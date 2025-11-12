@@ -46,11 +46,11 @@ function popoverContent(instance) {
     >
     <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL">
       <i class="fa fa-fw" :class="stateIcon('CRITICAL')"></i>
-      CRITICAL: {{ checks.CRITICAL }}</span
+      {{ checks.CRITICAL }}</span
     >
     <span class="badge text-bg-warning me-1" v-if="checks.WARNING">
       <i class="fa fa-fw" :class="stateIcon('WARNING')"></i>
-      WARNING: {{ checks.WARNING }}</span
+      {{ checks.WARNING }}</span
     >
     <span class="badge text-bg-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK"
       >OK</span
