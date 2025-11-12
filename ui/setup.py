@@ -7,37 +7,33 @@ __version__ = None
 setup_path = os.path.dirname(os.path.realpath(__file__))
 exec(open(os.path.join(setup_path, "temboardui", "version.py")).read())
 
-install_requires = [
-    "cryptography",
-    "flask",
-    "python-dateutil>=1.5",
-    "setuptools",
-    # There is no hard dependency on psycopg2 to allow using
-    # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
-    # and there is no way to state an OR dependency in Python. It's up to
-    # the user or package manager to ensure psycopg2 dependency. See
-    # documentation.
-    "sqlalchemy>=1.3.2,<2",
-    "tornado>=6.0.2,<6.5",
-]
-
-SETUP_KWARGS = dict(
+setup(
     name="temboard",
     version=__version__,
     description="temBoard User Interface.",
+    long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
+    packages=find_packages(),
     author="Dalibo",
     author_email="contact@dalibo.com",
     license="PostgreSQL",
     url="https://labs.dalibo.com/temboard",
     classifiers=[
         "Intended Audience :: System Administrators",
-        "License :: OSI Approved",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3.6",
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
-    install_requires=install_requires,
+    python_requires="~=3.6",
+    install_requires=[
+        "cryptography"
+        # There is no hard dependency on psycopg2 to allow using
+        # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
+        # and there is no way to state an OR dependency in Python. It's up to
+        # the user or package manager to ensure psycopg2 dependency. See
+        # documentation.
+    ],
     include_package_data=True,
     zip_safe=False,
     data_files=[
@@ -49,6 +45,7 @@ SETUP_KWARGS = dict(
                 "share/postinst.sh",
                 "share/preun.sh",
                 "share/purge.sh",
+                "vendor.txt",
             ],
         ),
         (
@@ -82,12 +79,3 @@ SETUP_KWARGS = dict(
         ],
     },
 )
-
-
-if __name__ == "__main__":
-    setup(
-        long_description=open("README.md", encoding="utf-8").read(),
-        long_description_content_type="text/markdown",
-        packages=find_packages(),
-        **SETUP_KWARGS,
-    )

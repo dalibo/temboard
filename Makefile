@@ -44,7 +44,7 @@ restart-selenium:  #: Restart selenium development container.
 	docker compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
-	PATH="$$(readlink -e $${PYENV_ROOT}/versions/$**/bin | sort -rV | head -1):$(PATH)" python$* -m venv dev/venv-py$*/ --prompt "$${PWD##*/}-py$*"
+	python$* -m venv dev/venv-py$*/ --prompt "temboard-py$*"
 	# Upgrade pip to install cryptography
 	# DEPRECATED: Once we drop Py 3.6 support, upgrade pip to 25 and
 	# use setuptools 64 for editable.
@@ -54,11 +54,24 @@ venv-%:
 
 install-%: venv-%
 	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
-	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt -e agent/ -e ui/ psycopg2-binary hupper
+	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt
+	dev/venv-py$*/bin/pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
+	dev/venv-py$*/bin/pip install -e agent/ -e ui/ psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # smoke test
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
-# LTS
+# Vendoring
+
+pip-locks: ui/vendor.txt
+
+# compile dependencies
+# DEPRECATED: uv does not support 3.6. Let's use 3.7 until 3.6 drop.
+# greenlet is a binary dep, drop it.
+%/vendor.txt: %/vendor.in %/setup.py
+	uv pip compile --python-version=3.7 $< -o $@
+	sed -i /greenlet/d $@
+
+#LTS
 PROMETHEUS_VERSION=2.53.0
 dev/downloads/prometheus-%.linux-amd64.tar.gz:
 	mkdir -p $(dir $@)
@@ -75,6 +88,7 @@ clean:  #: Trash venv and containers.
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
+	rm -rf ui/temboardui/_vendor
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
 
@@ -169,7 +183,7 @@ release-notes:  #: Extract changes for current release
 dist:  #: Build sources and wheels.
 	cd agent/; python3 setup.py sdist bdist_wheel
 	test -f ui/temboardui/static/dist/.vite/manifest.json
-	cd ui/; python3 setup.py sdist bdist_wheel --universal
+	cd ui/; python3 setup.py sdist bdist_wheel
 	twine check --strict \
 		agent/dist/temboard-agent-$(VERSION).tar.gz \
 		agent/dist/temboard_agent-$(VERSION)-py*.whl \

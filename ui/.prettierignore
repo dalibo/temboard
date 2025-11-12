@@ -2,4 +2,5 @@
 **/*.yml
 **/*.yaml
 **/*.html
+temboardui/_vendor
 temboardui/static/src/public

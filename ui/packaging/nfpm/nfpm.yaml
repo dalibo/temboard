@@ -1,0 +1,32 @@
+name: temboard
+arch: all
+# Accept PEP440
+version_schema: none
+version: ${VERSION}
+release: ${RELEASE}
+depends:
+  - "${PYTHONPKG}"
+maintainer: Dalibo Labs <contact@dalibo.com>
+description: PostgreSQL Remote Control UI
+homepage: https://labs.dalibo.com/temboard/
+license: PostgreSQL
+contents:
+  - src: packaging/nfpm/build/destdir/
+    dst: /
+    type: tree
+scripts:
+  postinstall: share/postinst.sh
+  preremove: share/preun.sh
+overrides:
+  deb:
+    depends:
+      - ssl-cert
+      - python3-cryptography
+      - python3-greenlet
+      - "python3-psycopg2 (>>2.8)"
+  rpm:
+    depends:
+      - openssl
+      - python3-psycopg2
+      - python3-cryptography
+      - python3-greenlet
