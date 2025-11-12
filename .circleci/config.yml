@@ -44,6 +44,8 @@ workflows:
           parameters:
             codename: [bookworm, bullseye, noble, jammy]
         requires: [stage0-dist]
+    # Take care of PostgreSQL version dispatch amongst distribution
+    # as documented at https://hub.docker.com/repository/docker/dalibo/buildpack-postgres/general#tags
     - e2e: &e2e
         name: stage2-e2e-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires:
@@ -51,28 +53,32 @@ workflows:
         - stage1-pkg-<< matrix.dist >>
         matrix:
           parameters:
-            dist: [rockylinux9]
-            # Odd version of Postgres for RHEL
             pgversion: ["17"]
-    - e2e:
-        <<: *e2e
-        matrix:
-          parameters:
             dist: [bookworm]
-            # Even version of Postgres for Debian
+    - e2e:
+        <<: *e2e
+        matrix:
+          parameters:
             pgversion: ["16"]
+            dist: [rockylinux9]
     - e2e:
         <<: *e2e
         matrix:
           parameters:
-            dist: [rockylinux8]
-            pgversion: ["12"]
+            pgversion: ["13"]
+            dist: [bookworm]
     - e2e:
         <<: *e2e
         matrix:
           parameters:
-            dist: [bullseye]
             pgversion: ["14"]
+            dist: [rockylinux8]
+    - e2e:
+        <<: *e2e
+        matrix:
+          parameters:
+            pgversion: ["11"]
+            dist: [bullseye]
     - release:
         name: stage3-release
         # Send secrets to this jobs from temboard CircleCI context.
@@ -308,11 +314,11 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bookworm, bullseye, rockylinux8, rockylinux9]
+        enum: [bookworm, bullseye, rockylinux9, rockylinux8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
-        enum: ["17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
+        enum: ["18", "17", "16", "15", "14", "13", "12", "11", "10", "9.6", "9.5"]
     resource_class: large
     docker:
     - image: dalibo/buildpack-postgres:<< parameters.dist >>

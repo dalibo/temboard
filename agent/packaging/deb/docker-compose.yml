@@ -1,5 +1,3 @@
-version: '2'
-
 services:
   bookworm: &mkdeb
     image: dalibo/buildpack-pkg:bookworm
