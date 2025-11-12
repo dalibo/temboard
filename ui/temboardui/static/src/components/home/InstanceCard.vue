@@ -13,7 +13,7 @@ const load1_last = ref("N/A");
 const tps_data = ref(null);
 const tps_last = ref("N/A");
 
-const props = defineProps(["end", "index", "refreshInterval", "start", "status_value", "instance"]);
+const props = defineProps(["end", "refreshInterval", "start", "status_value", "instance"]);
 
 const dashboard_url = computed(() => {
   return ["/server", props.instance.agent_address, props.instance.agent_port, "dashboard"].join("/");
@@ -24,25 +24,9 @@ const hasMonitoring = computed(() => {
 });
 
 onMounted(() => {
-  if (props.index >= 18) {
-    return;
-  }
-
   fetchTPS();
   fetchLoad1();
 });
-
-watch(
-  () => props.index,
-  (newValue) => {
-    if (newValue >= 18) {
-      load1_data.value = null;
-      load1_last.value = null;
-      tps_data.value = null;
-      tps_last.value = null;
-    }
-  },
-);
 
 function fetchLoad1() {
   fetchMetric("load1").done((data) => {
@@ -120,8 +104,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           <Checks :instance="instance"></Checks>
         </div>
       </div>
-      <!-- Limit graph to top 3 rows. -->
-      <div class="row" v-if="hasMonitoring && index < 18">
+      <div class="row" v-if="hasMonitoring">
         <div class="col-md-6 mt-2 small text-center text-nowrap">
           <span class="text-body-secondary" v-if="tps_last">TPS: </span>
           <span class="badge text-bg-secondary" v-if="tps_last">
