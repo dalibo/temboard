@@ -160,7 +160,7 @@ def get_primary_conninfo(conn):
         """
     is_in_recovery = conn.queryscalar(query)
     if not is_in_recovery:
-        raise Exception("Instance not in recovery or recovery file is " "missing.")
+        raise Exception("Instance not in recovery or recovery file is missing.")
 
     if conn.server_version < 120000:
         # Fetch primary_conninfo from recovery.conf file

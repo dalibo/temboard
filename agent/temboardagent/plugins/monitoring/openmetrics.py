@@ -90,8 +90,7 @@ METADATAS.update(
             MetricMetadata(
                 "node_uname_info",
                 help_=(
-                    "Labeled system information as provided by the uname system "
-                    "call."
+                    "Labeled system information as provided by the uname system call."
                 ),
                 type_=MetricMetadata.GAUGE,
             ),
@@ -729,16 +728,14 @@ METADATAS.update(
             MetricMetadata(
                 "pg_stat_database_xact_commit",
                 help_=(
-                    "Number of transactions in this database that have been "
-                    "committed"
+                    "Number of transactions in this database that have been committed"
                 ),
                 type_=MetricMetadata.COUNTER,
             ),
             MetricMetadata(
                 "pg_stat_database_xact_rollback",
                 help_=(
-                    "Number of transactions in this database that have been rolled "
-                    "back"
+                    "Number of transactions in this database that have been rolled back"
                 ),
                 type_=MetricMetadata.COUNTER,
             ),
