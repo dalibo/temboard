@@ -102,7 +102,7 @@ const emit = defineEmits(["apply"]);
                   </div>
                   <div v-show="vacuumWhen == 'scheduled'">
                     <button type="button" id="vacuumScheduledTime" class="btn btn-outline-secondary">
-                      <i class="fa fa-clock-o"></i>
+                      <i class="fa-regular fa-clock"></i>
                       &nbsp;
                       <span>{{ vacuumScheduledTime.toString() }}</span>
                     </button>

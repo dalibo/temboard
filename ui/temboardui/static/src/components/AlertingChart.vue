@@ -4,6 +4,8 @@ import $ from "jquery";
 import moment from "moment";
 import { inject, onMounted, ref, watch } from "vue";
 
+import { stateBgClass, stateIcon } from "../utils/state";
+
 const props = defineProps(["check", "key_", "valueType", "from", "to"]);
 const chartEl = ref(null);
 
@@ -14,6 +16,17 @@ const setFromTo = inject("setFromTo");
 watch(() => "" + props.from + props.to, createOrUpdateChart);
 
 onMounted(createOrUpdateChart);
+
+// Don't use orange first so that it is not confused with the warning level line
+const cudColors = {
+  SkyBlue: "#56b4e9",
+  Green: "#009e73",
+  Yellow: "#f0e442",
+  Blue: "#0072b2",
+  Vermilion: "#d55e00",
+  Purple: "#cc79a7",
+  Orange: "#e69f00",
+};
 
 function createOrUpdateChart() {
   const startDate = props.from;
@@ -27,6 +40,7 @@ function createOrUpdateChart() {
     legend: "always",
     labelsDiv: "legend" + props.key_,
     gridLineColor: "rgba(128, 128, 128, 0.3)",
+    colors: Object.values(cudColors),
     dateWindow: [new Date(startDate).getTime(), new Date(endDate).getTime()],
     xValueParser: function (x) {
       const m = moment(x);
@@ -148,17 +162,28 @@ function drawThreshold(data, canvas) {
 function drawAlerts(data) {
   const annotations = data.map(function (alert) {
     const x = getClosestX(alert.datetime);
-    let text = ['<span class="badge text-bg-', alert.state.toLowerCase(), '">', alert.state, "</span><br>"];
+    let text = `<span class="badge ${stateBgClass(alert.state)}">`;
+    text += `<i class="fa fa-fw ${stateIcon(alert.state)}"></i>`;
+    text += `${alert.state}</span><br>`;
     if (alert.state == "WARNING" || alert.state == "CRITICAL") {
-      text = text.concat([alert.value, " > ", alert[alert.state.toLowerCase()], "<br>"]);
+      text += `${alert.value} > ${alert[alert.state.toLowerCase()]}<br>`;
     }
-    text.push(alert.datetime);
+    text += alert.datetime;
+    let shortText = "✅";
+    switch (alert.state) {
+      case "WARNING":
+        shortText = "⚠️";
+        break;
+      case "CRITICAL":
+        shortText = "💥";
+        break;
+    }
+    text += alert.datetime;
     return {
       series: chart.getLabels()[1],
       x: x,
-      shortText: "♥",
-      cssClass: "alert-" + alert.state.toLowerCase(),
-      text: text.join(""),
+      shortText: shortText,
+      text,
       tickColor: bgColors[alert.state.toLowerCase()],
       attachAtBottom: true,
     };

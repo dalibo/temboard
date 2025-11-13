@@ -84,7 +84,7 @@ defineExpose({ fetchLoad1, fetchTPS });
     :class="[
       'card',
       {
-        'border-danger bg-danger-light': status_value >= 1000000,
+        'border-danger bg-danger-light border-2': status_value >= 1000000,
         'border-warning bg-warning-light': status_value >= 1000,
       },
     ]"
@@ -94,7 +94,7 @@ defineExpose({ fetchLoad1, fetchTPS });
         <div class="col-md-12">
           <p class="mb-0 overflow-ellipsis">
             <strong>
-              <i class="fa fa-database"></i>
+              <i class="fa-solid fa-database"></i>
               <a
                 :href="dashboard_url"
                 :title="
@@ -122,7 +122,7 @@ defineExpose({ fetchLoad1, fetchTPS });
       </div>
       <!-- Limit graph to top 3 rows. -->
       <div class="row" v-if="hasMonitoring && index < 18">
-        <div class="col-md-6 mt-2 small text-center text-nowrap">
+        <div class="col-6 mt-2 small text-center text-nowrap">
           <span class="text-body-secondary" v-if="tps_last">TPS: </span>
           <span class="badge text-bg-secondary" v-if="tps_last">
             {{ tps_last }}
@@ -131,7 +131,7 @@ defineExpose({ fetchLoad1, fetchTPS });
             :data="tps_data"
             :start="start"
             :end="end"
-            :colors="['#50BD68', '#F15854']"
+            :colors="['rgba(0, 188, 18, 0.4)', 'rgba(188, 0, 0, 1)']"
             @chart-rendered="setLastTPS"
             ref="tps_chart"
             class="sparkline-container"
@@ -142,7 +142,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           >
           </Sparkline>
         </div>
-        <div class="col-md-6 mt-2 small text-center text-nowrap">
+        <div class="col-6 mt-2 small text-center text-nowrap">
           <span class="text-body-secondary" v-if="load1_last">Loadavg: </span>
           <span class="badge text-bg-secondary" v-if="load1_last">
             {{ load1_last }}

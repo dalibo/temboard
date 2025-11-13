@@ -188,7 +188,7 @@ function reset() {
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" class="btn btn-success ms-auto" :disabled="disabled">
           Save
-          <i v-if="waiting" class="fa fa-spinner fa-spin loader"></i>
+          <i v-if="waiting" class="fa-solid fa-spinner fa-spin loader"></i>
         </button>
       </div>
     </form>

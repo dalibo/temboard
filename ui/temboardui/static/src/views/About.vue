@@ -20,16 +20,16 @@ function getMetadata() {
             <h1 style="font-size: 3rem; color: #d65a16" class="fw-bold">temBoard {{ temboard_version }}</h1>
             <div class="btn-group mx-auto justify-content-center">
               <a href="https://labs.dalibo.com/temboard" class="badge text-bg-light mx-1" target="_blank">
-                <i class="fa fa-globe"></i> Official website
+                <i class="fa-solid fa-globe"></i> Official website
               </a>
               <a href="https://temboard.readthedocs.io/en/latest/" class="badge text-bg-light mx-1" target="_blank">
-                <i class="fa fa-book"></i> Documentation
+                <i class="fa-solid fa-book"></i> Documentation
               </a>
               <a href="https://github.com/dalibo/temboard" class="badge text-bg-light mx-1" target="_blank">
-                <i class="fa fa-github"></i> GitHub
+                <i class="fa-brands fa-github"></i> GitHub
               </a>
               <a href="https://github.com/dalibo/temboard/issues/new" class="badge text-bg-light mx-1" target="_blank">
-                <i class="fa fa-bug"></i> New issue
+                <i class="fa-solid fa-bug"></i> New issue
               </a>
             </div>
           </div>
@@ -43,7 +43,7 @@ function getMetadata() {
               title="Copy to clipboard"
               @click="copy(getMetadata())"
             >
-              <i class="fa fa-copy"></i> {{ copied ? "Copied" : "Copy" }}
+              <i class="fa-solid fa-copy"></i> {{ copied ? "Copied" : "Copy" }}
             </button>
           </UseClipboard>
         </div>
@@ -55,7 +55,7 @@ function getMetadata() {
               <p class="mb-1">
                 <strong>{{ key }}:</strong>
                 <template v-if="value === true || value === false">
-                  <i class="fa" :class="{ 'fa-check': value, 'fa-times': !value }" :data-value="value"></i>
+                  <i class="fa-solid" :class="{ 'fa-check': value, 'fa-times': !value }" :data-value="value"></i>
                 </template>
                 <template v-else-if="key === 'Uptime'">
                   <UseTimeAgo v-slot="{ timeAgo }" :time="value">

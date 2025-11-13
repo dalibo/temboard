@@ -6,6 +6,8 @@ import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
 
+import { stateBgClass, stateBorderClass, stateIcon } from "../utils/state";
+
 // FIXME import chart.js and moment
 const props = defineProps(["config", "instance", "discover", "jdataHistory", "initialData"]);
 const dashboard = ref(props.initialData);
@@ -240,13 +242,6 @@ function updateTps(data) {
   $("#postgres-stopped-msg").toggleClass("d-none", !!data[data.length - 1].databases);
 }
 
-function getBorderColor(state) {
-  if (state != "OK" && state != "UNDEF") {
-    return "border border-2 border-" + state.toLowerCase();
-  }
-  return "border border-light";
-}
-
 /**
  * Update status and alerts
  */
@@ -411,8 +406,8 @@ onMounted(() => {
       datasets: [
         {
           label: "Commit",
-          backgroundColor: "rgba(0,188,18,0.2)",
-          borderColor: "rgba(0,188,18,1)",
+          backgroundColor: "rgba(0,188,18,0.1)",
+          borderColor: "rgba(0,188,18,0.4)",
         },
         {
           label: "Rollback",
@@ -457,7 +452,7 @@ onMounted(() => {
   <div ref="rootEl">
     <div class="position-absolute" style="z-index: 2">
       <button id="fullscreen" class="btn btn-link" @click="toggle">
-        <i class="fa fa-expand"></i>
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </button>
     </div>
     <div class="row d-fullscreen">
@@ -484,7 +479,7 @@ onMounted(() => {
                   CPU &times; {{ discover.system.cpu_count }}
                   <i
                     id="cpu-info"
-                    class="fa fa-info-circle text-body-secondary"
+                    class="fa-solid fa-info-circle text-body-secondary"
                     data-bs-toggle="tooltip"
                     :title="cpuTooltip"
                   >
@@ -574,7 +569,7 @@ onMounted(() => {
                 class="alert alert-warning border border-warning d-none"
               >
                 <div class="text-center">
-                  <i class="fa fa-exclamation-triangle fa-2x"></i>
+                  <i class="fa-solid fa-exclamation-triangle fa-2x"></i>
                   <br />
                   PostgreSQL instance
                   <br />
@@ -606,8 +601,14 @@ onMounted(() => {
             <div class="text-center small p-0">
               <span class="chart-title"> TPS </span>
               <div class="position-absolute top-0 right-0 pe-1">
-                Commit: <span id="tps_commit" class="badge text-bg-success">{{ tpsCommit }}</span> Rollback:
-                <span id="tps_rollback" class="badge text-bg-danger">{{ tpsRollback }}</span>
+                Commit:
+                <span id="tps_commit" class="badge" style="background-color: rgba(0, 188, 18, 0.4); color: inherit">{{
+                  tpsCommit
+                }}</span>
+                Rollback:
+                <span id="tps_rollback" class="badge" style="background-color: rgba(188, 0, 0, 1)">{{
+                  tpsRollback
+                }}</span>
               </div>
             </div>
             <div class="card-body p-2">
@@ -632,7 +633,7 @@ onMounted(() => {
             <div class="col-3 col-xxl-2 p-1 text-center" v-if="state.state != 'UNDEF'">
               <div
                 class="p-1 rounded"
-                v-bind:class="[getBorderColor(state.state), { 'striped bg-light': !state.enabled }]"
+                v-bind:class="[stateBorderClass(state.state), { 'striped bg-light': !state.enabled }]"
               >
                 <a v-bind:href="'alerting/' + state.name" v-bind:class="{ 'text-body-secondary': !state.enabled }">
                   <div
@@ -643,7 +644,10 @@ onMounted(() => {
                     {{ state.description }}
                   </div>
                   <div class="text-center">
-                    <span class="badge" v-bind:class="'text-bg-' + state.state.toLowerCase()">{{ state.state }}</span>
+                    <span class="badge" v-bind:class="stateBgClass(state.state)">
+                      <i class="fa fa-fw" :class="[stateIcon(state.state)]"></i>
+                      {{ state.state }}</span
+                    >
                   </div>
                 </a>
               </div>
@@ -671,9 +675,7 @@ onMounted(() => {
                   <div class="float-end text-body-secondary text-end">{{ moment(alert.datetime).fromNow() }}<br /></div>
                   <div>
                     <a v-bind:href="'alerting/' + alert.name">
-                      <span class="small text" v-bind:class="'text-' + alert.state.toLowerCase()">
-                        <i class="fa fa-square"></i>
-                      </span>
+                      <i class="fa fa-fw" :class="[stateIcon(alert.state), 'text-' + alert.state.toLowerCase()]"></i>
                       <span>
                         {{ alert.description }}
                       </span>
@@ -688,7 +690,10 @@ onMounted(() => {
                     v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
                   >
                     {{ moment(alert.datetime).format() }}<br />
-                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">{{ alert.state }}</span>
+                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">
+                      <i class="fa fa-fw" :class="[stateIcon(alert.state)]"></i>
+                      {{ alert.state }}
+                    </span>
                     <br />
                     <span class="fw-bold">
                       {{ alert.value }}

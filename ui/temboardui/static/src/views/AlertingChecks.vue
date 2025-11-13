@@ -3,13 +3,9 @@ import $ from "jquery";
 import * as _ from "lodash";
 import { ref } from "vue";
 
-const checks = ref([]);
+import { stateBgClass, stateBorderClass, stateIcon } from "../utils/state";
 
-function getBorderClass(state) {
-  if (state != "OK" && state != "UNDEF") {
-    return "border-" + state.toLowerCase();
-  }
-}
+const checks = ref([]);
 
 function sorted(items, key) {
   return _.orderBy(items, key);
@@ -42,23 +38,25 @@ refresh();
           <div
             v-bind:id="'status-' + check.name"
             class="card mb-3 w-100 border"
-            v-bind:class="[getBorderClass(check.state), { 'striped bg-light': !check.enabled }]"
+            v-bind:class="[stateBorderClass(check.state), { 'striped bg-light': !check.enabled }]"
           >
             <div class="card-body p-2">
               <div>
                 <a v-bind:href="'alerting/' + check.name" v-bind:class="{ 'text-body-secondary': !check.enabled }">
-                  <span v-bind:class="'badge text-bg-' + check.state.toLowerCase()">
-                    {{ check.state }}
-                  </span>
+                  <span class="badge" v-bind:class="stateBgClass(check.state)">
+                    <i class="fa fa-fw" :class="[stateIcon(check.state)]"></i>
+                    {{ check.state }}</span
+                  >
                   {{ check.description }}
                 </a>
               </div>
               <hr class="mt-1 mb-1" />
               <ul class="list-unstyled small ms-2 mb-0" style="max-height: 100px; overflow-y: auto">
                 <li v-for="key in sorted(check.state_by_key, 'key')">
-                  <span v-bind:class="'badge text-bg-' + key.state.toLowerCase()">
-                    {{ key.state }}
-                  </span>
+                  <span class="badge" v-bind:class="stateBgClass(key.state)">
+                    <i class="fa fa-fw" :class="[stateIcon(key.state)]"></i>
+                    {{ key.state }}</span
+                  >
                   {{ key.key }}
                 </li>
               </ul>
