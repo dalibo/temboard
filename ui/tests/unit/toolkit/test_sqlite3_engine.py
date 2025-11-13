@@ -46,9 +46,9 @@ def test_insert():
     )
 
     # We have one row in the table
-    assert (
-        execute(engine.conn, "SELECT COUNT(id) FROM tasks")[0][0] == 1
-    ), "Task not inserted."
+    assert execute(engine.conn, "SELECT COUNT(id) FROM tasks")[0][0] == 1, (
+        "Task not inserted."
+    )
 
     # Inserting Task with duplicated id raises KeyError
     with pytest.raises(KeyError):
@@ -148,9 +148,9 @@ def test_delete():
     engine.delete("cccc")
 
     # We don't have row in the table
-    assert (
-        execute(engine.conn, "SELECT COUNT(id) FROM tasks")[0][0] == 0
-    ), "Task not deleted."
+    assert execute(engine.conn, "SELECT COUNT(id) FROM tasks")[0][0] == 0, (
+        "Task not deleted."
+    )
 
     with NamedTemporaryFile() as f:
         engine = sqlite3_engine.TaskListSQLite3Engine(f.name)

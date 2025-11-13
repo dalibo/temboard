@@ -134,7 +134,7 @@ def send_mail(
         smtp.quit()
     except Exception as e:
         raise TemboardUIError(
-            500, "Could not send mail; %s\n" "SMTP connection may be misconfigured." % e
+            500, "Could not send mail; %s\nSMTP connection may be misconfigured." % e
         )
 
 
