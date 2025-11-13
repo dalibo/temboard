@@ -109,8 +109,7 @@ def insert_metrics(session, host_id, instance_id, data, labels=None, max_duratio
         call_duration = datetime.utcnow() - start
         if call_duration >= max_duration:
             logger.warning(
-                "Metrics insertion is too long. "
-                "Maybe another task is locking tables."
+                "Metrics insertion is too long. Maybe another task is locking tables."
             )
             logger.warning(
                 "Aborting metrics insertion. Retrying in less than a minute."

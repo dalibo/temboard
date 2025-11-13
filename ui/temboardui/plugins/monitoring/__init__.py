@@ -299,7 +299,7 @@ def notify_state_change(app, check_id, key, value, state, prev_state):
     smtp_from_addr = notifications_conf.smtp_from_addr
 
     if not smtp_host and not notifications_conf.get("twilio_account_sid", None):
-        logger.info("No SMTP nor SMS service configured, " "notification not sent")
+        logger.info("No SMTP nor SMS service configured, notification not sent")
         return
 
     # Worker in charge of sending notifications
@@ -407,8 +407,7 @@ def schedule_collector(app):
     with engine.connect() as conn:
         # Get the list of agents
         res = conn.execute(
-            "SELECT agent_address, agent_port "
-            "FROM application.instances ORDER BY 1, 2"
+            "SELECT agent_address, agent_port FROM application.instances ORDER BY 1, 2"
         )
 
         for batch in grouper(16, res.fetchall()):

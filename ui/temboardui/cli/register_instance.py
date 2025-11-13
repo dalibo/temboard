@@ -139,7 +139,7 @@ class RegisterInstance(SubCommand):
 
         if "valid" != discover["signature_status"]:
             logger.error(
-                "Agent %s is configured for another UI or " "signing key is outdated.",
+                "Agent %s is configured for another UI or signing key is outdated.",
                 agent,
             )
             logger.error("Update signing key with temboard-agent fetch-key.")

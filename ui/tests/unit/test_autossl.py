@@ -23,7 +23,7 @@ def test_parse_headers_ok():
     from temboardui.autossl import parse_http_headers
 
     start_line, headers = parse_http_headers(
-        "GET / HTTP/1.1\r\n" "Host: 0.0.0.0:8888\r\n" "\r\n" "Pouet\r\n"
+        "GET / HTTP/1.1\r\nHost: 0.0.0.0:8888\r\n\r\nPouet\r\n"
     )
 
     assert "HTTP/1.1" == start_line.version
@@ -34,7 +34,7 @@ def test_parse_headers_nocontents():
     from temboardui.autossl import parse_http_headers
 
     start_line, headers = parse_http_headers(
-        "GET /home HTTP/1.1\r\n" "Host: 0.0.0.0:8888\r\n"
+        "GET /home HTTP/1.1\r\nHost: 0.0.0.0:8888\r\n"
     )
 
     assert "HTTP/1.1" == start_line.version

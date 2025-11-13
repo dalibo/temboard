@@ -61,7 +61,7 @@ class Migrator:
             )
 
             raise UserError(
-                "Database is not up to date." " Please upgrade with temboard migratedb."
+                "Database is not up to date. Please upgrade with temboard migratedb."
             )
         else:
             logger.info("temBoard database is up-to-date. revision=%s", current)

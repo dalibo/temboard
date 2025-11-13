@@ -101,7 +101,7 @@ def upsert_last_measure(path, dbname, time, key, data):
             )
         except sqlite3.IntegrityError:
             c.execute(
-                "UPDATE last_measures SET time = ?, data = ? " "WHERE key = ?",
+                "UPDATE last_measures SET time = ?, data = ? WHERE key = ?",
                 (time, json.dumps(data, cls=JSONEncoder), key),
             )
 

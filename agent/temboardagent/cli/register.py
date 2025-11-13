@@ -112,7 +112,7 @@ class Register(SubCommand):
                     ui_url.netloc,
                 )
                 logger.error(
-                    "Use temboard-agent fetch-key --force " "to accept %s signing key.",
+                    "Use temboard-agent fetch-key --force to accept %s signing key.",
                     ui_url.netloc,
                 )
                 raise UserError("Signature mismatch.")
