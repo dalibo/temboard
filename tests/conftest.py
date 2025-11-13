@@ -60,7 +60,7 @@ def log_tweaks():
     """
 
     formatter = logging.Formatter(
-        fmt="%(asctime)s pytest[%(process)d] %(levelname)s:  " "%(module)s: %(message)s"
+        fmt="%(asctime)s pytest[%(process)d] %(levelname)s:  %(module)s: %(message)s"
     )
     formatter.datefmt = "%Y-%m-%d %H:%M:%S %Z"
     handler = logging.StreamHandler()
@@ -109,7 +109,7 @@ def pytest_addoption(parser):
         "--pg-version",
         choices=POSTGRESQL_AVAILABLE_VERSIONS.keys(),
         default=POSTGRESQL_AVAILABLE_VERSIONS.most_recent_version,
-        help=("Monitor specified PostgreSQL version" " (default: %(default)s)"),
+        help=("Monitor specified PostgreSQL version (default: %(default)s)"),
     )
     parser.addoption(
         "--selenium",

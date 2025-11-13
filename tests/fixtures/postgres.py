@@ -150,7 +150,7 @@ def postgres(agent_env, pguser, sudo_pguser, workdir: Path):
     log_lock_waits = on
     log_statement = all
     logging_collector = on
-    port = {agent_env['PGPORT']}
+    port = {agent_env["PGPORT"]}
     shared_preload_libraries = pg_stat_statements
     unix_socket_directories = '{socketdir}'
     """)
