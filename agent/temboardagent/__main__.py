@@ -11,6 +11,9 @@ def main():
         default_app.pop()  # Remove default app.
     default_app.push(create_app(app))
 
+    if __package__ is None:
+        return app()  # basedpyright
+
     # Import core HTTP routes
     __import__(__package__ + ".web.core")
 
