@@ -38,7 +38,7 @@ refresh();
     <div class="text-end text-body-secondary small">Auto refresh every 1 min</div>
     <div id="checks-container" class="row" v-cloak>
       <template v-for="check in checks">
-        <div class="col-3" v-if="check.state != 'UNDEF'">
+        <div class="col-3">
           <div
             v-bind:id="'status-' + check.name"
             class="card mb-3 w-100 border"
