@@ -23,7 +23,7 @@ install_requires = [
 
 SETUP_KWARGS = dict(
     name="temboard",
-    version=__version__,  # noqa, imported by execfile.
+    version=__version__,
     description="temBoard User Interface.",
     author="Dalibo",
     author_email="contact@dalibo.com",

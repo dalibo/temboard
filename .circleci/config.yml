@@ -161,7 +161,7 @@ jobs:
           name: Setup python environment
           command: |
             # Synchronise this line with Makefile
-            pip install --ignore-requires-python --only-binary :all: ruff==0.7.2
+            pip install --ignore-requires-python --only-binary :all: ruff==0.14.4
             pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
