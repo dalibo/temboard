@@ -13,7 +13,7 @@ DOCKER_MAX_VERSION=29
 develop: develop-3.6  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
-	git config blame.ignoreRevsFile .git-blame-ignore-revs
+	git config blame.ignoreRevsFile dev/git-blame-ignore-revs
 	if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $$PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
 	$(MAKE) -j 2 install-$* ui/build/bin/prometheus ui/build/bin/promtool
 	mkdir -p dev/temboard
