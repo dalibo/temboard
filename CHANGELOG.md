@@ -14,6 +14,7 @@ You need manual steps when upgrading UI.
 - Raise proper error on unknown environment.
 - Improve alerting performance.
 - Support Tornado 6.4 on RHEL9.
+- Add cookie_timeout to UI configuration.
 
 
 ## 9.0.0

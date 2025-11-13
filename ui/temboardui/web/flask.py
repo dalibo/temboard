@@ -99,6 +99,20 @@ def create_app(temboard_app):
         resp.headers["Content-Security-Policy"] = csp
         return resp
 
+    @app.after_request
+    def refresh_cookie(resp):
+        if request.endpoint == "logout":
+            return resp
+        cook = request.cookies.get("temboard")
+        if cook:
+            resp.set_cookie(
+                "temboard",
+                cook,
+                secure=True,
+                max_age=app.temboard.config.temboard.cookie_timeout,
+            )
+        return resp
+
     ViteJSExtension(app)
     # finalize_app() must be called before serving, to enable configured
     # blueprints.
