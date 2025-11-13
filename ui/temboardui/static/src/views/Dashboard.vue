@@ -630,7 +630,7 @@ onMounted(() => {
         </div>
         <div class="row small mb-2">
           <template v-for="state in states">
-            <div class="col-3 col-xxl-2 p-1 text-center" v-if="state.state != 'UNDEF'">
+            <div class="col-3 col-xxl-2 p-1 text-center">
               <div
                 class="p-1 rounded"
                 v-bind:class="[stateBorderClass(state.state), { 'striped bg-light': !state.enabled }]"
