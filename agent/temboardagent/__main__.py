@@ -7,8 +7,12 @@ from .web.app import create_app
 
 
 def main():
-    default_app.pop()  # Remove default app.
+    if len(default_app) > 1:  # DEPRECATED: bottle 0.12
+        default_app.pop()  # Remove default app.
     default_app.push(create_app(app))
+
+    if __package__ is None:
+        return app()  # basedpyright
 
     # Import core HTTP routes
     __import__(__package__ + ".web.core")

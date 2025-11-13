@@ -32,7 +32,7 @@ setup(
         ],
         python_requires="~=3.5",
         include_package_data=True,
-        install_requires=["bottle >= 0.12, <0.13", "cryptography"],
+        install_requires=["bottle >= 0.12, <0.14", "cryptography"],
         data_files=[
             (
                 "share/temboard-agent/",
