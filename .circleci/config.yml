@@ -222,6 +222,7 @@ jobs:
         name: Install Agent.
         command: |
           pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
+          pip<< parameters.pyversion >> install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
     - run:
         name: Agent Unit Tests
         command: |
@@ -239,9 +240,6 @@ jobs:
         type: enum
         enum: [rockylinux9, rockylinux8]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
-    environment:
-      DEBFULLNAME: CircleCI
-      DEBEMAIL: none@example.com
     working_directory: *working_directory
     steps:
     - checkout
@@ -250,8 +248,7 @@ jobs:
     - run:
         name: Build Agent RPM snapshot
         command: |
-          agent/packaging/rpm/build.sh
-          mv -v agent/dist/rhel*/temboard-agent/*.rpm agent/dist/
+          agent/packaging/nfpm/mkrpm.sh
     - store_artifacts:
         path: /workspace/agent/dist/
     - run:
@@ -288,7 +285,7 @@ jobs:
         path: /workspace/ui/dist/
     - run:
         name: Build Agent Debian Snapshot
-        command: agent/packaging/deb/mkdeb.sh
+        command: agent/packaging/nfpm/mkdeb.sh
     - store_artifacts:
         path: /workspace/agent/dist/
     - persist_to_workspace:

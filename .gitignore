@@ -53,4 +53,5 @@ temboard.conf.d/
 dev/prometheus/import/*.txt
 
 # Vendoring
+agent/temboardagent/_vendor/
 ui/temboardui/_vendor/

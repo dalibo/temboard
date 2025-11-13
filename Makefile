@@ -55,6 +55,7 @@ venv-%:
 install-%: venv-%
 	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
 	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt
+	dev/venv-py$*/bin/pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
 	dev/venv-py$*/bin/pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
 	dev/venv-py$*/bin/pip install -e agent/ -e ui/ psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # smoke test
@@ -62,7 +63,7 @@ install-%: venv-%
 
 # Vendoring
 
-pip-locks: ui/vendor.txt
+pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
 # DEPRECATED: uv does not support 3.6. Let's use 3.7 until 3.6 drop.
@@ -88,7 +89,7 @@ clean:  #: Trash venv and containers.
 	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
-	rm -rf ui/temboardui/_vendor
+	rm -rf agent/temboardagent/_vendor ui/temboardui/_vendor
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
 
