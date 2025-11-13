@@ -1,0 +1,31 @@
+# template file for nfpm configuration
+name: temboard-agent
+arch: all
+# Accept PEP440
+version_schema: none
+version: ${VERSION}
+release: ${RELEASE}
+maintainer: Dalibo Labs <contact@dalibo.com>
+description: PostgreSQL Remote Control Agent
+homepage: https://labs.dalibo.com/temboard/
+license: PostgreSQL
+depends:
+  - ${PYTHONPKG}
+contents:
+  - src: packaging/nfpm/build/destdir/
+    dst: /
+    type: tree
+scripts:
+  postinstall: share/restart-all.sh
+  preremove: share/preun.sh
+overrides:
+  deb:
+    depends:
+      - python3-cryptography
+      - python3-psycopg2 (>= 2.7)
+      - ssl-cert
+  rpm:
+    depends:
+      - openssl
+      - python3-cryptography
+      - python3-psycopg2
