@@ -13,7 +13,7 @@ function login(e) {
       "Content-Type": "application/json",
     },
     success: function (data) {
-      window.location.href = document.referrer ? document.referrer : "/";
+      window.location.href = "/home";
     },
     error: function (xhr) {
       console.log("error", xhr);

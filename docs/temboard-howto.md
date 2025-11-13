@@ -67,3 +67,9 @@ Click on username to allow him to the Environment.
 
 Once a user has access to an environment,
 he can manage instances in this environment.
+
+
+# Reset your password
+
+Currently, the password reset feature depends on the notification settings specified in the temboard configuration file.
+[Please, see the Notifications section](temboard-howto-alerting.md#Notifications).
