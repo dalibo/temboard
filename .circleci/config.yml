@@ -328,11 +328,7 @@ jobs:
     - run:
         name: Install test dependencies
         command: |
-          if type -p uv; then
-            uv pip install -r dev/requirements.txt
-          else
-            pip3 install -r dev/requirements.txt
-          fi
+          PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install -r dev/requirements.txt
     - run:
         name: Run pytest
         command: |
