@@ -350,7 +350,7 @@ jobs:
 
   release:
     # Configure secrets of this job in temboard CircleCI context.
-    docker: [{image: dalibo/buildpack-python:bullseye}]
+    docker: [{image: dalibo/buildpack-python:bookworm}]
     working_directory: *working_directory
     steps:
     - checkout
@@ -394,7 +394,7 @@ jobs:
           TWINE_NON_INTERACTIVE: 'true'
 
   docker:
-    docker: [{image: dalibo/buildpack-python:bullseye}]
+    docker: [{image: dalibo/buildpack-python:bookworm}]
     working_directory: *working_directory
     steps:
     - checkout
