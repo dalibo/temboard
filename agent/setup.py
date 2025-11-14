@@ -1,15 +1,11 @@
 import os
 
-from setuptools import __version__ as setuptoolsv
 from setuptools import find_packages, setup
 
 # Load version number
 __version__ = "(devel)"  # Satisfy linter before exec.
 setup_path = os.path.dirname(os.path.realpath(__file__))
 exec(open(os.path.join(setup_path, "temboardagent", "version.py")).read())
-
-if setuptoolsv < "1.0":
-    __version__ = __version__.replace("+", ".")
 
 setup(
     name="temboard-agent",
@@ -28,7 +24,7 @@ setup(
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
-    python_requires="~=3.6",
+    python_requires="~=3.9",
     include_package_data=True,
     install_requires=["cryptography"],
     data_files=[

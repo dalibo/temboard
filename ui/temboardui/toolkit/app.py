@@ -9,12 +9,8 @@ from argparse import Action as ArgAction
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from codecs import open
 from glob import glob
+from importlib.metadata import entry_points
 from textwrap import dedent
-
-try:
-    from importlib.metadata import entry_points
-except ImportError:
-    from importlib_metadata import entry_points  # DEPRECATED: Python 3.6
 
 from . import validators as v
 from .configuration import MergedConfiguration, OptionSpec
@@ -239,11 +235,9 @@ class BaseApplication:
             self.read_file(parser, filename)
 
     def fetch_plugin(self, name):
-        # Get entry points for the plugin group
-        # Using select() for compatibility with Python 3.9+, fallback to dict access
         eps = entry_points()
         if hasattr(eps, "select"):
-            # Python 3.10+ or importlib_metadata 3.6+
+            # Python 3.10+
             group_eps = eps.select(group=self.with_plugins, name=name)
         else:
             # Python 3.9: its a dict

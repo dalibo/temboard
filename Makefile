@@ -10,7 +10,7 @@ apropos:  #: Show dev Makefile help.
 	@echo
 
 DOCKER_MAX_VERSION=30
-develop: develop-3.6  #: Create Python venv and docker services.
+develop: develop-3.9  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile dev/git-blame-ignore-revs
@@ -45,10 +45,6 @@ restart-selenium:  #: Restart selenium development container.
 
 venv-%:
 	python$* -m venv dev/venv-py$*/ --prompt "temboard-py$*"
-	# Upgrade pip to install cryptography
-	# DEPRECATED: Once we drop Py 3.6 support, upgrade pip to 25 and
-	# use setuptools 64 for editable.
-	dev/venv-py$*/bin/pip install -U 'pip<24'
 	dev/venv-py$*/bin/python --version  # smoke test
 	dev/venv-py$*/bin/pip --version  # smoke test
 
@@ -66,9 +62,8 @@ install-%: venv-%
 pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
-# DEPRECATED: uv does not support 3.6. Let's use 3.7 until 3.6 drop.
 %/vendor.txt: %/vendor.in %/setup.py
-	uv pip compile --python-version=3.7 $< -o $@
+	uv pip compile --python-version=3.9 --upgrade $< -o $@
 
 #LTS
 PROMETHEUS_VERSION=2.53.0

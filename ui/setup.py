@@ -21,11 +21,11 @@ setup(
     classifiers=[
         "Intended Audience :: System Administrators",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3",
         "Topic :: Database :: Database Engines/Servers",
         "Topic :: System :: Monitoring",
     ],
-    python_requires="~=3.6",
+    python_requires="~=3.9",
     install_requires=[
         "cryptography"
         # There is no hard dependency on psycopg2 to allow using

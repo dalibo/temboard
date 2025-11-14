@@ -106,7 +106,7 @@ def test_find_argv_in_stack_module(mocker):
             (0xBAD, "-m"),
             (0xBAD, "main.module"),
             (0xBAD, "LC_ALL=fr_FR.UTF-8"),
-            (0xBAD, "/usr/lib/python3.6/site-packages/..."),
+            (0xBAD, "/usr/lib/python3.9/site-packages/..."),
         ]
     )
 
@@ -130,7 +130,7 @@ def test_find_argv_in_stack_command_string(mocker):
             (0xBAD, "-c"),
             (0xBAD, "from module import main; main()"),
             (0xBAD, "LC_ALL=fr_FR.UTF-8"),
-            (0xBAD, "/usr/lib/python3.6/site-packages/..."),
+            (0xBAD, "/usr/lib/python3.9/site-packages/..."),
         ]
     )
 

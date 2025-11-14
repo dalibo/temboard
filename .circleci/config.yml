@@ -18,7 +18,7 @@ workflows:
         name: stage0-unit-py<< matrix.pyversion >>
         matrix:
           parameters:
-            pyversion: ["3.6"]
+            pyversion: ["3.9"]
     - dist:
         name: stage0-dist
         requires: [stage0-static]
@@ -45,7 +45,7 @@ workflows:
     - e2e: &e2e
         name: stage2-e2e-pg<< matrix.pgversion >>-<< matrix.dist >>
         requires:
-        - stage0-unit-py3.6
+        - stage0-unit-py3.9
         - stage1-pkg-<< matrix.dist >>
         matrix:
           parameters:
@@ -161,7 +161,7 @@ jobs:
       pyversion:
         description: "Python version"
         type: enum
-        enum: ["3.6", "3.7", "3.8", "3.9"]
+        enum: ["3.9"]
     docker:
       - image: dalibo/buildpack-python:<< parameters.pyversion >>
     working_directory: *working_directory
@@ -174,14 +174,12 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            # Synchronise this line with Makefile
-            pip install --ignore-requires-python --only-binary :all: ruff==0.14.4
-            pip install --upgrade --requirement dev/requirements.txt
+            python<< parameters.pyversion >> -m pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Install Agent.
           command: |
-            pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
-            pip<< parameters.pyversion >> install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
+            python<< parameters.pyversion >> -m pip install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
+            python<< parameters.pyversion >> -m pip install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
       - run:
           name: Lint Agent
           command: |
@@ -197,8 +195,8 @@ jobs:
           name: Install UI
           command: |
             set -x
-            pip<< parameters.pyversion >> install --upgrade --editable ui/ --only-binary=psycopg2-binary psycopg2-binary
-            pip<< parameters.pyversion >> install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
+            python<< parameters.pyversion >> -m pip install --upgrade --editable ui/ --only-binary=psycopg2-binary psycopg2-binary
+            python<< parameters.pyversion >> -m pip install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
       - run:
           name: Lint UI
           command: |
@@ -278,7 +276,7 @@ jobs:
         root: .
         paths:
         - 'agent/dist/*_all.deb'
-        - 'ui/dist/*_all.deb'
+        - 'ui/dist/*.deb'
 
   e2e:
     parameters:

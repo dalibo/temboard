@@ -8,7 +8,6 @@ import os
 from ipaddress import ip_address, ip_network
 
 import jinja2
-import werkzeug.exceptions
 from flask import (
     Blueprint,
     Flask,
@@ -83,9 +82,6 @@ def create_app(temboard_app):
     APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthMiddleware(app)
-    # DEPRECATED: Seems required for old Flask only.
-    for code in werkzeug.exceptions.default_exceptions.keys():
-        app.register_error_handler(code, error_handler)
     app.register_error_handler(Exception, error_handler)
 
     # unsafe-eval is for jquery. unsafe-inline because we have
