@@ -67,10 +67,8 @@ pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
 # DEPRECATED: uv does not support 3.6. Let's use 3.7 until 3.6 drop.
-# greenlet is a binary dep, drop it.
 %/vendor.txt: %/vendor.in %/setup.py
 	uv pip compile --python-version=3.7 $< -o $@
-	sed -i /greenlet/d $@
 
 #LTS
 PROMETHEUS_VERSION=2.53.0

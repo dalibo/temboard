@@ -6,6 +6,7 @@ click==8.0.4
     #   flask
 flask==1.1.2
     # via -r ui/vendor.in
+greenlet==3.1.1
     # via sqlalchemy
 importlib-metadata==4.8.3
     # via

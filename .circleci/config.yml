@@ -247,7 +247,7 @@ jobs:
         root: .
         paths:
         - agent/dist/*.noarch.rpm
-        - ui/dist/*.noarch.rpm
+        - ui/dist/*.x86_64.rpm
 
   deb:
     parameters:
@@ -375,7 +375,7 @@ jobs:
           gh release create \
             $CIRCLE_TAG \
             agent/dist/*{.tar.gz,.whl,_all.deb,.noarch.rpm} \
-            ui/dist/*{.tar.gz,.whl,_amd64.deb,.noarch.rpm} \
+            ui/dist/*{.tar.gz,.whl,_amd64.deb,.x86_64.rpm} \
             --title "${CIRCLE_TAG#v}" \
             -F <(make -s release-notes VERSION=${CIRCLE_TAG#v}) \
             "${args[@]}"
