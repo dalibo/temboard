@@ -40,7 +40,6 @@ class TemboardAgentApplication(BaseApplication):
     ]
     DEFAULT_PLUGINS = [
         "activity",
-        "administration",
         "dashboard",
         "maintenance",
         "monitoring",

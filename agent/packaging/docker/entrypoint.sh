@@ -42,38 +42,6 @@ fi
 
 export TEMBOARD_CONFIGFILE="$conf"
 
-if ! [ -f "${conf}.d/administration.conf" ] ; then
-	# Hack to use docker instead of pg_ctl.
-	mkdir -p "${conf}.d"
-	if [ -x /usr/bin/docker ] ; then
-		# Create docker group matching docker socket ownership.
-		DOCKER_GID=$(stat -c "%g" /var/run/docker.sock)
-		if ! getent group "${DOCKER_GID}" &>/dev/null ; then
-			groupadd --system --gid "${DOCKER_GID}" docker-host
-			adduser postgres docker-host
-		fi
-
-		network=$(docker inspect --format '{{ .HostConfig.NetworkMode }}' $HOSTNAME)
-		links=($(docker inspect --format '{{ $net := index .NetworkSettings.Networks "'"${network}"'" }}{{range $net.Links }}{{.}} {{end}}' "$HOSTNAME"))
-		links=("${links[@]%%:${TEMBOARD_HOSTNAME}}")
-		PGCONTAINER="${links[*]%%*:*}"
-		COMPOSE_SERVICE=$(docker inspect --format "{{ index .Config.Labels \"com.docker.compose.service\"}}" "$HOSTNAME")
-		echo "Managing PostgreSQL container $PGCONTAINER." >&2
-
-		cat > "${conf}.d/administration.conf" <<- EOF
-		[administration]
-		pg_ctl = /usr/local/bin/pg_ctl_temboard.sh ${PGCONTAINER} %s
-		EOF
-	else
-		echo "Can't start/stop PostgreSQL." >&2
-
-		cat > "${conf}.d/administration.conf" <<- EOF
-		[administration]
-		pg_ctl = /bin/false %s
-		EOF
-	fi
-fi
-
 register() {
 	set -x
 

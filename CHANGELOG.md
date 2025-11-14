@@ -15,6 +15,11 @@ You need manual steps when upgrading UI.
 - Improve alerting performance.
 - Support Tornado 6.4 on RHEL9.
 
+**Breaking changes**
+
+- The administration plugin is no longer used and as been removed. The list of plugins
+in the agent configuration must be updated.
+
 
 ## 9.0.0
 
