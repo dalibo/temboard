@@ -193,11 +193,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - &pip-cache-restore
-        restore_cache:
-          keys:
-            - temboard-{{ .Branch }}
-            - temboard-master
       - run:
           name: Setup and Lint
           command: |
@@ -216,11 +211,7 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - &pip-cache-restore
-      restore_cache:
-        keys:
-          - temboard-{{ .Branch }}
-          - temboard-master
+    - *pip-cache-restore
     - run:
         name: Install UI and tooling.
         command: |
@@ -238,10 +229,7 @@ jobs:
         name: UI Unit Tests
         command: |
           pytest --full-trace --cov-report=xml ui/tests/unit/
-    - &pip-cache-save
-      save_cache:
-        key: temboard-{{ .Branch }}
-        paths: ["~/.cache/pip/"]
+    - *pip-cache-save
 
   rpm:
     parameters:
