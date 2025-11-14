@@ -1,4 +1,5 @@
 check-manifest
+hupper
 pytest
 pytest-cov
 pytest-mock

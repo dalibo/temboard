@@ -118,8 +118,6 @@ jobs:
         name: Build browser assets
         command: |
           make static
-    - store_artifacts:
-        path: /workspace/ui/temboardui/static/
     - persist_to_workspace:
         root: .
         paths: [ui/temboardui/static/]
@@ -135,10 +133,6 @@ jobs:
         name: Build Agent & UI
         command: |
           make dist
-    - store_artifacts:
-        path: /workspace/agent/dist/
-    - store_artifacts:
-        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
@@ -193,11 +187,6 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - &pip-cache-restore
-        restore_cache:
-          keys:
-            - temboard-{{ .Branch }}
-            - temboard-master
       - run:
           name: Setup and Lint
           command: |
@@ -216,20 +205,18 @@ jobs:
     working_directory: *working_directory
     steps:
     - checkout
-    - &pip-cache-restore
-      restore_cache:
-        keys:
-          - temboard-{{ .Branch }}
-          - temboard-master
+    - *pip-cache-restore
     - run:
         name: Install UI and tooling.
         command: |
           set -x
           pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt --only-binary=psycopg2-binary psycopg2-binary
+          pip<< parameters.pyversion >> install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
     - run:
         name: Install Agent.
         command: |
           pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
+          pip<< parameters.pyversion >> install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
     - run:
         name: Agent Unit Tests
         command: |
@@ -238,10 +225,7 @@ jobs:
         name: UI Unit Tests
         command: |
           pytest --full-trace --cov-report=xml ui/tests/unit/
-    - &pip-cache-save
-      save_cache:
-        key: temboard-{{ .Branch }}
-        paths: ["~/.cache/pip/"]
+    - *pip-cache-save
 
   rpm:
     parameters:
@@ -258,17 +242,11 @@ jobs:
     - run:
         name: Build Agent RPM snapshot
         command: |
-          agent/packaging/rpm/build.sh
-          mv -v agent/dist/rhel*/temboard-agent/*.rpm agent/dist/
-    - store_artifacts:
-        path: /workspace/agent/dist/
+          agent/packaging/nfpm/mkrpm.sh
     - run:
         name: Build UI RPM snapshot
         command: |
-          ui/packaging/rpm/build.sh
-          mv -v ui/dist/rhel*/temboard/*.rpm ui/dist/
-    - store_artifacts:
-        path: /workspace/ui/dist/
+          ui/packaging/nfpm/mkrpm.sh
     - persist_to_workspace:
         root: .
         paths:
@@ -283,31 +261,24 @@ jobs:
         enum: [bookworm, bullseye, noble, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
+    environment:
+      DEBFULLNAME: CircleCI
+      DEBEMAIL: none@example.com
     steps:
     - checkout
     - attach_workspace:
         at: *working_directory
     - run:
         name: Build UI Debian Snapshot
-        command: ui/packaging/deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
-    - store_artifacts:
-        path: /workspace/ui/dist/
+        command: ui/packaging/nfpm/mkdeb.sh
     - run:
         name: Build Agent Debian Snapshot
-        command: agent/packaging/deb/mkdeb.sh
-        environment:
-          DEBFULLNAME: CircleCI
-          DEBEMAIL: none@example.com
-    - store_artifacts:
-        path: /workspace/agent/dist/
+        command: agent/packaging/nfpm/mkdeb.sh
     - persist_to_workspace:
         root: .
         paths:
         - 'agent/dist/*_all.deb'
-        - 'ui/dist/*_amd64.deb'
+        - 'ui/dist/*_all.deb'
 
   e2e:
     parameters:
@@ -351,18 +322,13 @@ jobs:
         name: Shellcheck
         command: |
           shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
-          shellcheck ui/packaging/deb/mkdeb.sh
     - run:
         name: Install temBoard UI & agent
         command: tests/install-all.sh
     - run:
         name: Install test dependencies
         command: |
-          if type -p uv; then
-            uv pip install -r dev/requirements.txt
-          else
-            pip3 install -r dev/requirements.txt
-          fi
+          PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install -r dev/requirements.txt
     - run:
         name: Run pytest
         command: |
@@ -384,7 +350,7 @@ jobs:
 
   release:
     # Configure secrets of this job in temboard CircleCI context.
-    docker: [{image: dalibo/buildpack-python:bullseye}]
+    docker: [{image: dalibo/buildpack-python:bookworm}]
     working_directory: *working_directory
     steps:
     - checkout
@@ -428,7 +394,7 @@ jobs:
           TWINE_NON_INTERACTIVE: 'true'
 
   docker:
-    docker: [{image: dalibo/buildpack-python:bullseye}]
+    docker: [{image: dalibo/buildpack-python:bookworm}]
     working_directory: *working_directory
     steps:
     - checkout
