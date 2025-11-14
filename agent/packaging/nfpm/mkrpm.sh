@@ -26,29 +26,34 @@ mkdir -p "$DESTDIR"
 
 #       V E R S I O N S
 
+mapfile -t pythons < <(compgen -c python3. | grep -v config | sort --reverse --unique --version-sort)
+python="${pythons[0]}"
+pip=("$python" -m pip)
+
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$(python3 setup.py --version)
+	VERSION=$("$python" setup.py --version)
 fi
 RELEASE="1$(rpm --eval '%{dist}')"
 
 #       I N S T A L L
 
+
 whl="dist/temboard_agent-$VERSION-py3-none-any.whl"
 if ! [ -f "$whl" ] ; then
-	pip download --only-binary :all: --no-deps --pre --dest "dist/" "temboard-agent==$VERSION"
+	"${pip[@]}" download --only-binary :all: --no-deps --pre --dest "dist/" "temboard-agent==$VERSION"
 fi
 
 # Install from sources
-pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
+"${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
 # Vendor dependencies.
-pythonv=$(python3 --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
-pip3 install \
+pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
+"${pip[@]}" install \
 	--pre --no-deps --requirement "$DESTDIR/usr/share/temboard-agent/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardagent/_vendor"
 
 #       B U I L D
 
-pythonbin="$(type -p "python$pythonv")"
+pythonbin="$(type -p "$python")"
 PYTHONPKG="$(rpm -qf "$pythonbin")"
 PYTHONPKG="${PYTHONPKG%%-*}"
 
