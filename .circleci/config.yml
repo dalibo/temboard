@@ -118,8 +118,6 @@ jobs:
         name: Build browser assets
         command: |
           make static
-    - store_artifacts:
-        path: /workspace/ui/temboardui/static/
     - persist_to_workspace:
         root: .
         paths: [ui/temboardui/static/]
@@ -135,10 +133,6 @@ jobs:
         name: Build Agent & UI
         command: |
           make dist
-    - store_artifacts:
-        path: /workspace/agent/dist/
-    - store_artifacts:
-        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
@@ -249,14 +243,10 @@ jobs:
         name: Build Agent RPM snapshot
         command: |
           agent/packaging/nfpm/mkrpm.sh
-    - store_artifacts:
-        path: /workspace/agent/dist/
     - run:
         name: Build UI RPM snapshot
         command: |
           ui/packaging/nfpm/mkrpm.sh
-    - store_artifacts:
-        path: /workspace/ui/dist/
     - persist_to_workspace:
         root: .
         paths:
@@ -281,13 +271,9 @@ jobs:
     - run:
         name: Build UI Debian Snapshot
         command: ui/packaging/nfpm/mkdeb.sh
-    - store_artifacts:
-        path: /workspace/ui/dist/
     - run:
         name: Build Agent Debian Snapshot
         command: agent/packaging/nfpm/mkdeb.sh
-    - store_artifacts:
-        path: /workspace/agent/dist/
     - persist_to_workspace:
         root: .
         paths:
