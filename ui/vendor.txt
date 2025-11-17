@@ -24,6 +24,10 @@ markupsafe==2.0.1
     # via
     #   -r ui/vendor.in
     #   jinja2
+packaging==21.3
+    # via -r ui/vendor.in
+pyparsing==3.1.4
+    # via packaging
 python-dateutil==2.9.0.post0
     # via -r ui/vendor.in
 setuptools==58.5.3

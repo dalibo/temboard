@@ -2,5 +2,19 @@
 #    uv pip compile --python-version=3.7 agent/vendor.in -o agent/vendor.txt
 bottle==0.12.25
     # via -r agent/vendor.in
+importlib-metadata==4.8.3
+    # via -r agent/vendor.in
+packaging==21.3
+    # via -r agent/vendor.in
+pyparsing==3.1.4
+    # via packaging
 setuptools==58.5.3
     # via -r agent/vendor.in
+typing-extensions==4.1.1
+    # via
+    #   -r agent/vendor.in
+    #   importlib-metadata
+zipp==3.6.0
+    # via
+    #   -r agent/vendor.in
+    #   importlib-metadata

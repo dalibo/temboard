@@ -243,37 +243,49 @@ def test_reload(mocker):
 
 
 def test_fetch_plugin(mocker):
-    iter_ep = mocker.patch("temboardui.toolkit.app.pkg_resources.iter_entry_points")
+    entry_points_mock = mocker.patch("temboardui.toolkit.app.entry_points")
     from temboardui.toolkit.app import BaseApplication
 
     app = BaseApplication()
     ep = mocker.Mock(name="found")
     ep.name = "found"
     ep.load.return_value = "PLUGIN OBJECT"
-    iter_ep.return_value = [ep]
+
+    # Mock entry_points() to return an object with select() method
+    eps_result = mocker.Mock()
+    eps_result.select.return_value = [ep]
+    entry_points_mock.return_value = eps_result
 
     assert "PLUGIN OBJECT" == app.fetch_plugin(["found"])
 
 
 def test_fetch_failing(mocker):
-    iter_ep = mocker.patch("temboardui.toolkit.app.pkg_resources.iter_entry_points")
+    entry_points_mock = mocker.patch("temboardui.toolkit.app.entry_points")
     from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
     ep = mocker.Mock(name="ep")
     ep.load.side_effect = Exception("Pouet")
-    iter_ep.return_value = [ep]
+
+    # Mock entry_points() to return an object with select() method
+    eps_result = mocker.Mock()
+    eps_result.select.return_value = [ep]
+    entry_points_mock.return_value = eps_result
 
     with pytest.raises(UserError):
         app.fetch_plugin("myplugin")
 
 
 def test_fetch_missing(mocker):
-    iter_ep = mocker.patch("temboardui.toolkit.app.pkg_resources.iter_entry_points")
+    entry_points_mock = mocker.patch("temboardui.toolkit.app.entry_points")
     from temboardui.toolkit.app import BaseApplication, UserError
 
     app = BaseApplication()
-    iter_ep.return_value = []
+
+    # Mock entry_points() to return an object with select() method
+    eps_result = mocker.Mock()
+    eps_result.select.return_value = []
+    entry_points_mock.return_value = eps_result
 
     with pytest.raises(UserError):
         app.fetch_plugin("myplugin")
