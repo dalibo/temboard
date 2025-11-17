@@ -2,7 +2,7 @@ FROM debian:bullseye-slim AS copier
 # RUN --mount syntax does not accept arg. Thus first stage copy with arg in
 # static path for future RUN --mount.
 ARG VERSION
-COPY dist/temboard_${VERSION}-0dlb1bullseye1_amd64.deb /tmp/temboard.deb
+COPY dist/temboard_${VERSION}-0dlb1bullseye1_all.deb /tmp/temboard.deb
 
 FROM debian:bullseye-slim
 

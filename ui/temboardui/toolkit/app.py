@@ -11,7 +11,10 @@ from codecs import open
 from glob import glob
 from textwrap import dedent
 
-import pkg_resources
+try:
+    from importlib.metadata import entry_points
+except ImportError:
+    from importlib_metadata import entry_points  # DEPRECATED: Python 3.6
 
 from . import validators as v
 from .configuration import MergedConfiguration, OptionSpec
@@ -236,7 +239,18 @@ class BaseApplication:
             self.read_file(parser, filename)
 
     def fetch_plugin(self, name):
-        for ep in pkg_resources.iter_entry_points(self.with_plugins, name):
+        # Get entry points for the plugin group
+        # Using select() for compatibility with Python 3.9+, fallback to dict access
+        eps = entry_points()
+        if hasattr(eps, "select"):
+            # Python 3.10+ or importlib_metadata 3.6+
+            group_eps = eps.select(group=self.with_plugins, name=name)
+        else:
+            # Python 3.9: its a dict
+            group_eps = eps.get(self.with_plugins, [])
+            group_eps = [ep for ep in group_eps if ep.name == name]
+
+        for ep in group_eps:
             try:
                 return ep.load()
             except Exception:
