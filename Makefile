@@ -57,7 +57,7 @@ install-%: venv-%
 	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt
 	dev/venv-py$*/bin/pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
 	dev/venv-py$*/bin/pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
-	dev/venv-py$*/bin/pip install -e agent/ -e ui/ psycopg2-binary
+	dev/venv-py$*/bin/pip install -e agent/ -e ui/ --only-binary psycopg2-binary psycopg2-binary
 	dev/venv-py$*/bin/temboard --version  # smoke test
 	dev/venv-py$*/bin/temboard-agent --version  # smoke test
 
