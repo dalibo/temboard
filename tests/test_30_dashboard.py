@@ -20,7 +20,7 @@ def test_dashboard(browser, registered_agent, ui_url):
     sleep(0.1)
     tooltip = browser.select("#cpu-info").get_attribute("aria-describedby")
     cpuinfo = browser.select(f"#{tooltip}").text
-    assert "GHz" in cpuinfo
+    assert " \xd7 " in cpuinfo
 
     # Vanish tooltip
     browser.hover("body")
