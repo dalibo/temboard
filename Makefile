@@ -20,7 +20,7 @@ develop-%:: .env
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	. dev/venv-py$*/bin/activate; $(MAKE) repository
-	docker compose build
+	docker compose build --pull
 	docker compose up -d
 	@echo
 	@echo
