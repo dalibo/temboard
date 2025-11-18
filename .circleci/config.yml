@@ -16,8 +16,6 @@ workflows:
             only: '/v.+/'
     - lint-python:
         name: stage0-lint-python
-    - lint-js:
-        name: stage0-lint-js
     - unit:
         name: stage0-unit-py<< matrix.pyversion >>
         matrix:
@@ -109,11 +107,20 @@ jobs:
     working_directory: &working_directory /workspace
     steps:
     - checkout
+    - restore_cache:
+        keys:
+          - v1-node-{{ checksum "ui/package-lock.json" }}
+          - v1-node
     - run:
         name: Install Browser packages
         command: |
           cd ui;
           npm install-clean
+    - run:
+        name: Lint
+        command: |
+          cd ui;
+          npx prettier --check .
     - run:
         name: Build browser assets
         command: |
@@ -121,6 +128,10 @@ jobs:
     - persist_to_workspace:
         root: .
         paths: [ui/temboardui/static/]
+    - save_cache:
+        paths:
+          - ui/node_modules
+        key: v1-node-{{ checksum "ui/package-lock.json"}}
 
   dist:
     docker: [{image: dalibo/buildpack-python:bullseye}]
@@ -181,18 +192,6 @@ jobs:
         save_cache:
           key: temboard-{{ .Branch }}
           paths: ["~/.cache/pip/"]
-
-  lint-js:
-    docker: [image: node:20]
-    working_directory: *working_directory
-    steps:
-      - checkout
-      - run:
-          name: Setup and Lint
-          command: |
-            cd ui/
-            npm ci
-            npx prettier --check .
 
   unit:
     parameters:
