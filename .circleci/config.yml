@@ -42,7 +42,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bookworm, bullseye, buster, jammy]
+            codename: [bookworm, bullseye, jammy]
         requires: [stage0-dist]
     - func: &func
         name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
@@ -79,12 +79,6 @@ workflows:
           parameters:
             dist: [centos7]
             pgversion: ["11", "9.6"]
-    - func:
-        <<: *func
-        matrix:
-          parameters:
-            dist: [buster]
-            pgversion: ["10"]
     - release:
         name: stage3-release
         # Send secrets to this jobs from temboard CircleCI context.
@@ -95,7 +89,6 @@ workflows:
         - stage1-pkg-centos7
         - stage1-pkg-bookworm
         - stage1-pkg-bullseye
-        - stage1-pkg-buster
         - stage1-pkg-jammy
         filters:
           <<: *enable-for-tags
@@ -290,7 +283,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bookworm, bullseye, buster, jammy]
+        enum: [bookworm, bullseye, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -324,7 +317,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bookworm, bullseye, buster, centos7, rockylinux8, rockylinux9]
+        enum: [bookworm, bullseye, centos7, rockylinux8, rockylinux9]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
