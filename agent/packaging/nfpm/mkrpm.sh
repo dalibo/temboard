@@ -64,7 +64,7 @@ PYTHONPKG="${PYTHONPKG%%-*}"
 rpm="temboard-agent-${VERSION}-${RELEASE}.noarch.rpm"
 mv "$rpm" dist/
 rpm -qpl "dist/$rpm"
-yum -q -y --disablerepo='pgdg*' install "dist/$rpm"
+yum -q -y --disablerepo='extras*' --disablerepo='pgdg*' --disablerepo='epel*' --disablerepo='powertools*' install "dist/$rpm"
 (
 	cd /
 	temboard-agent --version
