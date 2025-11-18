@@ -53,32 +53,32 @@ workflows:
           parameters:
             dist: [rockylinux9]
             # Odd version of Postgres for RHEL
-            pgversion: ["15"]
+            pgversion: ["16"]
     - func:
         <<: *func
         matrix:
           parameters:
             dist: [bookworm]
             # Even version of Postgres for Debian
-            pgversion: ["16"]
+            pgversion: ["15"]
     - func:
         <<: *func
         matrix:
           parameters:
             dist: [rockylinux8]
-            pgversion: ["13"]
-    - func:
-        <<: *func
-        matrix:
-          parameters:
-            dist: [bullseye]
             pgversion: ["14"]
     - func:
         <<: *func
         matrix:
           parameters:
+            dist: [bullseye]
+            pgversion: ["11"]
+    - func:
+        <<: *func
+        matrix:
+          parameters:
             dist: [centos7]
-            pgversion: ["11", "9.6"]
+            pgversion: ["10"]
     - release:
         name: stage3-release
         # Send secrets to this jobs from temboard CircleCI context.
