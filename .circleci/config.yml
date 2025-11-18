@@ -153,7 +153,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement dev/requirements.txt
+            PIP_BREAK_SYSTEM_PACKAGES=1 pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
           command: |
@@ -353,7 +353,7 @@ jobs:
         command: tests/install-all.sh
     - run:
         name: Install test dependencies
-        command: pip3 install -r dev/requirements.txt
+        command: PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install -r dev/requirements.txt
     - run:
         name: Run pytest
         command: |
