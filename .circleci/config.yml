@@ -14,9 +14,7 @@ workflows:
         filters: &enable-for-tags
           tags:
             only: '/v.+/'
-    - lint-python:
-        name: stage0-lint-python
-    - unit:
+    - python:
         name: stage0-unit-py<< matrix.pyversion >>
         matrix:
           parameters:
@@ -152,16 +150,21 @@ jobs:
         - ui/dist/*.tar.gz
         - ui/dist/*.whl
 
-  lint-python:
-    docker: [image: python:3.9]
+  python:
+    parameters:
+      pyversion:
+        description: "Python version"
+        type: enum
+        enum: ["3.6", "3.7", "3.8", "3.9"]
+    docker:
+      - image: dalibo/buildpack-python:<< parameters.pyversion >>
     working_directory: *working_directory
     steps:
       - checkout
-      - &pip-cache-restore
-        restore_cache:
+      - restore_cache:
           keys:
-            - temboard-{{ .Branch }}
-            - temboard-master
+            - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+            - v1-python
       - run:
           name: Setup python environment
           command: |
@@ -169,13 +172,27 @@ jobs:
             pip install --ignore-requires-python --only-binary :all: ruff==0.14.4
             pip install --upgrade --requirement dev/requirements.txt
       - run:
+          name: Install Agent.
+          command: |
+            pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
+            pip<< parameters.pyversion >> install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
+      - run:
           name: Lint Agent
           command: |
             cd agent/
             ruff check temboardagent
             ruff format --check temboardagent
-            python setup.py --long-description | rst2html --verbose --halt=warning - >/dev/null
             check-manifest
+      - run:
+          name: Agent Unit Tests
+          command: |
+            pytest --full-trace --cov-report=xml agent/tests/unit/
+      - run:
+          name: Install UI
+          command: |
+            set -x
+            pip<< parameters.pyversion >> install --upgrade --editable ui/ --only-binary=psycopg2-binary psycopg2-binary
+            pip<< parameters.pyversion >> install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
       - run:
           name: Lint UI
           command: |
@@ -188,43 +205,13 @@ jobs:
             ruff check
             ruff format --check
             check-manifest
-      - &pip-cache-save
-        save_cache:
-          key: temboard-{{ .Branch }}
+      - run:
+          name: UI Unit Tests
+          command: |
+            pytest --full-trace --cov-report=xml ui/tests/unit/
+      - save_cache:
+          key: v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
           paths: ["~/.cache/pip/"]
-
-  unit:
-    parameters:
-      pyversion:
-        description: "Python version"
-        type: enum
-        enum: ["3.6", "3.7", "3.8", "3.9"]
-    docker:
-      - image: dalibo/buildpack-python:<< parameters.pyversion >>
-    working_directory: *working_directory
-    steps:
-    - checkout
-    - *pip-cache-restore
-    - run:
-        name: Install UI and tooling.
-        command: |
-          set -x
-          pip<< parameters.pyversion >> install --upgrade --editable ui/ --requirement dev/requirements.txt --only-binary=psycopg2-binary psycopg2-binary
-          pip<< parameters.pyversion >> install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
-    - run:
-        name: Install Agent.
-        command: |
-          pip<< parameters.pyversion >> install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
-          pip<< parameters.pyversion >> install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
-    - run:
-        name: Agent Unit Tests
-        command: |
-          pytest --full-trace --cov-report=xml agent/tests/unit/
-    - run:
-        name: UI Unit Tests
-        command: |
-          pytest --full-trace --cov-report=xml ui/tests/unit/
-    - *pip-cache-save
 
   rpm:
     parameters:
@@ -238,6 +225,10 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
+    - restore_cache:
+        keys:
+          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+          - v1-python
     - run:
         name: Build Agent RPM snapshot
         command: |
@@ -267,6 +258,10 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
+    - restore_cache:
+        keys:
+          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+          - v1-python
     - run:
         name: Build UI Debian Snapshot
         command: ui/packaging/nfpm/mkdeb.sh
@@ -316,7 +311,6 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - *pip-cache-restore
     - run:
         name: Shellcheck
         command: |
@@ -324,6 +318,10 @@ jobs:
     - run:
         name: Install temBoard UI & agent
         command: tests/install-all.sh
+    - restore_cache:
+        keys:
+          - v1-e2e-{{ checksum "dev/requirements.txt" }}
+          - v1-e2e
     - run:
         name: Install test dependencies
         command: |
@@ -345,7 +343,9 @@ jobs:
         path: /workspace/tests/screenshots/
     - store_test_results:
         path: /workspace/tests/results.xml
-    - *pip-cache-save
+    - save_cache:
+        paths: ["~/.cache/pip"]
+        key: v1-e2e-{{ checksum "dev/requirements.txt" }}
 
   release:
     # Configure secrets of this job in temboard CircleCI context.
