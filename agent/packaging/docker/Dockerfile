@@ -13,7 +13,6 @@ RUN set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
     apt-get install -y --no-install-recommends \
-        docker.io \
         openssl \
         postgresql-client \
         ssl-cert \
@@ -24,14 +23,13 @@ RUN set -ex; \
     :
 
 ADD packaging/docker/sudoers /etc/sudoers.d/temboard-agent
-ADD packaging/docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ADD packaging/docker/pg_ctl_temboard.sh /usr/local/bin/pg_ctl_temboard.sh
+ADD packaging/docker/entrypoint.sh /usr/local/lib/docker-entrypoint.sh
 
 RUN --mount=type=bind,from=copier,source=/tmp/temboard-agent.deb,target=/tmp/temboard-agent.deb \
     set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
-    apt-get install -y --no-install-recommends /tmp/temboard-agent.deb ; \
+    apt-get install -y --no-install-recommends /tmp/temboard-agent.deb tini ; \
     apt-get clean ; \
     rm -rf /var/lib/apt/lists/* /usr/share/man/man*/*.7*; \
     temboard-agent --version ; \
@@ -40,5 +38,5 @@ RUN --mount=type=bind,from=copier,source=/tmp/temboard-agent.deb,target=/tmp/tem
 VOLUME /etc/temboard-agent
 VOLUME /var/lib/temboard-agent
 WORKDIR /var/lib/temboard-agent
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "/usr/local/lib/docker-entrypoint.sh"]
 CMD ["temboard-agent"]
