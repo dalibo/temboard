@@ -60,7 +60,7 @@ guess_pkg_type() {
 
 
 install_rpm() {
-	"$(type -p retry)" yum --quiet --assumeyes  install "$@"
+	"$(type -p retry)" yum --quiet --assumeyes --disablerepo='pgdg*' --disablerepo='powertools*' --disablerepo='extras' install "$@"
 }
 
 
