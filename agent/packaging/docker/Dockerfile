@@ -12,7 +12,6 @@ RUN set -ex; \
     apt-get update -y ; \
     mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
     apt-get install -y --no-install-recommends \
-        docker.io \
         openssl \
         postgresql-client \
         ssl-cert \
@@ -24,7 +23,6 @@ RUN set -ex; \
 
 ADD packaging/docker/sudoers /etc/sudoers.d/temboard-agent
 ADD packaging/docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-ADD packaging/docker/pg_ctl_temboard.sh /usr/local/bin/pg_ctl_temboard.sh
 
 RUN --mount=type=bind,from=copier,source=/tmp/temboard-agent.deb,target=/tmp/temboard-agent.deb \
     set -ex; \
