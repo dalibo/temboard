@@ -30,7 +30,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [rockylinux9, rockylinux8]
+            codename: [rockylinux10, rockylinux9, rockylinux8]
         requires: [stage0-dist]
     - deb:
         name: stage1-pkg-<< matrix.codename >>
@@ -50,7 +50,7 @@ workflows:
         matrix:
           parameters:
             pgversion: ["18"]
-            dist: [rockylinux9]
+            dist: [rockylinux10]
     - e2e:
         <<: *e2e
         matrix:
@@ -86,6 +86,7 @@ workflows:
         # Send secrets to this jobs from temboard CircleCI context.
         context: temboard
         requires:
+        - stage1-pkg-rockylinux10
         - stage1-pkg-rockylinux9
         - stage1-pkg-rockylinux8
         - stage1-pkg-trixie
@@ -223,7 +224,7 @@ jobs:
       codename:
         description: "RHEL-clone distribution"
         type: enum
-        enum: [rockylinux9, rockylinux8]
+        enum: [rockylinux10, rockylinux9, rockylinux8]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -284,7 +285,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [trixie, bookworm, bullseye, rockylinux9, rockylinux8]
+        enum: [trixie, bookworm, bullseye, rockylinux10, rockylinux9, rockylinux8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
