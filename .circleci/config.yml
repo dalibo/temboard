@@ -410,7 +410,7 @@ jobs:
         name: Build Agent & UI Images
         command: |
           set -x
-          make docker-build-agent docker-build-ui
+          make -j 2 docker-build-agent docker-build-ui
 
           RELEASE_TAG="${CIRCLE_TAG#v}"
           if [ -n "$RELEASE_TAG" ] ; then

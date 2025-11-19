@@ -237,6 +237,7 @@ copy-rhel%:
 
 docker-build-agent:
 	DOCKER_BUILDKIT=1 docker build \
+		--progress=plain \
 		--file agent/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
@@ -245,6 +246,7 @@ docker-build-agent:
 
 docker-build-ui:
 	DOCKER_BUILDKIT=1 docker build \
+		--progress=plain \
 		--file ui/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
