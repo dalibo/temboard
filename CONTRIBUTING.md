@@ -231,9 +231,7 @@ temboard=#
 You can change the version of the monitored PostgreSQL instance by overriding
 image tag in `docker-compose.override.yml`.
 
-``` yaml title="docker-compose.override.yml" linenums="1" hl_lines="5 8"
-version: "3.8"
-
+``` yaml title="docker-compose.override.yml" linenums="1" hl_lines="3 6"
 services:
   postgres0:
     image: postgres:9.5-alpine &postgres_image

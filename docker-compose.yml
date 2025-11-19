@@ -183,7 +183,7 @@ services:
     ]
 
   agent-stable:
-    image: dalibo/temboard-agent:8
+    image: dalibo/temboard-agent:8-snapshot
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql

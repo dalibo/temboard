@@ -1,10 +1,10 @@
-FROM debian:bullseye-slim AS copier
+FROM debian:bookworm-slim AS copier
 # RUN --mount syntax does not accept arg. Thus first stage copy with arg in
 # static path for future RUN --mount.
 ARG VERSION
-COPY dist/temboard_${VERSION}-0dlb1bullseye1_all.deb /tmp/temboard.deb
+COPY dist/temboard_${VERSION}-0dlb1bookworm1_all.deb /tmp/temboard.deb
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
 RUN set -ex; \

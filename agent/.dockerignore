@@ -1,3 +1,3 @@
 *
-!dist/*bullseye*.deb
+!dist/*bookworm*.deb
 !packaging/docker/

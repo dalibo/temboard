@@ -1,6 +1,7 @@
 #!/bin/bash -eux
 
 export PIP_CACHE_DIR=/usr/local/src/temboard/dev/pip-cache
+export PIP_BREAK_SYSTEM_PACKAGES=1
 mkdir -p $PIP_CACHE_DIR
 chown "$(id -u):$(id -g)" $PIP_CACHE_DIR
 pip cache dir

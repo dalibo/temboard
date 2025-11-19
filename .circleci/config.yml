@@ -100,7 +100,7 @@ workflows:
     - docker:
         name: stage3-docker
         context: temboard
-        requires: [stage1-pkg-bullseye]
+        requires: [stage1-pkg-bookworm]
         filters:
           <<: *enable-for-tags
 
