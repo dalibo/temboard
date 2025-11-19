@@ -236,6 +236,7 @@ copy-rhel%:
 	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/
 
 docker-build-agent:
+	type pep440deb
 	DOCKER_BUILDKIT=1 docker build \
 		--progress=plain \
 		--file agent/packaging/docker/Dockerfile \
@@ -245,6 +246,7 @@ docker-build-agent:
 		agent/
 
 docker-build-ui:
+	type pep440deb
 	DOCKER_BUILDKIT=1 docker build \
 		--progress=plain \
 		--file ui/packaging/docker/Dockerfile \
