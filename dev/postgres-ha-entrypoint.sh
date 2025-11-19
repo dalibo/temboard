@@ -22,7 +22,6 @@ _ha_setup() {
     docker_setup_env
 
     chown postgres:postgres /var/lib/postgresql/archive
-    chown postgres:postgres "$PGDATA"
 
     echo "Waiting for $PEER_HOST to have network."
     if ! peerhost="$(_retry getent hosts "$PEER_HOST")"; then
