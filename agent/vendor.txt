@@ -2,5 +2,3 @@
 #    uv pip compile --python-version=3.9 agent/vendor.in -o agent/vendor.txt
 bottle==0.13.4
     # via -r agent/vendor.in
-setuptools==80.9.0
-    # via -r agent/vendor.in

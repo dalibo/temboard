@@ -23,8 +23,6 @@ markupsafe==3.0.3
     #   werkzeug
 python-dateutil==2.9.0.post0
     # via -r ui/vendor.in
-setuptools==80.9.0
-    # via -r ui/vendor.in
 six==1.17.0
     # via python-dateutil
 sqlalchemy==1.4.54
