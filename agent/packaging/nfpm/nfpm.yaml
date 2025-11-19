@@ -12,9 +12,15 @@ license: PostgreSQL
 depends:
   - ${PYTHONPKG}
 contents:
-  - src: packaging/nfpm/build/destdir/
+  - type: tree
+    src: packaging/nfpm/build/destdir/
     dst: /
-    type: tree
+  - type: tree
+    src: share/
+    dst: /usr/share/temboard-agent
+  - type: tree
+    src: packaging/temboard-agent@.service
+    dst: /usr/lib/systemd/system/temboard-agent@.service
 scripts:
   postinstall: share/restart-all.sh
   preremove: share/preun.sh

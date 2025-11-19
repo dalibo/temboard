@@ -61,7 +61,7 @@ install-%: venv-%
 pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
-%/vendor.txt: %/vendor.in %/setup.py
+%/vendor.txt: %/vendor.in
 	uv pip compile --python-version=3.9 --upgrade $< -o $@
 
 #LTS
@@ -156,11 +156,11 @@ release:  #: Tag and push a new git release.
 	@git fetch --quiet $(REMOTE) refs/heads/$(BRANCH)
 	@git diff --check @..FETCH_HEAD
 	@echo Checking agent and UI version are same.
-	@grep -Fq "$(VERSION)" agent/temboardagent/version.py
+	@grep -Fq "$(VERSION)" agent/pyproject.toml
 	@echo Checking version is PEP440 compliant.
 	@pep440deb "$(VERSION)" >/dev/null
 	@echo Creating release commit.
-	@git commit --only --quiet agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
+	@git commit --only --quiet agent/pyproject.toml ui/temboardui/version.py -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
 	@git diff --quiet
 	@echo Tagging v$(VERSION).
@@ -174,7 +174,7 @@ release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
 
 dist:  #: Build sources and wheels.
-	cd agent/; python3 setup.py sdist bdist_wheel
+	uv build -o agent/dist/ agent/
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel
 	twine check --strict \

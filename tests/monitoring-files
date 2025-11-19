@@ -6,4 +6,5 @@ tests/monitoring-files
 tests/test_40_monitoring.py
 ui/temboardui/plugins/monitoring/
 ui/temboardui/toolkit/taskmanager/
+pyproject.toml
 setup.py

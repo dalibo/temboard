@@ -171,7 +171,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+            - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/pyproject.toml" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/pyproject.toml" }}-{{ checksum "ui/vendor.txt"}}
             - v1-python
       - run:
           name: Setup python environment
@@ -192,7 +192,7 @@ jobs:
       - run:
           name: Agent Unit Tests
           command: |
-            pytest --full-trace --cov-report=xml agent/tests/unit/
+            pytest --full-trace agent/tests/unit/
       - run:
           name: Install UI
           command: |
@@ -216,7 +216,7 @@ jobs:
           command: |
             pytest --full-trace --cov-report=xml ui/tests/unit/
       - save_cache:
-          key: v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+          key: v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/pyproject.toml" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
           paths: ["~/.cache/pip/"]
 
   rpm:
@@ -233,7 +233,7 @@ jobs:
         at: *working_directory
     - restore_cache:
         keys:
-          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/pyproject.toml" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
           - v1-python
     - run:
         name: Build Agent RPM snapshot
@@ -266,7 +266,7 @@ jobs:
         at: *working_directory
     - restore_cache:
         keys:
-          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
+          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/pyproject.toml" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
           - v1-python
     - run:
         name: Build UI Debian Snapshot

@@ -513,7 +513,7 @@ APT repositories.
 To release a new version:
 
 - Checkout release branch : master for v8.
-- Edit `ui/temboardui/version.py` and `agent/temboardagent/version.py` without
+- Edit `ui/temboardui/version.py` and `agent/pyproject.toml` without
   committing. The version must be the same and follow [PEP440].
 - Check, commit, tag and push using `make release`.
 

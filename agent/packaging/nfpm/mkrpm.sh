@@ -4,7 +4,7 @@
 TOP_SRCDIR=$(readlink -m "$0/../../..")
 UID_GID=$(stat -c %u:%g "$0")
 cd "$TOP_SRCDIR"
-test -f setup.py
+test -f temboardagent/__init__.py
 
 BUILDDIR=$(readlink -m packaging/nfpm/build)
 DESTDIR=$BUILDDIR/destdir
@@ -31,7 +31,7 @@ python="${pythons[0]}"
 pip=("$python" -m pip)
 
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$("$python" setup.py --version)
+	VERSION=$(uv version --short)
 fi
 RELEASE="1$(rpm --eval '%{dist}')"
 
@@ -48,7 +48,7 @@ fi
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
 "${pip[@]}" install \
-	--pre --no-deps --requirement "$DESTDIR/usr/share/temboard-agent/vendor.txt" \
+	--pre --no-deps --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardagent/_vendor"
 
 #       B U I L D

@@ -1,1 +1,3 @@
-__version__ = "9.0.1"
+from importlib.metadata import version
+
+__version__ = version("temboard-agent")
