@@ -17,6 +17,7 @@ You need manual steps when upgrading UI.
 - Postgres 18 support.
 - Requires Python 3.9.
 - Packages for Debian Trixie.
+- Packages for RHEL 10.
 
 
 ## 9.0.0

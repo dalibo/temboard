@@ -1,11 +1,15 @@
 services:
-  rhel9: &rhel
-    image: dalibo/buildpack-pkg:rockylinux9
+  rhel10: &rhel
+    image: dalibo/buildpack-pkg:rockylinux10
     volumes:
       - ../..:/workspace
     working_dir: /workspace
     entrypoint: ["/usr/local/sbin/tini", "--"]
     command: /workspace/packaging/nfpm/mkrpm.sh
+
+  rhel9:
+    <<: *rhel
+    image: dalibo/buildpack-pkg:rockylinux9
 
   rhel8:
     <<: *rhel
