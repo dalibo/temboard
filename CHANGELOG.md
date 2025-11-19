@@ -16,6 +16,7 @@ You need manual steps when upgrading UI.
 - Support Tornado 6.4 on RHEL9.
 - Postgres 18 support.
 - Requires Python 3.9.
+- Packages for Debian Trixie.
 
 
 ## 9.0.0
