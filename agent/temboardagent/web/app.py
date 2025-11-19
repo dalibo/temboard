@@ -29,6 +29,7 @@ def create_app(temboard):
     app = CustomBottle(autojson=False)
     app.temboard = temboard
     app.add_hook("before_request", before_request_log)
+    app.uninstall(True)
     # First declared, first executed.
     app.install(JSONPlugin())
     app.install(SignaturePlugin())
