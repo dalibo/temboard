@@ -106,7 +106,7 @@ function fetch() {
           title="Delete"
           @click.prevent="$refs.deleteModal.open(`/json/groups/${rowData.groupname}/members/${rowData.username}`)"
         >
-          <i class="fa-regular fa-trash"></i>
+          <i class="fa-solid fa-trash"></i>
         </button>
       </template>
     </DataTable>

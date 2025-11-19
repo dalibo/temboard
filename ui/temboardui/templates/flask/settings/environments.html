@@ -42,7 +42,7 @@
             title="Edit"
             @click.prevent="$refs.editModal.edit('{{ environment.name }}')"
           >
-            <i class="fa fa-edit"></i>
+            <i class="fa-solid fa-pen-to-square"></i>
           </button>
           <a
             type="button"
@@ -53,7 +53,7 @@
             title="Edit members"
             href="/settings/environments/{{ environment.name }}/members"
           >
-            <i class="fa fa-users"></i>
+            <i class="fa-solid fa-users"></i>
           </a>
           <button
             type="button"
@@ -64,7 +64,7 @@
             title="Delete"
             @click.prevent="$refs.deleteModal.open('/json/environments/{{ environment.name }}')"
           >
-            <i class="fa fa-trash-o"></i>
+            <i class="fa-solid fa-trash"></i>
           </button>
         </td>
       </tr>
