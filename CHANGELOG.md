@@ -5,6 +5,11 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
+## UNRELEASED
+
+- Support Tornado 6.4 on RHEL9.
+
+
 ## 8.2.1
 
 Released: 15 november 2023

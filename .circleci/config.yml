@@ -34,7 +34,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [rockylinux9, rockylinux8, centos7]
+            codename: [rockylinux9, rockylinux8]
         requires: [stage0-dist]
     - deb:
         name: stage1-pkg-<< matrix.codename >>
@@ -42,7 +42,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bookworm, bullseye, buster, jammy]
+            codename: [bookworm, bullseye, jammy]
         requires: [stage0-dist]
     - func: &func
         name: stage2-func-pg<< matrix.pgversion >>-<< matrix.dist >>
@@ -53,38 +53,26 @@ workflows:
           parameters:
             dist: [rockylinux9]
             # Odd version of Postgres for RHEL
-            pgversion: ["15"]
+            pgversion: ["16"]
     - func:
         <<: *func
         matrix:
           parameters:
             dist: [bookworm]
             # Even version of Postgres for Debian
-            pgversion: ["16"]
+            pgversion: ["15"]
     - func:
         <<: *func
         matrix:
           parameters:
             dist: [rockylinux8]
-            pgversion: ["13"]
-    - func:
-        <<: *func
-        matrix:
-          parameters:
-            dist: [bullseye]
             pgversion: ["14"]
     - func:
         <<: *func
         matrix:
           parameters:
-            dist: [centos7]
-            pgversion: ["11", "9.6"]
-    - func:
-        <<: *func
-        matrix:
-          parameters:
-            dist: [buster]
-            pgversion: ["10"]
+            dist: [bullseye]
+            pgversion: ["11"]
     - release:
         name: stage3-release
         # Send secrets to this jobs from temboard CircleCI context.
@@ -92,10 +80,8 @@ workflows:
         requires:
         - stage1-pkg-rockylinux9
         - stage1-pkg-rockylinux8
-        - stage1-pkg-centos7
         - stage1-pkg-bookworm
         - stage1-pkg-bullseye
-        - stage1-pkg-buster
         - stage1-pkg-jammy
         filters:
           <<: *enable-for-tags
@@ -167,7 +153,7 @@ jobs:
       - run:
           name: Setup python environment
           command: |
-            pip install --upgrade --requirement dev/requirements.txt
+            PIP_BREAK_SYSTEM_PACKAGES=1 pip install --upgrade --requirement dev/requirements.txt
       - run:
           name: Lint Agent
           command: |
@@ -258,7 +244,7 @@ jobs:
       codename:
         description: "RHEL-clone distribution"
         type: enum
-        enum: [rockylinux9, rockylinux8, centos7]
+        enum: [rockylinux9, rockylinux8]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -290,7 +276,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bookworm, bullseye, buster, jammy]
+        enum: [bookworm, bullseye, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     steps:
@@ -324,7 +310,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bookworm, bullseye, buster, centos7, rockylinux8, rockylinux9]
+        enum: [bookworm, bullseye, rockylinux8, rockylinux9]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
@@ -367,7 +353,7 @@ jobs:
         command: tests/install-all.sh
     - run:
         name: Install test dependencies
-        command: pip3 install -r dev/requirements.txt
+        command: PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install -r dev/requirements.txt
     - run:
         name: Run pytest
         command: |
@@ -447,17 +433,14 @@ jobs:
           RELEASE_TAG="${CIRCLE_TAG#v}"
           if [ -n "$RELEASE_TAG" ] ; then
             # Create release tag from snapshot.
-            docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:$RELEASE_TAG
-            docker tag dalibo/temboard:snapshot dalibo/temboard:$RELEASE_TAG
+            docker tag dalibo/temboard-agent:8-snapshot dalibo/temboard-agent:$RELEASE_TAG
+            docker tag dalibo/temboard:8-snapshot dalibo/temboard:$RELEASE_TAG
 
             # Stable release tags (without letters in version)
             if ! expr match "$RELEASE_TAG" ".*[a-z]\+" >/dev/null ; then
-              # Point latest to this build
-              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:latest
-              docker tag dalibo/temboard:snapshot dalibo/temboard:latest
               # Point 8 to this build.
-              docker tag dalibo/temboard-agent:snapshot dalibo/temboard-agent:8
-              docker tag dalibo/temboard:snapshot dalibo/temboard:8
+              docker tag dalibo/temboard-agent:8-snapshot dalibo/temboard-agent:8
+              docker tag dalibo/temboard:8-snapshot dalibo/temboard:8
             fi
           fi
 
@@ -467,7 +450,7 @@ jobs:
         name: Push to Docker Hub (only master and tags)
         command: |
           set -x
-          if [ -z "${CIRCLE_TAG-}" ] && [ master != "${CIRCLE_BRANCH-}" ] ; then
+          if [ -z "${CIRCLE_TAG-}" ] && [ v8 != "${CIRCLE_BRANCH-}" ] ; then
             exit 0;
           fi
           docker login --username "${DOCKER_HUB_USERNAME}" --password-stdin \<<< "${DOCKER_HUB_TOKEN}"

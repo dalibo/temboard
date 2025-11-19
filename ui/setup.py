@@ -17,7 +17,7 @@ if setuptoolsv < '1.0':
 # Accept Tornado 5.X on Python 2.7.9+
 # Accept Tornado < 6.4 on Python 3+
 # _verify_cert in SSLIOStream is removed on Tornado 6.4+ on Python 3+.
-BLEEDING_EDGE_TORNADO = '6.4'
+BLEEDING_EDGE_TORNADO = "6.5"
 if sys.version_info < (2, 7, 9):
     BLEEDING_EDGE_TORNADO = '4.5'
     open_kw = dict()
