@@ -46,7 +46,7 @@ You need the following software to develop temBoard:
 
 - bash, git, make, psql.
 - Docker Compose v2.
-- Python 3.9 with `venv` module.
+- uv.
 - NodeJS 20+ and npm for building some browser assets.
 
 

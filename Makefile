@@ -19,12 +19,12 @@ develop-%:: .env
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
-	. dev/venv-py$*/bin/activate; $(MAKE) repository
+	uv run $(MAKE) repository
 	docker compose build --pull
 	docker compose up -d
 	@echo
 	@echo
-	@echo "    You can now execute temBoard UI with dev/venv-py$*/bin/temboard"
+	@echo "    You can now execute temBoard UI with uv run temboard"
 	@echo
 	@echo
 
@@ -44,18 +44,17 @@ restart-selenium:  #: Restart selenium development container.
 	docker compose up --detach --force-recreate --renew-anon-volumes selenium
 
 venv-%:
-	python$* -m venv dev/venv-py$*/ --prompt "temboard-py$*"
-	dev/venv-py$*/bin/python --version  # smoke test
-	dev/venv-py$*/bin/pip --version  # smoke test
+	uv venv --no-project --allow-existing --python=python$* --prompt="temboard-py$*"
+	uv run python --version  # smoke test
 
 install-%: venv-%
-	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
-	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt
-	dev/venv-py$*/bin/pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
-	dev/venv-py$*/bin/pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
-	dev/venv-py$*/bin/pip install -e agent/ -e ui/ --only-binary psycopg2-binary psycopg2-binary
-	dev/venv-py$*/bin/temboard --version  # smoke test
-	dev/venv-py$*/bin/temboard-agent --version  # smoke test
+	uv pip install --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
+	uv pip install -r docs/requirements.txt -r dev/requirements.txt
+	uv pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
+	uv pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
+	uv pip install -e agent/ -e ui/ --only-binary psycopg2-binary psycopg2-binary
+	uv run temboard --version  # smoke test
+	uv run temboard-agent --version  # smoke test
 
 # Vendoring
 
@@ -79,7 +78,7 @@ ui/build/bin/prometheus ui/build/bin/promtool: dev/downloads/prometheus-$(PROMET
 clean:  #: Trash venv and containers.
 	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
-	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -rf .venv/ dev/venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rf agent/temboardagent/_vendor ui/temboardui/_vendor

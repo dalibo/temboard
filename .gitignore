@@ -2,6 +2,7 @@
 *.egg-info/
 *.ipynb_checkpoints
 *.pyc
+.venv/
 
 dev/downloads/
 dev/bin/prometheus
@@ -26,7 +27,6 @@ ui/temboardui/static/.vite/
 dev/agent-bash_history
 dev/agent-psql_history
 dev/pip-cache
-dev/venv-py*
 dev/prometheus/targets/*.yaml
 
 # Test runtime files
