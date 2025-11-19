@@ -27,5 +27,5 @@ overrides:
   rpm:
     depends:
       - openssl
-      - python3-cryptography
-      - python3-psycopg2
+      - ${PYTHONPKG}-cryptography
+      - ${PYTHONPKG}-psycopg2

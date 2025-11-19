@@ -13,7 +13,7 @@ components:
 |                |                                            |
 | -------------- | -------------------------------------------|
 | Linux          | Debian 11 and 12, Ubuntu 22.04 and 24.04, RHEL 8 and 9  |
-| Python         | 3.6+                                       |
+| Python         | 3.9+                                       |
 | Postgres       | 12 to 17                                   |
 | Temboard Agent | 8.2 and 9.x                                |
 

@@ -9,8 +9,9 @@ mock
 docutils
 pep440deb
 wheel
+ruff==0.14.4
 # For integration tests
-httpx; python_version >= '3.6'
-selenium; python_version >= '3.6'
-sh<2; python_version >= '3.6'
-tenacity<8.4; python_version >= '3.6'
+httpx
+selenium
+sh<2
+tenacity<8.4

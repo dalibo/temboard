@@ -19,7 +19,7 @@ This document guides you to quickly setup all these components together.
 
 temBoard UI requires:
 
-- Python 3.6+.
+- Python 3.9+.
 - openssl
 - bash, sudo and psql for setup script.
 
@@ -106,30 +106,6 @@ Keep them for later use by auto-configuration script.
     # apt install temboard
     # temboard --version
     ```
-
-
-=== "PyPI"
-
-    temBoard UI wheel and source tarball are published on
-    [PyPI](https://pypi.org/project/temboard).
-    Installing from PyPI requires Python3.6, pip and wheel.
-    It's better to have a recent version of pip.
-
-    Due to the [binary strategy of psycopg2](http://initd.org/psycopg/articles/2018/02/08/psycopg-274-released/) project,
-    you have to choose how to install psycopg2:
-    either from source (using `psycopg2` package)
-    or from binary (using `psycopg2-binary` package).
-    You can also use distribution package instead.
-
-    ``` console
-    $ sudo pip install temboard psycopg2-binary
-    $ temboard --version
-    ```
-
-    !!! note "temBoard installation prefix"
-
-        temBoard installation prefix may differ from one system to another, e.g. `/usr`
-        or `/usr/local`. Please adapt the documentation to match this system prefix.
 
 
 # Configure

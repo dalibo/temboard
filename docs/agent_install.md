@@ -9,7 +9,7 @@ In order to run temBoard agent, you need:
 - PostgreSQL 13+, listening on UNIX socket. Check with
   `sudo -u postgres psql`.
 - openssl.
-- Python 3.6+. Check with `python --version`.
+- Python 3.9+. Check with `python3 --version`.
 - bash, curl and sudo for setup script.
 - A [running temBoard UI](server_install.md).
 
@@ -79,25 +79,6 @@ In order to run temBoard agent, you need:
     # apt install temboard-agent
     # temboard-agent --version
     ```
-
-
-=== "PyPI"
-
-    temBoard agent wheel and source tarball are published on
-    [PyPI](https://pypi.org/project/temboard-agent).
-
-    Installing from PyPI requires Python3.6+, pip and wheel. It\'s better to
-    have a recent version of pip.
-
-    ``` console
-    $ sudo pip install temboard-agent
-    $ temboard-agent --version
-    ```
-
-    Note where is installed temBoard agent and determine the prefix. You
-    must find a `share/temboard-agent` folder in e.g `/usr` or `/usr/local`.
-    If temBoard agent is installed in `/usr/local`, please adapt the
-    documentation to match this system prefix.
 
 
 ## Configure

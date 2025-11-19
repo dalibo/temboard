@@ -34,7 +34,7 @@ overview.
 - `dev/` - Development scripts and data.
   - `dev/bin/` - Development scripts.
 - `docker/` - Quickstart Docker Compose file.
-- `tests/` - Functional integration tests.
+- `tests/` - Functional end to end tests.
 
 Python package is `temboardui` for temBoard UI and `temboardagent` for temBoard
 agent.
@@ -46,7 +46,7 @@ You need the following software to develop temBoard:
 
 - bash, git, make, psql.
 - Docker Compose v2.
-- Python 3.6 with `venv` module.
+- Python 3.9 with `venv` module.
 - NodeJS 20+ and npm for building some browser assets.
 
 
@@ -57,34 +57,32 @@ each.
 
 The `develop` make target
 builds assets,
-creates a virtual environment for Python 3.6,
+creates a virtual environment for Python 3.9,
 installs temBoard UI, its requirements, development tools,
 builds agent Docker image,
 starts docker services and initializes temBoard database.
 
 ``` console
 $ make develop
-make venv-3.6
-make[1] : on entre dans le répertoire « /home/.../src/dalibo/temboard »
-python3.6 -m venv dev/venv-py3.6/
+dev/bin/mkenv > .env
+git config blame.ignoreRevsFile dev/git-blame-ignore-revs
+if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
+make -j 2 install-3.9 ui/build/bin/prometheus ui/build/bin/promtool
+make[1] : on entre dans le répertoire « /home/bersace/src/dalibo/temboard »
+python3.9 -m venv dev/venv-py3.9/ --prompt "temboard-py3.9"
 ...
-2020-03-24 17:09:05,937 [30557] [migrator        ]  INFO: Database is up to date.
-Initialized role temboard and database temboard.
-docker compose up -d
-temboard_repository_1 is up-to-date
-Creating temboard_instance_1 ... done
-Creating temboard_agent_1    ... done
+✔ Container temboard-agent-stable-1     Started                                                                                                                                   5.5s
 
 
-    You can now execute temBoard UI with dev/venv-py3.6/bin/temboard
+   You can now execute temBoard UI with dev/venv-py3.9/bin/temboard
 
-
-$ dev/venv-py3.6/bin/temboard --debug
-INFO:  app: Using config file /home/bersace/src/dalibo/temboard/temboard.conf.
-INFO:  tornado: Enabling Tornado's autoreload.
-14:42:13 temboardui[1145101] DEBUG:  app: Looking for plugin dashboard.
+$ dev/venv-py3.9/bin/temboard --debug
+INFO:  app: Starting temboard. version=9.0.1
+INFO:  app: Using config file /home/bersace/src/dalibo/temboard/.config/temboard.conf.
+15:21:56 temboardui[243684] DEBUG:  model: Using PostgreSQL PostgreSQL 17.7 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit.
+15:21:56 temboardui[243684] INFO:  migrator: temBoard database is up-to-date. revision=013_alerting-index.sql
 ...
-14:42:13 temboardui[1145101] INFO:  temboardui: Serving temboardui on http://0.0.0.0:8888
+15:21:57 temboardui[243684] INFO:  temboardui: Serving temboardui on http://0.0.0.0:8888
 ...
 ```
 
@@ -267,7 +265,7 @@ Each UI and agent projects has its own unit tests battery.
 Enable the virtualenv and use pytest to run unit tests:
 
 ``` console
-$ . dev/venv-py3.6/bin/activate
+$ . dev/venv-py3.9/bin/activate
 $ pytest ui/tests/unit
 ...
 ==== 31 passed, 10 warnings in 1.10 seconds ======
@@ -290,21 +288,24 @@ instead of dev files. To run the tests locally it is better not to have temboard
 Execute these tests right from your virtualenv, using pytest:
 
 ``` console
-$ . dev/venv-py3.6/bin/activate
+$ . dev/venv-py3.9/bin/activate
 $ pytest tests/
 ============================= test session starts ==============================
-platform linux -- Python 3.6.8, pytest-7.0.1, pluggy-1.0.0 -- /home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/python3.6
+platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/python3.9
 cachedir: .pytest_cache
-postgresql: 14 (/usr/lib/postgresql/14/bin)
-sqlalchemy: 1.4.35
-system: Debian GNU/Linux 11 (bullseye)
+postgresql: 17 (/usr/lib/postgresql/17/bin)
+flask: 3.1.2
+sqlalchemy: 1.4.54
+system: Debian GNU/Linux 13 (trixie)
 tornado: 6.1
-libpq: 14.2
-psycopg2: 2.9.3 (dt dec pq3 ext lo64)
-temboard: 8.0.dev0 (/home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/temboard)
-temboard-agent: 8.0.dev0 (/home/bersace/src/dalibo/temboard/dev/venv-py3.6/bin/temboard-agent)
-rootdir: /home/bersace/src/dalibo/temboard/tests, configfile: pytest.ini
-plugins: mock-3.6.1, cov-3.0.0, tornado-0.8.1, anyio-3.5.0
+bottle: 0.12.25
+cryptography: 46.0.3
+libpq: 17.6
+psycopg2: 2.9.11 (dt dec pq3 ext lo64)
+temboard: 9.0.1 (/home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/temboard)
+temboard-agent: 9.0.1 (/home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/temboard-agent)
+rootdir: /home/bersace/src/dalibo/temboard/tests
+configfile: pytest.ini
 ...
 tests/test_00_setup_ui.py::test_temboard_version PASSED                  [ 12%]
 ...

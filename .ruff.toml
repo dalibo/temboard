@@ -1,5 +1,4 @@
-# ruff does not have Python 3.6, Python 3.7 should make the job
-target-version = "py37"
+target-version = "py39"
 
 [lint]
 extend-select = [

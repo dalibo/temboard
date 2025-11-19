@@ -26,8 +26,12 @@ mkdir -p "$DESTDIR"
 
 #       V E R S I O N S
 
+mapfile -t pythons < <(compgen -c python3. | grep -v config | sort --reverse --unique --version-sort)
+python="${pythons[0]}"
+pip=("$python" -m pip)
+
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$(python3 setup.py --version)
+	VERSION=$("$python" setup.py --version)
 fi
 RELEASE="1$(rpm --eval '%{dist}')"
 
@@ -35,20 +39,20 @@ RELEASE="1$(rpm --eval '%{dist}')"
 
 whl="dist/temboard-$VERSION-py3-none-any.whl"
 if ! [ -f "$whl" ] ; then
-	pip download --only-binary :all: --no-deps --pre --dest "dist/" "temboard==$VERSION"
+	"${pip[@]}" download --only-binary :all: --no-deps --pre --dest "dist/" "temboard==$VERSION"
 fi
 
 # Install from sources
-pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
+"${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
 # Vendor dependencies.
-pythonv=$(python3 --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
-pip3 install \
-	--pre --no-deps --requirement "$DESTDIR/usr/share/temboard/vendor.txt" \
+pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
+"${pip[@]}" install \
+	--pre --no-deps --only-binary :all: --requirement "$DESTDIR/usr/share/temboard/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardui/_vendor"
 
 #       B U I L D
 
-pythonbin="$(type -p "python$pythonv")"
+pythonbin="$(type -p "$python")"
 PYTHONPKG="$(rpm -qf "$pythonbin")"
 PYTHONPKG="${PYTHONPKG%%-*}"
 
@@ -61,7 +65,7 @@ PYTHONPKG="${PYTHONPKG%%-*}"
 
 #       T E S T
 
-rpm="temboard-${VERSION}-${RELEASE}.noarch.rpm"
+rpm="temboard-${VERSION}-${RELEASE}.x86_64.rpm"
 mv "$rpm" dist/
 rpm -qpl "dist/$rpm"
 yum -q -y --disablerepo='extras*' --disablerepo='pgdg*' --disablerepo='epel*' --disablerepo='powertools*' install "dist/$rpm"

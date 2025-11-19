@@ -79,7 +79,7 @@ PYTHONPKG="${PYTHONPKG/-minimal}"
 
 #       T E S T
 
-deb="temboard_${VERSION}-${RELEASE}_all.deb"
+deb="temboard_${VERSION}-${RELEASE}_amd64.deb"
 mv "$deb" dist/
 dpkg-deb --info "dist/$deb"
 dpkg-deb --show --showformat '$''{Depends}\n' "dist/$deb"

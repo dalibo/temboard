@@ -10,7 +10,7 @@ apropos:  #: Show dev Makefile help.
 	@echo
 
 DOCKER_MAX_VERSION=30
-develop: develop-3.6  #: Create Python venv and docker services.
+develop: develop-3.9  #: Create Python venv and docker services.
 develop-%:: .env
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile dev/git-blame-ignore-revs
@@ -45,10 +45,6 @@ restart-selenium:  #: Restart selenium development container.
 
 venv-%:
 	python$* -m venv dev/venv-py$*/ --prompt "temboard-py$*"
-	# Upgrade pip to install cryptography
-	# DEPRECATED: Once we drop Py 3.6 support, upgrade pip to 25 and
-	# use setuptools 64 for editable.
-	dev/venv-py$*/bin/pip install -U 'pip<24'
 	dev/venv-py$*/bin/python --version  # smoke test
 	dev/venv-py$*/bin/pip --version  # smoke test
 
@@ -66,11 +62,8 @@ install-%: venv-%
 pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
-# DEPRECATED: uv does not support 3.6. Let's use 3.7 until 3.6 drop.
-# greenlet is a binary dep, drop it.
 %/vendor.txt: %/vendor.in %/setup.py
-	uv pip compile --python-version=3.7 $< -o $@
-	sed -i /greenlet/d $@
+	uv pip compile --python-version=3.9 --upgrade $< -o $@
 
 #LTS
 PROMETHEUS_VERSION=2.53.0
@@ -236,7 +229,9 @@ copy-rhel%:
 	cp -f agent/dist/temboard-agent-$(VERSION)-1.el$*.noarch.rpm ui/dist/temboard-$(VERSION)-1.el$*.noarch.rpm $(YUM_LABS)/rpms/RHEL$*-x86_64/
 
 docker-build-agent:
+	type pep440deb
 	DOCKER_BUILDKIT=1 docker build \
+		--progress=plain \
 		--file agent/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
@@ -244,7 +239,9 @@ docker-build-agent:
 		agent/
 
 docker-build-ui:
+	type pep440deb
 	DOCKER_BUILDKIT=1 docker build \
+		--progress=plain \
 		--file ui/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
 		--build-arg VERSION=$(DEBIANVERSION) \
