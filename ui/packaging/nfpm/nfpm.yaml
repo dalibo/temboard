@@ -11,9 +11,15 @@ description: PostgreSQL Remote Control UI
 homepage: https://labs.dalibo.com/temboard/
 license: PostgreSQL
 contents:
-  - src: packaging/nfpm/build/destdir/
+  - type: tree
+    src: packaging/nfpm/build/destdir/
     dst: /
-    type: tree
+  - type: tree
+    src: share/
+    dst: /usr/share/temboard
+  - type: tree
+    src: packaging/temboard.service
+    dst: /usr/lib/systemd/system/temboard.service
 scripts:
   postinstall: share/postinst.sh
   preremove: share/preun.sh

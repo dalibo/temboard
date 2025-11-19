@@ -7,4 +7,3 @@ tests/test_50_statements.py
 ui/temboardui/plugins/statements/
 ui/temboardui/toolkit/taskmanager/
 pyproject.toml
-setup.py

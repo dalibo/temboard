@@ -1,7 +1,6 @@
 check-manifest
 hupper
 pytest
-pytest-cov
 pytest-mock
 pytest-tornado
 pytz  # for dev/perfui/

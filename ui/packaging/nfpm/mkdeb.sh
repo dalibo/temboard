@@ -4,7 +4,7 @@
 TOP_SRCDIR=$(readlink -m "$0/../../..")
 UID_GID=$(stat -c %u:%g "$0")
 cd "$TOP_SRCDIR"
-test -f setup.py
+test -f pyproject.toml
 
 BUILDDIR=$(readlink -m packaging/nfpm/build)
 DESTDIR=$BUILDDIR/destdir
@@ -27,7 +27,7 @@ mkdir -p "$DESTDIR"
 #       V E R S I O N S
 
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$(python3 setup.py --version)
+	VERSION=$(uv version --short)
 fi
 mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 pep440v=${versions[0]}
@@ -60,7 +60,7 @@ rm -rf "$DESTDIR/usr/lib/python$pythonv"
 
 # Vendor dependencies.
 pip3 install \
-	--pre --no-deps --requirement "$DESTDIR/usr/share/temboard/vendor.txt" \
+	--pre --no-deps --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python3/dist-packages/temboardui/_vendor"
 
 #       B U I L D

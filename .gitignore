@@ -30,7 +30,6 @@ dev/pip-cache
 dev/prometheus/targets/*.yaml
 
 # Test runtime files
-.coverage
 # from pytest-log
 test_log.log
 tests/downloads/

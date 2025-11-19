@@ -142,7 +142,7 @@ prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus d
 dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
 	$^ > $@
 
-VERSION=$(shell cd ui; python3 setup.py --version)
+VERSION=$(shell uv --directory=ui/ version --short)
 BRANCH?=master
 # When stable branch v8 is created, use this:
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
@@ -160,7 +160,7 @@ release:  #: Tag and push a new git release.
 	@echo Checking version is PEP440 compliant.
 	@pep440deb "$(VERSION)" >/dev/null
 	@echo Creating release commit.
-	@git commit --only --quiet agent/pyproject.toml ui/temboardui/version.py -m "Version $(VERSION)"
+	@git commit --only --quiet agent/pyproject.toml ui/pyproject.toml -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
 	@git diff --quiet
 	@echo Tagging v$(VERSION).
@@ -176,7 +176,7 @@ release-notes:  #: Extract changes for current release
 dist:  #: Build sources and wheels.
 	uv build -o agent/dist/ agent/
 	test -f ui/temboardui/static/dist/.vite/manifest.json
-	cd ui/; python3 setup.py sdist bdist_wheel
+	uv build -o ui/dist/ ui/
 	twine check --strict \
 		agent/dist/temboard_agent-$(VERSION).tar.gz \
 		agent/dist/temboard_agent-$(VERSION)-py*.whl \

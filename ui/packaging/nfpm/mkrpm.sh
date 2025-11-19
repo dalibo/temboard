@@ -4,7 +4,7 @@
 TOP_SRCDIR=$(readlink -m "$0/../../..")
 UID_GID=$(stat -c %u:%g "$0")
 cd "$TOP_SRCDIR"
-test -f setup.py
+test -f pyproject.toml
 
 BUILDDIR=$(readlink -m packaging/nfpm/build)
 DESTDIR=$BUILDDIR/destdir
@@ -31,7 +31,7 @@ python="${pythons[0]}"
 pip=("$python" -m pip)
 
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$("$python" setup.py --version)
+	VERSION=$(uv version --short)
 fi
 RELEASE="1$(rpm --eval '%{dist}')"
 
@@ -47,7 +47,7 @@ fi
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
 "${pip[@]}" install \
-	--pre --no-deps --only-binary :all: --requirement "$DESTDIR/usr/share/temboard/vendor.txt" \
+	--pre --no-deps --only-binary :all: --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardui/_vendor"
 
 #       B U I L D

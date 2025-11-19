@@ -1,0 +1,87 @@
+[project]
+name = "temboard"
+version = "9.0.1"
+description = "temBoard User Interface."
+readme = "README.md"
+requires-python = ">=3.9,<3.14"
+license = "PostgreSQL"
+authors = [
+    {name = "Dalibo", email = "contact@dalibo.com"},
+]
+classifiers = [
+    "Intended Audience :: System Administrators",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "cryptography",
+    # There is no hard dependency on psycopg2 to allow using
+    # psycopg2-binary instead. psycopg2 is not provided by psycopg2-binary
+    # and there is no way to state an OR dependency in Python. It's up to
+    # the user or package manager to ensure psycopg2 dependency. See
+    # documentation.
+]
+
+[project.urls]
+Homepage = "https://labs.dalibo.com/temboard"
+Documentation = "https://temboard.readthedocs.io"
+Repository = "https://github.com/dalibo/temboard"
+Changelog = "https://github.com/dalibo/temboard/blob/master/CHANGELOG.md"
+
+[project.scripts]
+temboard = "temboardui.__main__:main"
+
+[project.entry-points."temboardui.plugins"]
+activity = "temboardui.plugins.activity:ActivityPlugin"
+dashboard = "temboardui.plugins.dashboard:DashboardPlugin"
+maintenance = "temboardui.plugins.maintenance:MaintenancePlugin"
+monitoring = "temboardui.plugins.monitoring:MonitoringPlugin"
+pgconf = "temboardui.plugins.pgconf:PGConfPlugin"
+statements = "temboardui.plugins.statements:StatementsPlugin"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["temboardui*"]
+
+[tool.setuptools.package-data]
+temboardui = [
+    "model/queries/*.sql",
+    "model/versions/*",
+    "static/**/*",
+    "templates/**/*",
+    "plugins/*/static/**/*",
+    "plugins/*/templates/**/*",
+]
+
+[tool.check-manifest]
+ignore = [
+    "*/__pycache__/*",
+    ".dockerignore",
+    ".gitmodules",
+    "*.config.js",
+    "Makefile",
+    "package.json",
+    "package-lock.json",
+    ".prettier*",
+    ".husky/*",
+    ".npmrc",
+    "docs",
+    "docs/*",
+    "packaging/nfpm",
+    "packaging/nfpm/*",
+    "packaging/docker",
+    "packaging/docker/*",
+    "temboardui/static/src",
+    "temboardui/static/src/*",
+    "tests",
+    "tests/*",
+]
