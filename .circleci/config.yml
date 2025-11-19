@@ -88,6 +88,7 @@ workflows:
         requires:
         - stage1-pkg-rockylinux9
         - stage1-pkg-rockylinux8
+        - stage1-pkg-trixie
         - stage1-pkg-bookworm
         - stage1-pkg-bullseye
         - stage1-pkg-noble
