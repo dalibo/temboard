@@ -11,10 +11,14 @@ services:
     <<: *rhel
     image: dalibo/buildpack-pkg:rockylinux8
 
-  bookworm: &mkdeb
+  trixie: &mkdeb
     <<: *rhel
-    image: dalibo/buildpack-pkg:bookworm
+    image: dalibo/buildpack-pkg:trixie
     command: /workspace/packaging/nfpm/mkdeb.sh
+
+  bookworm:
+    <<: *mkdeb
+    image: dalibo/buildpack-pkg:bookworm
 
   bullseye:
     <<: *mkdeb

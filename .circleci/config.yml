@@ -38,7 +38,7 @@ workflows:
           <<: *enable-for-tags
         matrix:
           parameters:
-            codename: [bookworm, bullseye, noble, jammy]
+            codename: [trixie, bookworm, bullseye, noble, jammy]
         requires: [stage0-dist]
     # Take care of PostgreSQL version dispatch amongst distribution
     # as documented at https://hub.docker.com/repository/docker/dalibo/buildpack-postgres/general#tags
@@ -56,7 +56,7 @@ workflows:
         matrix:
           parameters:
             pgversion: ["17"]
-            dist: [bookworm]
+            dist: [trixie]
     - e2e:
         <<: *e2e
         matrix:
@@ -252,7 +252,7 @@ jobs:
       codename:
         description: "Debian version"
         type: enum
-        enum: [bookworm, bullseye, noble, jammy]
+        enum: [trixie, bookworm, bullseye, noble, jammy]
     docker: [{image: "dalibo/buildpack-pkg:<< parameters.codename >>"}]
     working_directory: *working_directory
     environment:
@@ -283,7 +283,7 @@ jobs:
       dist:
         description: "Distribution"
         type: enum
-        enum: [bookworm, bullseye, rockylinux9, rockylinux8]
+        enum: [trixie, bookworm, bullseye, rockylinux9, rockylinux8]
       pgversion:
         description: "PostgreSQL version for repository."
         type: enum
