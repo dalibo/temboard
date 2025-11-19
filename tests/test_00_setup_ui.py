@@ -1,6 +1,17 @@
 import csv
 
-from sh import temboard
+import pytest
+from sh import Command, temboard
+
+
+@pytest.fixture(scope="session")
+def python3():
+    with open(temboard._path) as fo:
+        shebang = fo.readline().strip()
+    python = shebang[2:]
+    assert python.startswith("/")
+    assert "python" in python
+    return Command(python)
 
 
 def test_start_ui(agent, ui, browser):
@@ -8,24 +19,18 @@ def test_start_ui(agent, ui, browser):
     pass
 
 
-def test_setproctitle_script():
-    from sh import python3
-
+def test_setproctitle_script(python3):
     python3("ui/temboardui/toolkit/proctitle.py")
 
 
-def test_setproctitle_inline():
-    from sh import python3
-
+def test_setproctitle_inline(python3):
     python3(
         c="import temboardui.toolkit.proctitle as pc; pc.test_main()",
         _env={"PYTHONPATH": "/usr/lib/temboard"},
     )
 
 
-def test_setproctitle_module():
-    from sh import python3
-
+def test_setproctitle_module(python3):
     python3(m="temboardui.toolkit.proctitle", _env={"PYTHONPATH": "/usr/lib/temboard"})
 
 
