@@ -18,6 +18,11 @@ You need manual steps when upgrading UI.
 - Requires Python 3.9.
 - Packages for Debian Trixie.
 
+**Breaking changes**
+
+- The administration plugin is no longer used and as been removed. The list of plugins
+in the agent configuration must be updated.
+
 
 ## 9.0.0
 
