@@ -425,54 +425,47 @@ This helps reading diff, handling conflicts when rebasing.
 [semantic line breaks]: https://sembr.org/
 
 
-## Building RHEL Package
+## Building Packages
 
-Building RPM packages for RHEL and compatible clones requires Docker and Docker
-Compose for isolation. Uploading to Dalibo Labs requires internal project
-yum-labs and access.
+Building packages for RHEL, Debian and compatible clones requires Docker and Docker Compose for isolation.
+UI and agent each have `packaging/nfpm/` directory with a Makefile and scripts to build DEB and RPM packages.
 
-UI and agent each has `packaging/rpm` directory with a Makefile and scripts to build RPM packages.
+The builder script searches for wheels in respective `dist/`
+and if not found, tries to download wheel from PyPI.
+Use top level `make dist` to generate wheels.
+
+
+### RPM Packages
+
 Use `build-rhel<version>` make target like this:
 
 ``` bash
-make -C ui/packaging/rpm/ build-rhel9
+make -C ui/packaging/nfpm/ build-rhel9
 ```
 
-Version can be either 9, 8 or 7.
-`agent/packaging/rpm/Makefile` provides the same targets.
+Version can be either 10, 9 or 8.
+`agent/packaging/nfpm/Makefile` provides the same targets.
 
-The builder script searches for wheels in `ui/dist/`
-and if not found, tries to download wheel from PyPI.
-Use top level `make dist` to generate wheels.
+Uploading to Dalibo Labs YUM repository requires internal project yum-labs and access.
 
 
-## Building Debian Package
+### Building Debian Package
 
-Building debian packages requires Docker and Docker Compose for isolation. For
-signing, you need the ``devscripts`` package and a GPG private key. For
-uploading, you require ``dput``.
+For signing changes, you need the ``devscripts`` package and a GPG private key.
+For uploading DEB, you require ``dput``.
 
-```
-sudo apt install devscripts dput
-```
+Define environment variables `DEBFULLNAME` and `DEBEMAIL`.
+mkchanges.sh scripts signs changes with your GPG key matching these environment variables.
 
-Define environment variables `DEBFULLNAME` and `DEBEMAIL`. mkchanges.sh scripts
-signs changes with your GPG key matching these environment variables.
-
-Each UI and agent has `packaging/deb/` directory with a Makefile and scripts to
-build packages. Use `build-<codename>` target like this:
+ Use `build-<codename>` target like this:
 
 ``` bash
-make -C ui/packaging/deb build-bullseye
+make -C ui/packaging/nfpm/ build-bullseye
 ```
 
-`codename` is one of `bookworm` or `bullseye` for Debian
+`codename` is one of `trixie`, `bookworm` or `bullseye` for Debian
 and `noble` or `jammy` for Ubuntu.
-`agent/packaging/deb/Makefile` provides the same targets.
-
-The builder script search for wheels in `ui/dist/`
-and if not found, tries to download wheel from PyPI.
-Use top level `make dist` to generate wheels.
+`agent/packaging/nfpm/Makefile` provides the same targets.
 
 
 ## Testing with Grafana
