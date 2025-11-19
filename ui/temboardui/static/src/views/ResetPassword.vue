@@ -6,25 +6,28 @@
       </div>
 
       <div class="card-body">
-        <h5 class="text-center mb-4">Reset your password</h5>
+        <h5 class="text-center mb-3">Reset your password</h5>
+        <p class="text-muted text-center mb-4">Enter your username or registered email.</p>
 
         <Error ref="error" />
 
         <form @submit.prevent="submit">
           <div class="mb-3">
-            <label class="form-label">New password</label>
-            <input type="password" class="form-control" v-model="password" :disabled="disabled" required />
+            <label for="inputIdentifier" class="form-label">Username or Email</label>
+            <input
+              type="text"
+              class="form-control"
+              id="inputIdentifier"
+              v-model="identifier"
+              placeholder="Username or Email"
+              :disabled="disabled"
+              required
+            />
           </div>
-
-          <div class="mb-3">
-            <label class="form-label">Confirm password</label>
-            <input type="password" class="form-control" v-model="confirm" :disabled="disabled" required />
-          </div>
-
           <div class="text-center">
             <button type="submit" class="btn btn-primary w-100" :disabled="waiting">
               <span v-if="waiting"><i class="fa fa-spinner fa-spin"></i> Please wait…</span>
-              <span v-else>Reset password</span>
+              <span v-else>Send password reset link</span>
             </button>
           </div>
         </form>
@@ -39,12 +42,7 @@ import { computed, ref } from "vue";
 
 import Error from "../components/Error.vue";
 
-const props = defineProps({
-  token: String,
-});
-
-const password = ref("");
-const confirm = ref("");
+const identifier = ref("");
 const error = ref(null);
 const waiting = ref(false);
 
@@ -53,12 +51,11 @@ function submit() {
   error.value.clear();
 
   $.ajax({
-    url: `/json/reset-password/${props.token}`,
+    url: "/json/reset-password",
     method: "POST",
     contentType: "application/json",
     data: JSON.stringify({
-      password: password.value,
-      confirm: confirm.value,
+      identifier: identifier.value,
     }),
     success: () => {
       window.location.href = "/login";

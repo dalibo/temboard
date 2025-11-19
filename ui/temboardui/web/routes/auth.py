@@ -3,7 +3,16 @@ from time import sleep
 
 import flask
 from flask import current_app as app
-from flask import g, jsonify, make_response, redirect, render_template, request, url_for
+from flask import (
+    flash,
+    g,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from itsdangerous import SignatureExpired
 from tornado.web import create_signed_value
 
@@ -116,7 +125,10 @@ def reset_password():
             except TemboardUIError as e:
                 logger.error("Failed to send email: %s", e)
 
-        return redirect(url_for("login"))
+            flash("A password reset link has been sent to your email.", "success")
+            return redirect(url_for("login"))
+
+        flash("Invalid role or email.", "error")
 
     return render_template("reset-password.html", headerbar=False)
 
@@ -124,6 +136,14 @@ def reset_password():
 @app.route("/reset-password/<token>", methods=["GET"])
 @anonymous_allowed
 def reset_token(token):
+    serializer = get_reset_token_serializer()
+
+    try:
+        serializer.loads(token, salt="pwd-reset", max_age=1800)
+    except SignatureExpired:
+        flash("Your reset link has expired. Please request a new one.", "error")
+        return redirect(url_for("reset_password"))
+
     return render_template("reset-password-form.html", token=token, headerbar=False)
 
 
@@ -157,7 +177,8 @@ def json_reset_password(token):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    return jsonify({"message": "Your password has been successfully reset."})
+    flash("Your password has been successfully reset.", "success")
+    return jsonify()
 
 
 @app.route("/json/users")
