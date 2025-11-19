@@ -36,7 +36,7 @@
           <td>
             <div>
               <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard">
-                <i class="fa fa-database"></i>
+                <i class="fa-solid fa-database"></i>
                 {{instance.hostname}}:{{instance.pg_port}}
               </a>
               <span class="badge border text-body-secondary align-middle">{{instance.environment.name}}</span>
@@ -63,7 +63,7 @@
           </td>
           <td class="text-center">
             {% if instance.notify %}
-            <i class="fa fa-check"></i>
+            <i class="fa-solid fa-check"></i>
             {% endif %}
           </td>
           <td class="text-center">
@@ -73,7 +73,7 @@
               data-bs-placement="bottom"
               title="Edit"
               v-on:click.prevent="$refs.update_modal.open('{{instance.agent_address}}', {{instance.agent_port}})"
-            ><i class="fa fa-edit"></i></button>
+            ><i class="fa-solid fa-pen-to-square"></i></button>
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm buttonDelete m-1"
@@ -81,7 +81,7 @@
               data-bs-placement="bottom"
               title="Delete"
               v-on:click.prevent="$refs.delete_modal.open('/json/instances/{{instance.agent_address}}/{{instance.agent_port}}')"
-            ><i class="fa fa-trash-o"></i></button>
+            ><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
         {% endfor %}
