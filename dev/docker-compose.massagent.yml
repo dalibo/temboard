@@ -7,12 +7,12 @@ networks:
     external: true
 
 volumes:
-  data:
+  home:
   run:
 
 services:
   postgres:
-    image: postgres:${PGVERSION-17}-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_PASSWORD: confinment
     command: [
@@ -21,7 +21,7 @@ services:
       -c, "cluster_name=postgres-${TEMBOARD_REGISTER_PORT}",
     ]
     volumes:
-      - data:/var/lib/postgresql/data
+      - home:/var/lib/postgresql
       - run:/var/run/postgresql
       - type: bind
         source: ../ui/share/sql/pg_stat_statements-create-extension.sql
@@ -40,9 +40,8 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - data:/var/lib/postgresql/data
+      - home:/var/lib/postgresql
       - run:/var/run/postgresql
-      - /var/run/docker.sock:/var/run/docker.sock
     links:
       - "postgres:postgres-${TEMBOARD_REGISTER_PORT}.dev"
     environment:

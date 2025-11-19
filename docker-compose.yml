@@ -32,7 +32,7 @@ services:
   postgres0:
     image: &postgres_image postgres:18-alpine
     volumes:
-    - data0:/var/lib/postgresql/18/docker
+    - home0:/var/lib/postgresql
     - run0:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
@@ -66,7 +66,7 @@ services:
       context: agent/
       dockerfile: packaging/docker/Dockerfile.dev
     volumes:
-    - data0:/var/lib/postgresql/18/docker
+    - home0:/var/lib/postgresql
     - run0:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
@@ -76,7 +76,6 @@ services:
       # container.
       HISTFILE: /usr/local/src/temboard/dev/agent-bash_history
       PGUSER: postgres
-      PGDATA: /var/lib/postgresql/18/docker
       PSQL_HISTORY: /usr/local/src/temboard/dev/agent-psql_history
       # Send TEMBOARD_UI_URL from .env file
       TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
@@ -96,7 +95,7 @@ services:
   postgres1:
     image: *postgres_image
     volumes:
-    - data1:/var/lib/postgresql/18/docker
+    - home1:/var/lib/postgresql
     - run1:/var/run/postgresql
     - wal:/var/lib/postgresql/archive/
     - ./dev/postgres-ha-entrypoint.sh:/usr/local/bin/postgres-ha-entrypoint.sh
@@ -126,7 +125,7 @@ services:
     build:
       <<: *build-agent
     volumes:
-    - data1:/var/lib/postgresql/18/docker
+    - home1:/var/lib/postgresql
     - run1:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
@@ -235,12 +234,12 @@ volumes:
   wal:
 
   # data_directory for first postgres instance.
-  data0:
+  home0:
   # /run/postgresql to share socket between postgres instance and agent.
   run0:
 
   # data directory for second postgres instances.
-  data1:
+  home1:
   # /run/postgresql to share socket between postgres instance and agent.
   run1:
 
