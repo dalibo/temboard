@@ -39,7 +39,7 @@ RELEASE=0dlb1${codename}1
 
 whl="dist/temboard-$pep440v-py3-none-any.whl"
 if ! [ -f "$whl" ] ; then
-	pip download --only-binary :all: --no-deps --pre --dest "dist/" "temboard==$pep440v"
+	pip3 download --only-binary :all: --no-deps --pre --dest "dist/" "temboard==$pep440v"
 fi
 
 # Install from sources

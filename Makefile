@@ -43,16 +43,11 @@ recreate-repository:  #: Reinitialize temBoard UI database.
 restart-selenium:  #: Restart selenium development container.
 	docker compose up --detach --force-recreate --renew-anon-volumes selenium
 
-venv-%:
-	uv venv --no-project --allow-existing --python=python$* --prompt="temboard-py$*"
-	uv run python --version  # smoke test
-
-install-%: venv-%
-	uv pip install --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
-	uv pip install -r docs/requirements.txt -r dev/requirements.txt
-	uv pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
-	uv pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
-	uv pip install -e agent/ -e ui/ --only-binary psycopg2-binary psycopg2-binary
+install-%:
+	uv venv --clear --python=python$* --prompt="temboard-py$*"
+	uv sync
+	uv pip install --upgrade --no-deps --requirement agent/vendor.txt --target agent/temboardagent/_vendor
+	uv pip install --upgrade --no-deps --requirement ui/vendor.txt --target ui/temboardui/_vendor
 	uv run temboard --version  # smoke test
 	uv run temboard-agent --version  # smoke test
 

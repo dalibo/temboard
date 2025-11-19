@@ -69,14 +69,14 @@ git config blame.ignoreRevsFile dev/git-blame-ignore-revs
 if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
 make -j 2 install-3.9 ui/build/bin/prometheus ui/build/bin/promtool
 make[1] : on entre dans le répertoire « /home/bersace/src/dalibo/temboard »
-python3.9 -m venv dev/venv-py3.9/ --prompt "temboard-py3.9"
+uv venv --clear --python=python3.9 --prompt="temboard-py3.9"
 ...
 ✔ Container temboard-agent-stable-1     Started                                                                                                                                   5.5s
 
 
-   You can now execute temBoard UI with dev/venv-py3.9/bin/temboard
+   You can now execute temBoard UI with uv run temboard
 
-$ dev/venv-py3.9/bin/temboard --debug
+$ uv run temboard --debug
 INFO:  app: Starting temboard. version=9.0.1
 INFO:  app: Using config file /home/bersace/src/dalibo/temboard/.config/temboard.conf.
 15:21:56 temboardui[243684] DEBUG:  model: Using PostgreSQL PostgreSQL 17.7 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit.
@@ -288,24 +288,22 @@ instead of dev files. To run the tests locally it is better not to have temboard
 Execute these tests right from your virtualenv, using pytest:
 
 ``` console
-$ . dev/venv-py3.9/bin/activate
-$ pytest tests/
+$ uv run pytest tests/
 ============================= test session starts ==============================
-platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/python3.9
+platform linux -- Python 3.9.25, pytest-8.4.2, pluggy-1.6.0 -- /home/bersace/src/dalibo/temboard/.venv/bin/python3
 cachedir: .pytest_cache
 postgresql: 17 (/usr/lib/postgresql/17/bin)
 flask: 3.1.2
 sqlalchemy: 1.4.54
 system: Debian GNU/Linux 13 (trixie)
-tornado: 6.1
-bottle: 0.12.25
+tornado: 6.4.2
+bottle: 0.13.4
 cryptography: 46.0.3
 libpq: 17.6
 psycopg2: 2.9.11 (dt dec pq3 ext lo64)
-temboard: 9.0.1 (/home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/temboard)
-temboard-agent: 9.0.1 (/home/bersace/src/dalibo/temboard/dev/venv-py3.9/bin/temboard-agent)
+temboard: 9.0.1 (/home/bersace/src/dalibo/temboard/.venv/bin/temboard)
+temboard-agent: 9.0.1 (/home/bersace/src/dalibo/temboard/.venv/bin/temboard-agent)
 rootdir: /home/bersace/src/dalibo/temboard/tests
-configfile: pytest.ini
 ...
 tests/test_00_setup_ui.py::test_temboard_version PASSED                  [ 12%]
 ...
@@ -400,10 +398,9 @@ does not required reloading server-side.
 ## Editing Documentation
 
 The documentation is written in Markdown and built with `mkdocs`.
-Editing documentation requires Python 3.8.
 
 ``` console
-$ dev/venv-py3.8/bin/mkdocs serve
+$ uv run mkdocs serve
 INFO     -  Building documentation...
 INFO     -  Cleaning site directory
 INFO     -  The following pages exist in the docs directory, but are not included in the "nav" configuration:

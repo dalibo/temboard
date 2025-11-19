@@ -1,0 +1,51 @@
+# This is a virtual project to manage a single development env
+#
+# Never build nor release temboard-workspace project.
+#
+
+[project]
+requires-python = ">=3.9,<3.14"
+name = "temboard-workspace"
+version = "0.0.0" # never change this.
+
+[dependency-groups]
+dev = [
+    "hupper",
+    "pep440deb",
+    "pytest",
+    "psycopg2-binary",
+    "pytz>=2025.2", # for dev/perfui/
+    # Installed as editable according to uv settings below.
+    "temboard",
+    "temboard-agent",
+    "wheel>=0.45.1",
+]
+docs = [
+    "mkdocs-git-revision-date-localized-plugin",
+    "mkdocs-glightbox",
+    "mkdocs-material",
+]
+lint = [
+    "check-manifest",
+    "docutils",
+    "ruff",
+]
+e2e = [
+    "httpx",
+    "pytest",
+    "pytest-mock",
+    "pytest-tornado",
+    "selenium",
+    "sh<2",
+    "tenacity<8.4",
+]
+
+[tool.uv]
+default-groups = "all"
+
+[tool.uv.workspace]
+members = ["agent", "ui"]
+
+[tool.uv.sources]
+temboard = { workspace = true }
+temboard-agent = { workspace = true }
