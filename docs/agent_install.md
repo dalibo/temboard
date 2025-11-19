@@ -81,25 +81,6 @@ In order to run temBoard agent, you need:
     ```
 
 
-=== "PyPI"
-
-    temBoard agent wheel and source tarball are published on
-    [PyPI](https://pypi.org/project/temboard-agent).
-
-    Installing from PyPI requires Python3.6+, pip and wheel. It\'s better to
-    have a recent version of pip.
-
-    ``` console
-    $ sudo pip install temboard-agent
-    $ temboard-agent --version
-    ```
-
-    Note where is installed temBoard agent and determine the prefix. You
-    must find a `share/temboard-agent` folder in e.g `/usr` or `/usr/local`.
-    If temBoard agent is installed in `/usr/local`, please adapt the
-    documentation to match this system prefix.
-
-
 ## Configure
 
 The quickest way to setup temBoard agent is to use the
