@@ -32,7 +32,10 @@ import logging
 import os
 import sys
 
-logger = logging.getLogger(__name__)
+# Absolute import to work as a script: python3 temboardtoolkit/proctitle.py
+from temboardtoolkit.log import LastnameFilter
+
+logger = logging.getLogger(LastnameFilter.root + ".proctitle")
 _setter = None
 
 

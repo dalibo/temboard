@@ -5,8 +5,9 @@ import os
 import signal
 
 from . import logfmt
+from .log import LastnameFilter
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".perf")
 SC_CLK_TCK = os.sysconf("SC_CLK_TCK")
 
 

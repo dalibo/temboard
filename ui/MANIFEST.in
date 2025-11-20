@@ -6,6 +6,7 @@ include vendor.*
 graft temboardui/model/versions
 graft temboardui/static
 graft temboardui/templates
+graft temboardui/toolkit
 graft temboardui/plugins/pgconf/static
 graft temboardui/plugins/pgconf/templates
 graft temboardui/plugins/activity/static

@@ -6,9 +6,10 @@ import os
 from argparse import SUPPRESS as SUPPRESS_ARG
 
 from .errors import UserError
+from .log import LastnameFilter
 from .utils import DotDict
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".configuration")
 
 
 class OptionSpec:

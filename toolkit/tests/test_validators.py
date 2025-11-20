@@ -1,7 +1,7 @@
 import os.path
 
 import pytest
-from temboardui.toolkit import validators as v
+from temboardtoolkit import validators as v
 
 
 def test_address():
@@ -29,8 +29,8 @@ def test_boolean():
 
 
 def test_directory(mocker):
-    access = mocker.patch("temboardui.toolkit.validators.os.access")
-    isdir = mocker.patch("temboardui.toolkit.validators.os.path.isdir")
+    access = mocker.patch("temboardtoolkit.validators.os.access")
+    isdir = mocker.patch("temboardtoolkit.validators.os.path.isdir")
 
     access.return_value = True
     isdir.return_value = True
@@ -112,7 +112,7 @@ def test_nday():
     with pytest.raises(ValueError):
         v.nday(-1)
 
-    assert type(v.nday("1")) == int
+    assert type(v.nday("1")) is int
 
 
 def test_fqdn():

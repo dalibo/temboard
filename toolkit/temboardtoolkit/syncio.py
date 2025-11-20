@@ -3,7 +3,9 @@ import logging
 import os
 import signal
 
-logger = logging.getLogger(__name__)
+from .log import LastnameFilter
+
+logger = logging.getLogger(LastnameFilter.root + ".syncio")
 
 
 class Service:

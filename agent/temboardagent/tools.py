@@ -35,7 +35,7 @@ def validate_parameters(values, types):
                 for value in values[key]:
                     if isinstance(typ, str) and not re.match(typ, str(value)):
                         raise HTTPError(406, "Parameter '%s' is malformed." % (key))
-                    if not isinstance(typ, str) and typ != type(value):
+                    if not isinstance(typ, str) and typ is not type(value):
                         raise HTTPError(406, "Parameter '%s' is malformed." % (key))
         except HTTPError as e:
             raise e
