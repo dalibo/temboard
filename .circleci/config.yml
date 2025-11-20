@@ -169,55 +169,47 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - restore_cache:
+      - restore_cache: &restore_cache_uv
           keys:
-            - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
-            - v1-python
+            - v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
+            - v1-uv
       - run:
           name: Setup python environment
+          environment:
+            UV_NO_GROUP: docs
           command: |
-            python<< parameters.pyversion >> -m pip install --upgrade --requirement dev/requirements.txt
+            make install-3.9
       - run:
-          name: Install Agent.
+          name: Agent
+          environment:
+            UV_NO_SYNC: "1"
           command: |
-            python<< parameters.pyversion >> -m pip install --upgrade --editable agent/ --only-binary=psycopg2-binary psycopg2-binary
-            python<< parameters.pyversion >> -m pip install --no-deps -r agent/vendor.txt --target=agent/temboardagent/_vendor
-      - run:
-          name: Lint Agent
-          command: |
-            cd agent/
-            ruff check temboardagent
-            ruff format --check temboardagent
-            check-manifest
-      - run:
-          name: Agent Unit Tests
-          command: |
-            pytest --full-trace --cov-report=xml agent/tests/unit/
-      - run:
-          name: Install UI
-          command: |
-            set -x
-            python<< parameters.pyversion >> -m pip install --upgrade --editable ui/ --only-binary=psycopg2-binary psycopg2-binary
-            python<< parameters.pyversion >> -m pip install --no-deps -r ui/vendor.txt --target=ui/temboardui/_vendor
-      - run:
-          name: Lint UI
-          command: |
-            set -x
             # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
             git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-            ruff check tests/
-            ruff format --check tests/
-            cd ui/
-            ruff check
-            ruff format --check
-            check-manifest
+            uv run ruff check agent/
+            uv run ruff format --check agent/
+            uv run check-manifest --no-build-isolation agent/
+            uv run pytest --full-trace agent/tests/unit/
       - run:
-          name: UI Unit Tests
+          name: UI
+          environment:
+            UV_NO_SYNC: "1"
           command: |
-            pytest --full-trace --cov-report=xml ui/tests/unit/
+            set -x
+            uv run ruff check ui/
+            uv run ruff format --check ui/
+            uv run check-manifest --no-build-isolation ui/
+            uv run pytest --full-trace ui/tests/unit/
+      - run:
+          name: Lint E2E
+          environment:
+            UV_NO_SYNC: "1"
+          command: |
+            uv run ruff check tests/
+            uv run ruff format --check tests/
       - save_cache:
-          key: v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
-          paths: ["~/.cache/pip/"]
+          key: v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
+          paths: ["~/.cache/uv/"]
 
   rpm:
     parameters:
@@ -231,10 +223,7 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - restore_cache:
-        keys:
-          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
-          - v1-python
+    - restore_cache: *restore_cache_uv
     - run:
         name: Build Agent RPM snapshot
         command: |
@@ -264,10 +253,7 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - restore_cache:
-        keys:
-          - v1-python-{{ checksum "dev/requirements.txt" }}-{{ checksum "agent/setup.py" }} {{ checksum "agent/vendor.txt" }}-{{ checksum "ui/setup.py" }}-{{ checksum "ui/vendor.txt"}}
-          - v1-python
+    - restore_cache: *restore_cache_uv
     - run:
         name: Build UI Debian Snapshot
         command: ui/packaging/nfpm/mkdeb.sh
@@ -326,12 +312,13 @@ jobs:
         command: tests/install-all.sh
     - restore_cache:
         keys:
-          - v1-e2e-{{ checksum "dev/requirements.txt" }}
+          - v1-e2e-{{ checksum "uv.lock" }}
           - v1-e2e
     - run:
         name: Install test dependencies
         command: |
-          PIP_BREAK_SYSTEM_PACKAGES=1 $(grep -Po '^#!\K.+' /usr/bin/temboard-agent) -m pip install -r dev/requirements.txt --ignore-installed
+          uv venv --python=$(grep -oP '^#!\K.+' /usr/bin/temboard) --clear --no-managed-python
+          uv sync --frozen --no-default-groups --group=e2e
     - run:
         name: Run pytest
         command: |
@@ -340,7 +327,7 @@ jobs:
           PGVERSION=<< parameters.pgversion >>
           PGVERSION=${PGVERSION%rc*}
           PGVERSION=${PGVERSION%beta*}
-          tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION --junit-xml=tests/results.xml tests/
+          uv run --no-sync tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION --junit-xml=tests/results.xml tests/
     - store_artifacts:
         path: /workspace/tests/downloads/
     - store_artifacts:
@@ -351,7 +338,7 @@ jobs:
         path: /workspace/tests/results.xml
     - save_cache:
         paths: ["~/.cache/pip"]
-        key: v1-e2e-{{ checksum "dev/requirements.txt" }}
+        key: v1-e2e-{{ checksum "uv.lock" }}
 
   release:
     # Configure secrets of this job in temboard CircleCI context.

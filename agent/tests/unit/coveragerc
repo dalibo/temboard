@@ -1,4 +1,0 @@
-[run]
-data_file = agent/.coverage
-omit =
-    temboardagent/toolkit/*

@@ -21,17 +21,5 @@ graft temboardui/plugins/statements/templates
 graft share
 global-exclude *.pyc
 
-exclude .dockerignore
-exclude .gitmodules
-exclude *.config.js
-exclude Makefile
-exclude package.json
-exclude package-lock.json
-exclude .prettier*
-exclude .husky/*
-exclude .npmrc
-prune docs
-prune packaging/nfpm
-prune packaging/docker
-prune temboardui/static/src
+prune temboardui/_vendor
 prune tests

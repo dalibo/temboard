@@ -1,16 +1,18 @@
 # Python runtime files
 *.egg-info/
-*.ipynb_checkpoints
 *.pyc
+.venv/
 
 dev/downloads/
 dev/bin/prometheus
 dev/bin/promtool
 
 # Buildtime files
+agent/temboardagent/_vendor/
+ui/temboardui/_vendor/
 build/
 dist/
-!.github/actions/dist
+
 # ViteJS assets
 ui/temboardui/static/*.css
 ui/temboardui/static/css/
@@ -26,11 +28,9 @@ ui/temboardui/static/.vite/
 dev/agent-bash_history
 dev/agent-psql_history
 dev/pip-cache
-dev/venv-py*
 dev/prometheus/targets/*.yaml
 
 # Test runtime files
-.coverage
 # from pytest-log
 test_log.log
 tests/downloads/
@@ -44,14 +44,9 @@ node_modules/
 
 # temBoard runtime files
 dev/temboard/
-temboard-func.log
 
 # Help developer customize their development environment
 docker-compose.override.yml
 temboard.conf.d/
 *.log
 dev/prometheus/import/*.txt
-
-# Vendoring
-agent/temboardagent/_vendor/
-ui/temboardui/_vendor/

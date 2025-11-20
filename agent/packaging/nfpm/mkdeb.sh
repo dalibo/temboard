@@ -4,7 +4,7 @@
 TOP_SRCDIR=$(readlink -m "$0/../../..")
 UID_GID=$(stat -c %u:%g "$0")
 cd "$TOP_SRCDIR"
-test -f setup.py
+test -f temboardagent/__init__.py
 
 BUILDDIR=$(readlink -m packaging/nfpm/build)
 DESTDIR=$BUILDDIR/destdir
@@ -27,7 +27,7 @@ mkdir -p "$DESTDIR"
 #       V E R S I O N S
 
 if [ -z "${VERSION-}" ] ; then
-	VERSION=$(python3 setup.py --version)
+	VERSION=$(uv version --short)
 fi
 mapfile -t versions < <(pep440deb --echo "$VERSION" | tr ' ' '\n')
 pep440v=${versions[0]}
@@ -39,7 +39,7 @@ RELEASE=0dlb1${codename}1
 
 whl="dist/temboard_agent-$pep440v-py3-none-any.whl"
 if ! [ -f "$whl" ] ; then
-	pip download --only-binary :all: --no-deps --pre --dest "dist/" "temboard-agent==$pep440v"
+	pip3 download --only-binary :all: --no-deps --pre --dest "dist/" "temboard-agent==$pep440v"
 fi
 
 # Install from sources
@@ -59,8 +59,8 @@ mv "$DESTDIR/usr/lib/python${pythonv}/dist-packages"/* "$DESTDIR/usr/lib/python3
 rm -rf "$DESTDIR/usr/lib/python$pythonv"
 
 # Vendor dependencies.
-pip3 install \
-	--pre --no-deps --requirement "$DESTDIR/usr/share/temboard-agent/vendor.txt" \
+uv pip install \
+	--pre --no-deps --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python3/dist-packages/temboardagent/_vendor"
 
 #       B U I L D

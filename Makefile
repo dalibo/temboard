@@ -19,12 +19,12 @@ develop-%:: .env
 	mkdir -p dev/temboard
 	cd ui/; npm install-clean
 	cd ui/; npm run build
-	. dev/venv-py$*/bin/activate; $(MAKE) repository
+	uv run $(MAKE) repository
 	docker compose build --pull
 	docker compose up -d
 	@echo
 	@echo
-	@echo "    You can now execute temBoard UI with dev/venv-py$*/bin/temboard"
+	@echo "    You can now execute temBoard UI with uv run temboard"
 	@echo
 	@echo
 
@@ -43,26 +43,20 @@ recreate-repository:  #: Reinitialize temBoard UI database.
 restart-selenium:  #: Restart selenium development container.
 	docker compose up --detach --force-recreate --renew-anon-volumes selenium
 
-venv-%:
-	python$* -m venv dev/venv-py$*/ --prompt "temboard-py$*"
-	dev/venv-py$*/bin/python --version  # smoke test
-	dev/venv-py$*/bin/pip --version  # smoke test
-
-install-%: venv-%
-	dev/venv-py$*/bin/pip install --ignore-requires-python --only-binary :all: ruff==0.14.4 # Synchronise this line with .circleci/config.yml
-	dev/venv-py$*/bin/pip install -r docs/requirements.txt -r dev/requirements.txt
-	dev/venv-py$*/bin/pip install --upgrade --no-deps -r agent/vendor.txt --target agent/temboardagent/_vendor
-	dev/venv-py$*/bin/pip install --upgrade --no-deps -r ui/vendor.txt --target ui/temboardui/_vendor
-	dev/venv-py$*/bin/pip install -e agent/ -e ui/ --only-binary psycopg2-binary psycopg2-binary
-	dev/venv-py$*/bin/temboard --version  # smoke test
-	dev/venv-py$*/bin/temboard-agent --version  # smoke test
+install-%:
+	uv venv --clear --python=python$* --prompt="temboard-py$*"
+	uv sync
+	uv pip install --upgrade --no-deps --requirement agent/vendor.txt --target agent/temboardagent/_vendor
+	uv pip install --upgrade --no-deps --requirement ui/vendor.txt --target ui/temboardui/_vendor
+	uv run temboard --version  # smoke test
+	uv run temboard-agent --version  # smoke test
 
 # Vendoring
 
 pip-locks: ui/vendor.txt agent/vendor.txt
 
 # compile dependencies
-%/vendor.txt: %/vendor.in %/setup.py
+%/vendor.txt: %/vendor.in
 	uv pip compile --python-version=3.9 --upgrade $< -o $@
 
 #LTS
@@ -79,7 +73,7 @@ ui/build/bin/prometheus ui/build/bin/promtool: dev/downloads/prometheus-$(PROMET
 clean:  #: Trash venv and containers.
 	docker compose down --volumes --remove-orphans
 	docker rmi --force dalibo/temboard-agent:dev
-	rm -rf dev/venv-py* .venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
+	rm -rf .venv/ dev/venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
 	rm -rf agent/build/ .env agent/.coverage
 	rm -rf agent/temboardagent/_vendor ui/temboardui/_vendor
@@ -143,7 +137,7 @@ prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus d
 dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
 	$^ > $@
 
-VERSION=$(shell cd ui; python3 setup.py --version)
+VERSION=$(shell uv --directory=ui/ version --short)
 BRANCH?=master
 # When stable branch v8 is created, use this:
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
@@ -157,11 +151,11 @@ release:  #: Tag and push a new git release.
 	@git fetch --quiet $(REMOTE) refs/heads/$(BRANCH)
 	@git diff --check @..FETCH_HEAD
 	@echo Checking agent and UI version are same.
-	@grep -Fq "$(VERSION)" agent/temboardagent/version.py
+	@grep -Fq "$(VERSION)" agent/pyproject.toml
 	@echo Checking version is PEP440 compliant.
 	@pep440deb "$(VERSION)" >/dev/null
 	@echo Creating release commit.
-	@git commit --only --quiet agent/temboardagent/version.py ui/temboardui/version.py -m "Version $(VERSION)"
+	@git commit --only --quiet agent/pyproject.toml ui/pyproject.toml -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
 	@git diff --quiet
 	@echo Tagging v$(VERSION).
@@ -175,9 +169,9 @@ release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
 
 dist:  #: Build sources and wheels.
-	cd agent/; python3 setup.py sdist bdist_wheel
+	uv build -o agent/dist/ agent/
 	test -f ui/temboardui/static/dist/.vite/manifest.json
-	cd ui/; python3 setup.py sdist bdist_wheel
+	uv build -o ui/dist/ ui/
 	twine check --strict \
 		agent/dist/temboard_agent-$(VERSION).tar.gz \
 		agent/dist/temboard_agent-$(VERSION)-py*.whl \
