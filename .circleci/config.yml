@@ -109,7 +109,7 @@ workflows:
 
 jobs:
   static:
-    docker: [{image: node:20}]
+    docker: [{image: node:20-alpine}]
     working_directory: &working_directory /workspace
     steps:
     - checkout
@@ -130,7 +130,8 @@ jobs:
     - run:
         name: Build browser assets
         command: |
-          make static
+          cd ui;
+          npm run build
     - persist_to_workspace:
         root: .
         paths: [ui/temboardui/static/]
