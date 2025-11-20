@@ -169,7 +169,7 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
-      - restore_cache:
+      - restore_cache: &restore_cache_uv
           keys:
             - v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
             - v1-uv
@@ -223,10 +223,7 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - restore_cache: &restore_pip_cache
-        keys:
-          - v1-pip-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
-          - v1-pip
+    - restore_cache: *restore_cache_uv
     - run:
         name: Build Agent RPM snapshot
         command: |
@@ -240,9 +237,6 @@ jobs:
         paths:
         - agent/dist/*.noarch.rpm
         - ui/dist/*.x86_64.rpm
-    - save_cache: &save_pip_cache
-        key: v1-pip-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
-        paths: ["~/.cache/pip/"]
 
   deb:
     parameters:
@@ -259,7 +253,7 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - restore_cache: *restore_pip_cache
+    - restore_cache: *restore_cache_uv
     - run:
         name: Build UI Debian Snapshot
         command: ui/packaging/nfpm/mkdeb.sh
@@ -271,7 +265,6 @@ jobs:
         paths:
         - 'agent/dist/*_all.deb'
         - 'ui/dist/*.deb'
-    - save_cache: *save_pip_cache
 
   e2e:
     parameters:

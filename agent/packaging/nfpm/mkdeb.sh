@@ -59,7 +59,7 @@ mv "$DESTDIR/usr/lib/python${pythonv}/dist-packages"/* "$DESTDIR/usr/lib/python3
 rm -rf "$DESTDIR/usr/lib/python$pythonv"
 
 # Vendor dependencies.
-pip3 install \
+uv pip install \
 	--pre --no-deps --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python3/dist-packages/temboardagent/_vendor"
 

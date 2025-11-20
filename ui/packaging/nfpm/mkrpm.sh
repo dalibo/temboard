@@ -46,7 +46,7 @@ fi
 "${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
-"${pip[@]}" install \
+uv pip install \
 	--pre --no-deps --only-binary :all: --requirement "$TOP_SRCDIR/vendor.txt" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardui/_vendor"
 
