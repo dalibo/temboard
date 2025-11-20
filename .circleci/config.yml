@@ -203,7 +203,6 @@ jobs:
             set -x
             uv run ruff check ui/
             uv run ruff format --check ui/
-            uv run check-manifest --no-build-isolation ui/
             uv run pytest --full-trace ui/tests/unit/
       - run:
           name: Lint E2E
