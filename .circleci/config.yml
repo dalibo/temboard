@@ -375,21 +375,13 @@ jobs:
     - run:
         name: Upload Agent to PyPI
         command: |
-          set -eu
-          export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
-          twine upload agent/dist/*.{tar.gz,whl}
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
+          set -u
+          UV_PUBLISH_TOKEN="$AGENT_PYPI_TOKEN" uv publish agent/dist/*.{tar.gz,whl}
     - run:
         name: Upload UI to PyPI
         command: |
-          set -eu
-          export TWINE_PASSWORD="$UI_PYPI_TOKEN"
-          twine upload ui/dist/*.{tar.gz,whl}
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
+          set -u
+          UV_PUBLISH_TOKEN="$UI_PYPI_TOKEN" uv publish ui/dist/*.{tar.gz,whl}
 
   docker:
     docker: [{image: dalibo/buildpack-pkg:trixie}]

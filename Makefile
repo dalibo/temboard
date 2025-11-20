@@ -172,15 +172,9 @@ dist: dist-agent dist-ui  #: Build sources and wheels.
 dist-ui:
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	uv build -o ui/dist/ ui/
-	twine check --strict \
-		ui/dist/temboard-$(VERSION).tar.gz \
-		ui/dist/temboard-$(VERSION)-py*.whl
 
 dist-agent:
 	uv build -o agent/dist/ agent/
-	twine check --strict \
-		agent/dist/temboard_agent-$(VERSION).tar.gz \
-		agent/dist/temboard_agent-$(VERSION)-py*.whl \
 
 static:  #: Build UI browser assets.
 	cd ui/; npm run build
