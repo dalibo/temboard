@@ -230,7 +230,7 @@ copy-rhel%:
 
 docker-build-agent:
 	type pep440deb
-	DOCKER_BUILDKIT=1 docker build \
+	docker build \
 		--progress=plain \
 		--file agent/packaging/docker/Dockerfile \
 		--build-arg http_proxy \
@@ -240,7 +240,7 @@ docker-build-agent:
 
 docker-build-ui:
 	type pep440deb
-	DOCKER_BUILDKIT=1 docker build \
+	docker build \
 		--progress=plain \
 		--file ui/packaging/docker/Dockerfile \
 		--build-arg http_proxy \

@@ -399,7 +399,7 @@ jobs:
           TWINE_NON_INTERACTIVE: 'true'
 
   docker:
-    docker: [{image: dalibo/buildpack-python:bookworm}]
+    docker: [{image: dalibo/buildpack-pkg:trixie}]
     working_directory: *working_directory
     steps:
     - checkout
