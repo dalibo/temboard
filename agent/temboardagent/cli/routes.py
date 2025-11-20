@@ -1,8 +1,8 @@
 import logging
 
 from bottle import default_app
+from temboardtoolkit.app import SubCommand
 
-from ..toolkit.app import SubCommand
 from .app import app
 
 logger = logging.getLogger(__name__)

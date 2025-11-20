@@ -1,9 +1,10 @@
 import logging
 import os
 
+from temboardtoolkit import services
+from temboardtoolkit.app import SubCommand
+
 from ..plugins.monitoring import db
-from ..toolkit import services
-from ..toolkit.app import SubCommand
 from .app import app
 
 logger = logging.getLogger(__name__)

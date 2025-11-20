@@ -30,7 +30,6 @@ overview.
 - `ui/` - Python Tornado/Flask project for temBoard UI aka server.
     - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
-    - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
 - `toolkit/` - Shared library between agent and UI.
 - `dev/` - Development scripts and data.
   - `dev/bin/` - Development scripts.

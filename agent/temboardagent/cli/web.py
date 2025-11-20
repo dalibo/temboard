@@ -1,5 +1,6 @@
-from ..toolkit import services
-from ..toolkit.app import SubCommand
+from temboardtoolkit import services
+from temboardtoolkit.app import SubCommand
+
 from .app import app
 
 
