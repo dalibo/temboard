@@ -2,8 +2,8 @@ import json
 import logging
 from uuid import uuid4
 
-from .toolkit.http import TemboardClient, format_date
-from .toolkit.signing import canonicalize_request, sign_v1
+from temboardtoolkit.http import TemboardClient, format_date
+from temboardtoolkit.signing import canonicalize_request, sign_v1
 
 logger = logging.getLogger(__name__)
 

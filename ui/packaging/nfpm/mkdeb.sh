@@ -60,7 +60,9 @@ rm -rf "$DESTDIR/usr/lib/python$pythonv"
 
 # Vendor dependencies.
 uv pip install \
-	--pre --no-deps --requirement "$TOP_SRCDIR/vendor.txt" \
+	--pre --no-deps \
+	--requirement "$TOP_SRCDIR/vendor.txt" \
+	"$TOP_SRCDIR/dist/temboard_toolkit-0.0.0-py3-none-any.whl" \
 	--target "$DESTDIR/usr/lib/python3/dist-packages/temboardui/_vendor"
 
 #       B U I L D
