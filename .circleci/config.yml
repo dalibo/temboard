@@ -149,9 +149,9 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        name: Build Agent & UI
+        name: Build source artifacts
         command: |
-          make -j 2 dist
+          make -j 3 dist
     - persist_to_workspace:
         root: .
         paths:

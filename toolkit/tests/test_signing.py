@@ -15,7 +15,7 @@ def headers():
 
 
 def test_canonicalize_request_get(headers):
-    from temboardui.toolkit.signing import canonicalize_request
+    from temboardtoolkit.signing import canonicalize_request
 
     data = canonicalize_request(method="get", path="/chemin/toto+titi", headers=headers)
 
@@ -32,7 +32,7 @@ def test_canonicalize_request_get(headers):
 
 
 def test_canonicalize_request_get_missing_header():
-    from temboardui.toolkit.signing import TemboardError, canonicalize_request
+    from temboardtoolkit.signing import TemboardError, canonicalize_request
 
     with pytest.raises(TemboardError) as ei:
         canonicalize_request(method="get", path="/chemin", headers={})
@@ -46,7 +46,7 @@ def test_canonicalize_request_get_missing_header():
 
 
 def test_canonicalize_request_post(headers):
-    from temboardui.toolkit.signing import canonicalize_request
+    from temboardtoolkit.signing import canonicalize_request
 
     body = dedent("""\
     pouet
@@ -154,7 +154,7 @@ vDqvhmKaNFwJpkWuSW3p+j5fjWVsf39arIodLU4XxNr32LaqKncld24bRYhg35CG
 
 
 def test_signing():
-    from temboardui.toolkit.signing import HASH, PADDING, load_private_key, sign_v1
+    from temboardtoolkit.signing import HASH, PADDING, load_private_key, sign_v1
 
     key = load_private_key(RSA_PRIVATE_KEY)
 
@@ -176,7 +176,7 @@ def test_signing():
 
 
 def test_verifying():
-    from temboardui.toolkit.signing import InvalidSignature, load_public_key, verify_v1
+    from temboardtoolkit.signing import InvalidSignature, load_public_key, verify_v1
 
     payload = b"payload"
     signature = (

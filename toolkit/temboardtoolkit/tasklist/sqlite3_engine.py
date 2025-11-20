@@ -5,9 +5,10 @@ from datetime import datetime
 from textwrap import dedent
 
 from ..errors import StorageEngineError
+from ..log import LastnameFilter
 from ..taskmanager import Task
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".tasklist.sqlite3_engine")
 
 
 def epoch_to_datetime(epoch):

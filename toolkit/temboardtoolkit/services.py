@@ -37,8 +37,9 @@ import signal
 import time
 
 from . import proctitle
+from .log import LastnameFilter
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".services")
 
 
 def run(main, *backgrounds):

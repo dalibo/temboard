@@ -19,6 +19,7 @@ dev = [
     # Installed as editable according to uv settings below.
     "temboard",
     "temboard-agent",
+    "temboard-toolkit",
     "wheel>=0.45.1",
 ]
 docs = [
@@ -45,8 +46,9 @@ e2e = [
 default-groups = "all"
 
 [tool.uv.workspace]
-members = ["agent", "ui"]
+members = ["agent", "ui", "toolkit"]
 
 [tool.uv.sources]
 temboard = { workspace = true }
 temboard-agent = { workspace = true }
+temboard-toolkit = { workspace = true }

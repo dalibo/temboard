@@ -18,7 +18,7 @@ from .errors import UserError
 from .log import LastnameFilter, setup_logging
 from .utils import strtobool
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".app")
 
 
 class StoreDefinedAction(ArgAction):

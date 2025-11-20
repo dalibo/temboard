@@ -82,6 +82,10 @@ ignore = [
     "packaging/docker/*",
     "temboardui/static/src",
     "temboardui/static/src/*",
+    "temboardui/toolkit",
+    "temboardui/toolkit/*",
+    "temboardui/toolkit/tasklist",
+    "temboardui/toolkit/tasklist/*",
     "tests",
     "tests/*",
 ]

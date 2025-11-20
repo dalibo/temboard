@@ -169,7 +169,12 @@ release:  #: Tag and push a new git release.
 release-notes:  #: Extract changes for current release
 	FINAL_VERSION="$(shell echo $(VERSION) | grep -Po '([^a-z]{3,})')" ; sed -En "/Unreleased/d;/^#+ $$FINAL_VERSION/,/^#/p" CHANGELOG.md  | sed '1d;$$d'
 
-dist: dist-agent dist-ui  #: Build sources and wheels.
+dist: dist-agent dist-ui dist-toolkit  #: Build sources and wheels.
+dist-toolkit:
+	uv build -o agent/dist/ toolkit/
+	mkdir -p ui/dist/
+	ln -f agent/dist/temboard*toolkit* ui/dist/
+
 dist-ui:
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	uv build -o ui/dist/ ui/
