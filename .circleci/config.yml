@@ -169,6 +169,10 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
+      - run:
+          name: Shellcheck
+          command: |
+            shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
       - restore_cache: &restore_cache_uv
           keys:
             - v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
@@ -303,10 +307,6 @@ jobs:
     - checkout
     - attach_workspace:
         at: *working_directory
-    - run:
-        name: Shellcheck
-        command: |
-          shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
     - run:
         name: Install temBoard UI & agent
         command: tests/install-all.sh
