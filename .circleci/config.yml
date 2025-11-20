@@ -328,6 +328,10 @@ jobs:
           PGVERSION=${PGVERSION%rc*}
           PGVERSION=${PGVERSION%beta*}
           uv run --no-sync tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION --junit-xml=tests/results.xml tests/
+          # on success, drop some debugging artifacts.
+          rm -rf \
+            tests/downloads \
+            tests/logs
     - store_artifacts:
         path: /workspace/tests/downloads/
     - store_artifacts:
