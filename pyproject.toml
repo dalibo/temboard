@@ -28,7 +28,6 @@ docs = [
     "mkdocs-material",
 ]
 lint = [
-    "check-manifest",
     "docutils",
     "ruff",
 ]

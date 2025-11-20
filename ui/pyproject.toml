@@ -42,50 +42,9 @@ pgconf = "temboardui.plugins.pgconf:PGConfPlugin"
 statements = "temboardui.plugins.statements:StatementsPlugin"
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.10,<0.10"]
+build-backend = "uv_build"
 
-[tool.setuptools]
-include-package-data = true
-zip-safe = false
-
-[tool.setuptools.packages.find]
-include = ["temboardui*"]
-
-[tool.setuptools.package-data]
-temboardui = [
-    "model/queries/*.sql",
-    "model/versions/*",
-    "static/**/*",
-    "templates/**/*",
-    "plugins/*/static/**/*",
-    "plugins/*/templates/**/*",
-]
-
-[tool.check-manifest]
-ignore = [
-    "*/__pycache__/*",
-    ".dockerignore",
-    ".gitmodules",
-    "*.config.js",
-    "Makefile",
-    "package.json",
-    "package-lock.json",
-    ".prettier*",
-    ".husky/*",
-    ".npmrc",
-    "docs",
-    "docs/*",
-    "packaging/nfpm",
-    "packaging/nfpm/*",
-    "packaging/docker",
-    "packaging/docker/*",
-    "temboardui/static/src",
-    "temboardui/static/src/*",
-    "temboardui/toolkit",
-    "temboardui/toolkit/*",
-    "temboardui/toolkit/tasklist",
-    "temboardui/toolkit/tasklist/*",
-    "tests",
-    "tests/*",
-]
+[tool.uv.build-backend]
+module-name = "temboardui"
+module-root = ""
