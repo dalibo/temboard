@@ -140,7 +140,7 @@ jobs:
         key: v1-node-{{ checksum "ui/package-lock.json"}}
 
   dist:
-    docker: [{image: dalibo/buildpack-python:bullseye}]
+    docker: [{image: dalibo/buildpack-python:trixie}]
     working_directory: *working_directory
     steps:
     - checkout

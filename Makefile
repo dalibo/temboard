@@ -179,7 +179,7 @@ dist:  #: Build sources and wheels.
 	test -f ui/temboardui/static/dist/.vite/manifest.json
 	cd ui/; python3 setup.py sdist bdist_wheel
 	twine check --strict \
-		agent/dist/temboard-agent-$(VERSION).tar.gz \
+		agent/dist/temboard_agent-$(VERSION).tar.gz \
 		agent/dist/temboard_agent-$(VERSION)-py*.whl \
 		ui/dist/temboard-$(VERSION).tar.gz \
 		ui/dist/temboard-$(VERSION)-py*.whl
