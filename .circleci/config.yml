@@ -126,7 +126,7 @@ jobs:
         name: Lint
         command: |
           cd ui;
-          npx prettier --check .
+          npx prettier --check temboardui/static/src/
     - run:
         name: Build browser assets
         command: |
