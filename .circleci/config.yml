@@ -110,6 +110,7 @@ workflows:
 jobs:
   static:
     docker: [{image: node:20-alpine}]
+    resource_class: large
     working_directory: &working_directory /workspace
     steps:
     - checkout
