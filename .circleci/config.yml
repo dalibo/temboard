@@ -121,7 +121,7 @@ jobs:
         name: Install Browser packages
         command: |
           cd ui;
-          npm install-clean
+          npm install --no-audit --no-fund
     - run:
         name: Lint
         command: |
