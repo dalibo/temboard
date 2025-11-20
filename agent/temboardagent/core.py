@@ -1,3 +1,3 @@
-from .toolkit import taskmanager
+from temboardtoolkit import taskmanager
 
 workers = taskmanager.WorkerSet()

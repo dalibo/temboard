@@ -1,8 +1,8 @@
 import logging
 
 from bottle import HTTPError, default_app
+from temboardtoolkit.configuration import OptionSpec
 
-from ...toolkit.configuration import OptionSpec
 from ...tools import now
 from ...web.app import CustomBottle
 

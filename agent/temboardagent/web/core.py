@@ -1,9 +1,9 @@
 import logging
 
 from bottle import HTTPError, HTTPResponse, default_app, get, post, request, response
+from temboardtoolkit.signing import InvalidSignature, canonicalize_request, verify_v1
 
 from ..notification import NotificationMgmt
-from ..toolkit.signing import InvalidSignature, canonicalize_request, verify_v1
 
 logger = logging.getLogger(__name__)
 

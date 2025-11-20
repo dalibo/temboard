@@ -1,4 +1,4 @@
-from .toolkit.errors import UserError
+from temboardtoolkit.errors import UserError
 
 __all__ = ["UserError"]
 

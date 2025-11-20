@@ -18,11 +18,16 @@ from datetime import datetime, timezone
 from multiprocessing import cpu_count
 from platform import machine, python_version
 
+from temboardtoolkit.errors import UserError
+from temboardtoolkit.utils import JSONEncoder
+from temboardtoolkit.versions import (
+    format_pq_version,
+    read_distinfo,
+    read_libpq_version,
+)
+
 from .core import workers
 from .queries import QUERIES
-from .toolkit.errors import UserError
-from .toolkit.utils import JSONEncoder
-from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
 from .version import __version__
 
 logger = logging.getLogger(__name__)
