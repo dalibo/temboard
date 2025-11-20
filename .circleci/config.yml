@@ -151,7 +151,7 @@ jobs:
     - run:
         name: Build Agent & UI
         command: |
-          make dist
+          make -j 2 dist
     - persist_to_workspace:
         root: .
         paths:
