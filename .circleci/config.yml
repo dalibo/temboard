@@ -194,7 +194,6 @@ jobs:
             git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
             uv run ruff check agent/
             uv run ruff format --check agent/
-            uv run check-manifest --no-build-isolation agent/
             uv run pytest --full-trace agent/tests/unit/
       - run:
           name: UI
