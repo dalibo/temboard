@@ -3,8 +3,9 @@ import os
 from glob import glob
 from textwrap import dedent
 
+from temboardtoolkit.errors import UserError
+
 from .. import __version__
-from ..toolkit.errors import UserError
 
 logger = logging.getLogger(__name__)
 

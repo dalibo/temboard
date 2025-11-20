@@ -2,11 +2,11 @@ import logging
 from contextlib import closing
 
 from psycopg2 import connect
+from temboardtoolkit.app import SubCommand
+from temboardtoolkit.errors import UserError
 
 from ..model import format_dsn
 from ..model.migrator import Migrator
-from ..toolkit.app import SubCommand
-from ..toolkit.errors import UserError
 from .app import app
 
 logger = logging.getLogger(__name__)

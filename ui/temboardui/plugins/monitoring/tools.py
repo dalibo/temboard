@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 from dateutil import parser as parse_datetime
 from sqlalchemy.orm.exc import NoResultFound
+from temboardtoolkit.errors import UserError
 
-from ...toolkit.errors import UserError
 from ...web.tornado import HTTPError
 from .alerting import bootstrap_checks, check_specs
 from .model import db

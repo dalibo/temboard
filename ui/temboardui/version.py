@@ -29,8 +29,11 @@ def inspect_versions():
     import psycopg2
     import sqlalchemy
     import tornado
-
-    from .toolkit.versions import format_pq_version, read_distinfo, read_libpq_version
+    from temboardtoolkit.versions import (
+        format_pq_version,
+        read_distinfo,
+        read_libpq_version,
+    )
 
     distinfos = read_distinfo()
 

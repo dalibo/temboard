@@ -6,12 +6,12 @@ from os import path
 import tornado.web
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import case, column, extract, func, select, text
+from temboardtoolkit import taskmanager
 
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.model import worker_engine
 from temboardui.model.orm import Instance
 from temboardui.plugins.monitoring.tools import parse_start_end
-from temboardui.toolkit import taskmanager
 from temboardui.web.tornado import Blueprint, TemplateRenderer, jsonify
 
 logger = logging.getLogger(__name__)

@@ -14,24 +14,32 @@ def python3():
     return Command(python)
 
 
+@pytest.fixture(scope="session")
+def vendor(python3):
+    out = python3(
+        c="import temboardui; print(temboardui.__path__[0]+'/_vendor', end='')"
+    )
+    return out.stdout.decode()
+
+
 def test_start_ui(agent, ui, browser):
     # Start UI ASAP to save some times.
     pass
 
 
-def test_setproctitle_script(python3):
-    python3("ui/temboardui/toolkit/proctitle.py")
+def test_setproctitle_script(python3, vendor):
+    python3("toolkit/temboardtoolkit/proctitle.py", _env={"PYTHONPATH": vendor})
 
 
-def test_setproctitle_inline(python3):
+def test_setproctitle_inline(python3, vendor):
     python3(
-        c="import temboardui.toolkit.proctitle as pc; pc.test_main()",
-        _env={"PYTHONPATH": "/usr/lib/temboard"},
+        c="import temboardtoolkit.proctitle as pc; pc.test_main()",
+        _env={"PYTHONPATH": vendor},
     )
 
 
-def test_setproctitle_module(python3):
-    python3(m="temboardui.toolkit.proctitle", _env={"PYTHONPATH": "/usr/lib/temboard"})
+def test_setproctitle_module(python3, vendor):
+    python3(m="temboardtoolkit.proctitle", _env={"PYTHONPATH": vendor})
 
 
 def test_temboard_version():

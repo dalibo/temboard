@@ -28,7 +28,6 @@ overview.
 
 - `docs/` - Global mkdocs documentation sources.
 - `ui/` - Python Tornado/Flask project for temBoard UI aka server.
-    - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
 - `toolkit/` - Shared library between agent and UI.
 - `dev/` - Development scripts and data.
