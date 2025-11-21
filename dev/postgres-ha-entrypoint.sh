@@ -107,7 +107,7 @@ _ha_failback() {
 }
 
 _retry() {
-    for i in {2..7}; do
+    for i in {2..5}; do
         if "$@"; then
             return
         else
