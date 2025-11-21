@@ -18,6 +18,7 @@ from textwrap import dedent
 
 from . import proctitle, syncio
 from .errors import StorageEngineError, UserError
+from .log import LastnameFilter
 from .perf import PerfCounters
 
 TM_DEF_LISTENER_ADDR = "/tmp/.temboardsched.sock"
@@ -43,7 +44,7 @@ TASK_STATUS_CANCELED = 64
 TASK_STATUS_ABORTED = 128
 TASK_STATUS_ABORT = 256
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".taskmanager")
 
 
 def ensure_str(value):

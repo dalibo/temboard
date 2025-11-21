@@ -4,7 +4,7 @@ import pytest
 
 
 def test_resolve_main(mocker):
-    from temboardui.toolkit.proctitle import compute_main_module_name
+    from temboardtoolkit.proctitle import compute_main_module_name
 
     mod = mocker.Mock(__package__="my", __name__="module")
     assert "my.module" == compute_main_module_name(mod)
@@ -15,9 +15,9 @@ def test_resolve_main(mocker):
 
 def test_fix_argv(mocker):
     cmmn = mocker.patch(
-        "temboardui.toolkit.proctitle.compute_main_module_name", autospec=True
+        "temboardtoolkit.proctitle.compute_main_module_name", autospec=True
     )
-    from temboardui.toolkit.proctitle import fix_argv
+    from temboardtoolkit.proctitle import fix_argv
 
     cmmn.return_value = "my.module"
     input_ = ["python", "-m", "-m"]
@@ -37,7 +37,7 @@ def test_fix_argv(mocker):
 def test_read_memory():
     import ctypes
 
-    from temboardui.toolkit.proctitle import read_byte
+    from temboardtoolkit.proctitle import read_byte
 
     data = ctypes.create_string_buffer(b"abcdef")
     a = read_byte(ctypes.addressof(data))
@@ -48,7 +48,7 @@ def test_read_memory():
 def test_walk_bytes_backwards():
     import ctypes
 
-    from temboardui.toolkit.proctitle import reverse_walk_memory
+    from temboardtoolkit.proctitle import reverse_walk_memory
 
     data = ctypes.create_string_buffer(b"abcdef")
     address_of_nul = ctypes.addressof(data) + 6
@@ -61,7 +61,7 @@ def test_walk_bytes_backwards():
 def test_find_nulstrings():
     import ctypes
 
-    from temboardui.toolkit.proctitle import reverse_find_nulstring
+    from temboardtoolkit.proctitle import reverse_find_nulstring
 
     data = b"\x00string0\x00string1\x00"
     buf = ctypes.create_string_buffer(data)
@@ -73,7 +73,7 @@ def test_find_nulstrings():
 
 
 def test_find_stack_address_and_size():
-    from temboardui.toolkit.proctitle import find_stack_segment_from_maps
+    from temboardtoolkit.proctitle import find_stack_segment_from_maps
 
     lines = dedent("""\
     55c7c8b2d000-55c7c8b35000 r-xp 00000000 fd:01 12582915                   /bin/lol
@@ -93,10 +93,10 @@ def test_find_stack_address_and_size():
 
 
 def test_find_argv_in_stack_module(mocker):
-    mod = "temboardui.toolkit.proctitle"
+    mod = "temboardtoolkit.proctitle"
     rfn = mocker.patch(mod + ".reverse_find_nulstring", autospec=True)
 
-    from temboardui.toolkit.proctitle import find_argv_in_stack
+    from temboardtoolkit.proctitle import find_argv_in_stack
 
     rfn.return_value = reversed(
         [
@@ -117,10 +117,10 @@ def test_find_argv_in_stack_module(mocker):
 
 
 def test_find_argv_in_stack_command_string(mocker):
-    mod = "temboardui.toolkit.proctitle"
+    mod = "temboardtoolkit.proctitle"
     rfn = mocker.patch(mod + ".reverse_find_nulstring", autospec=True)
 
-    from temboardui.toolkit.proctitle import find_argv_in_stack
+    from temboardtoolkit.proctitle import find_argv_in_stack
 
     rfn.return_value = reversed(
         [
@@ -141,8 +141,8 @@ def test_find_argv_in_stack_command_string(mocker):
 
 
 def test_set_proc_title(mocker):
-    memmove = mocker.patch("temboardui.toolkit.proctitle.ctypes.memmove", autospec=True)
-    from temboardui.toolkit.proctitle import ProcTitleSetter
+    memmove = mocker.patch("temboardtoolkit.proctitle.ctypes.memmove", autospec=True)
+    from temboardtoolkit.proctitle import ProcTitleSetter
 
     setproctitle = ProcTitleSetter(prefix="prefix: ")
     title = setproctitle("not initialized")

@@ -1,13 +1,5 @@
 #!/bin/bash -eux
 
-export PIP_CACHE_DIR=/usr/local/src/temboard/dev/pip-cache
-export PIP_BREAK_SYSTEM_PACKAGES=1
-mkdir -p $PIP_CACHE_DIR
-chown "$(id -u):$(id -g)" $PIP_CACHE_DIR
-pip cache dir
-
-pip install --ignore-installed --no-deps -e /usr/local/src/temboard/agent/
-temboard-agent --version
 chown -R "$(stat -c "%u:%g" "$0")" /usr/local/src/temboard/agent
 
 if ! [ -f /etc/temboard-agent/postgres0/signing-public.pem ] ; then
@@ -18,4 +10,9 @@ if ! [ -f /etc/temboard-agent/postgres0/signing-public.pem ] ; then
 	cp -fv /usr/local/src/temboard/dev/signing-public.pem /etc/temboard-agent/postgres1
 fi
 
-exec /usr/local/src/temboard/agent/packaging/docker/entrypoint.sh "$@"
+# Presere uv PATH when sudoing as Postgres.
+sed -i /secure_path/d /etc/sudoers
+visudo -cf /etc/sudoers
+
+uv sync
+exec uv run /usr/local/src/temboard/agent/packaging/docker/entrypoint.sh "$@"

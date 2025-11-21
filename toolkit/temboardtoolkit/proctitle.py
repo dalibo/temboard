@@ -32,7 +32,9 @@ import logging
 import os
 import sys
 
-logger = logging.getLogger(__name__)
+from .log import LastnameFilter
+
+logger = logging.getLogger(LastnameFilter.root + ".proctitle")
 _setter = None
 
 

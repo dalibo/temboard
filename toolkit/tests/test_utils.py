@@ -1,5 +1,5 @@
 def test_dict_factory():
-    from temboardui.toolkit.utils import dict_factory
+    from temboardtoolkit.utils import dict_factory
 
     my = dict_factory()
     assert isinstance(my, dict)
@@ -22,7 +22,7 @@ def test_dict_factory():
 
 
 def test_dotdict():
-    from temboardui.toolkit.utils import DotDict
+    from temboardtoolkit.utils import DotDict
 
     my = DotDict(dict(a=1, b=dict(c=2)))
 
@@ -52,7 +52,7 @@ def test_pickle_dotdict():
     from pickle import dumps as pickle
     from pickle import loads as unpickle
 
-    from temboardui.toolkit.utils import DotDict
+    from temboardtoolkit.utils import DotDict
 
     orig = DotDict(dict(a=1, b=dict(c=2)))
     copy = unpickle(pickle(orig))
@@ -60,7 +60,7 @@ def test_pickle_dotdict():
 
 
 def test_ensure_str():
-    from temboardui.toolkit.taskmanager import ensure_str
+    from temboardtoolkit.taskmanager import ensure_str
 
     assert type(ensure_str("toto")) is str
     assert type(ensure_str(b"toto")) is str

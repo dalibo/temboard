@@ -25,8 +25,7 @@ _ha_setup() {
 
     echo "Waiting for $PEER_HOST to have network."
     if ! peerhost="$(_retry getent hosts "$PEER_HOST")"; then
-        echo "$PEER_HOST down. Can't elect primary."
-        exit 1
+        echo "$PEER_HOST down? Running standalone."
     fi
 
     if [ "$DATABASE_ALREADY_EXISTS" = "true" ]; then
@@ -38,7 +37,7 @@ _ha_setup() {
                 echo "$PEER_HOST restarted as secondary. Restarting as primary."
                 rm -f "$PGDATA/standby.signal"
             else
-                echo "$PEER_HOST restared as primary. Failback as secondary."
+                echo "$PEER_HOST restarted as primary. Failback as secondary."
                 _ha_failback
             fi
         else
@@ -57,7 +56,7 @@ _ha_setup() {
         if _ha_have_i_precedence "$peerhost"; then
             echo "Elected as primary."
             # replication is configured in
-            # postgres-setup-primary.sh
+            # postgres-setup-replication.sh
         else
             echo "Elected as secondary."
             sleep 3
@@ -84,7 +83,7 @@ _ha_init_secondary() {
     _retry psql -Aqt -h "$PEER_HOST" -c 'SELECT NULL'
 
     echo "Initializing PGDATA with pg_basebackup."
-    pg_basebackup \
+    gosu postgres pg_basebackup \
         -h "$PEER_HOST" -p 5432 -U $POSTGRES_USER \
         -D "$PGDATA" \
         --format=p \
@@ -107,7 +106,7 @@ _ha_failback() {
 }
 
 _retry() {
-    for i in {2..7}; do
+    for i in {2..5}; do
         if "$@"; then
             return
         else
@@ -125,5 +124,5 @@ else
     echo 'PEER_HOST undefined. No HA setup.'
 fi
 
-# trigger docker-entrypoin.sh main
+# trigger docker-entrypoint.sh main
 _main "$@"

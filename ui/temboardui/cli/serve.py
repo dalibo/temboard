@@ -1,6 +1,7 @@
+from temboardtoolkit import services
+from temboardtoolkit.app import SubCommand
+
 from ..model import check_schema
-from ..toolkit import services
-from ..toolkit.app import SubCommand
 from .app import app
 
 

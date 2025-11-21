@@ -6,8 +6,8 @@ from sqlalchemy import Column, Table, orm, schema, text, types
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, relationship
+from temboardtoolkit.utils import utcnow
 
-from ..toolkit.utils import utcnow
 from . import QUERIES
 
 Model = declarative_base()

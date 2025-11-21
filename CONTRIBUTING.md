@@ -28,9 +28,8 @@ overview.
 
 - `docs/` - Global mkdocs documentation sources.
 - `ui/` - Python Tornado/Flask project for temBoard UI aka server.
-    - `ui/temboardui/toolkit` - Shared library between agent and UI.
 - `agent/` - Bare Python project for temBoard agent.
-    - `agent/temboardagent/toolkit` - Symlink to toolkit in UI source tree.
+- `toolkit/` - Shared library between agent and UI.
 - `dev/` - Development scripts and data.
   - `dev/bin/` - Development scripts.
 - `docker/` - Quickstart Docker Compose file.
@@ -93,7 +92,7 @@ You now need to run the agent. Open a second terminal to interact with the
 agent and execute the following commands.
 
 ``` console
-$ docker compose exec agent0 /bin/bash
+$ docker compose exec agent0 uv run /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
 12:41:10 temboardagent[67] DEBUG:  app: Starting temboard-agent 9.0.dev0.
 ...

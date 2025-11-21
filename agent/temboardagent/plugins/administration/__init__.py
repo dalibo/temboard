@@ -2,10 +2,10 @@ import logging
 import time
 
 from bottle import default_app, request
+from temboardtoolkit.configuration import OptionSpec
 
 from temboardagent.command import exec_script, oneline_cmd_to_array
 from temboardagent.notification import Notification, NotificationMgmt
-from temboardagent.toolkit.configuration import OptionSpec
 from temboardagent.tools import validate_parameters
 
 from ...web.app import CustomBottle
