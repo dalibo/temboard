@@ -25,8 +25,7 @@ _ha_setup() {
 
     echo "Waiting for $PEER_HOST to have network."
     if ! peerhost="$(_retryfast getent hosts "$PEER_HOST")"; then
-        echo "$PEER_HOST down. Can't elect primary."
-        exit 1
+        echo "$PEER_HOST down? Running standalone."
     fi
 
     if [ "$DATABASE_ALREADY_EXISTS" = "true" ]; then
