@@ -4,7 +4,7 @@ services:
     volumes:
       - ../..:/workspace
     working_dir: /workspace
-    entrypoint: ["/usr/local/sbin/tini", "--"]
+    entrypoint: ["/usr/bin/tini", "--"]
     command: /workspace/packaging/nfpm/mkrpm.sh
 
   rhel9:
