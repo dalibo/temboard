@@ -24,7 +24,7 @@ _ha_setup() {
     chown postgres:postgres /var/lib/postgresql/archive
 
     echo "Waiting for $PEER_HOST to have network."
-    if ! peerhost="$(_retry getent hosts "$PEER_HOST")"; then
+    if ! peerhost="$(_retryfast getent hosts "$PEER_HOST")"; then
         echo "$PEER_HOST down. Can't elect primary."
         exit 1
     fi
@@ -33,7 +33,7 @@ _ha_setup() {
         # We are in restarting mode.
         # Check if the other node is primary.
         # Or guess based on IP.
-        if is_in_recovery=$(_retry env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c 'SELECT pg_is_in_recovery();'); then
+        if is_in_recovery=$(_retryfast env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c 'SELECT pg_is_in_recovery();'); then
             if [ "$is_in_recovery" = "t" ]; then
                 echo "$PEER_HOST restarted as secondary. Restarting as primary."
                 rm -f "$PGDATA/standby.signal"
@@ -106,8 +106,21 @@ _ha_failback() {
         --no-ensure-shutdown
 }
 
+_retryfast() {
+    for i in {2..4}; do
+        if "$@"; then
+            return
+        else
+            echo "Retrying in one second, attempt #$i."
+            sleep 1
+        fi
+    done
+
+    "$@"
+}
+
 _retry() {
-    for i in {2..7}; do
+    for i in {2..8}; do
         if "$@"; then
             return
         else
