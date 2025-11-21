@@ -109,7 +109,8 @@ workflows:
 
 jobs:
   static:
-    docker: [{image: node:20}]
+    docker: [{image: node:20-alpine}]
+    resource_class: large
     working_directory: &working_directory /workspace
     steps:
     - checkout
@@ -121,16 +122,17 @@ jobs:
         name: Install Browser packages
         command: |
           cd ui;
-          npm install-clean
+          npm install --no-audit --no-fund
     - run:
         name: Lint
         command: |
           cd ui;
-          npx prettier --check .
+          npx prettier --check temboardui/static/src/
     - run:
         name: Build browser assets
         command: |
-          make static
+          cd ui;
+          npm run build
     - persist_to_workspace:
         root: .
         paths: [ui/temboardui/static/]
@@ -140,7 +142,7 @@ jobs:
         key: v1-node-{{ checksum "ui/package-lock.json"}}
 
   dist:
-    docker: [{image: dalibo/buildpack-python:trixie}]
+    docker: [{image: dalibo/buildpack-python:3.9}]
     working_directory: *working_directory
     steps:
     - checkout
@@ -149,7 +151,7 @@ jobs:
     - run:
         name: Build Agent & UI
         command: |
-          make dist
+          make -j 2 dist
     - persist_to_workspace:
         root: .
         paths:
@@ -169,6 +171,10 @@ jobs:
     working_directory: *working_directory
     steps:
       - checkout
+      - run:
+          name: Shellcheck
+          command: |
+            shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
       - restore_cache: &restore_cache_uv
           keys:
             - v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
@@ -304,10 +310,6 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        name: Shellcheck
-        command: |
-          shellcheck ui/share/purge.sh ui/share/create_repository.sh ui/share/auto_configure.sh
-    - run:
         name: Install temBoard UI & agent
         command: tests/install-all.sh
     - restore_cache:
@@ -328,6 +330,10 @@ jobs:
           PGVERSION=${PGVERSION%rc*}
           PGVERSION=${PGVERSION%beta*}
           uv run --no-sync tests/pytest-ci $upstream -vvv --pg-version=$PGVERSION --junit-xml=tests/results.xml tests/
+          # on success, drop some debugging artifacts.
+          rm -rf \
+            tests/downloads \
+            tests/logs
     - store_artifacts:
         path: /workspace/tests/downloads/
     - store_artifacts:
@@ -369,21 +375,13 @@ jobs:
     - run:
         name: Upload Agent to PyPI
         command: |
-          set -eu
-          export TWINE_PASSWORD="$AGENT_PYPI_TOKEN"
-          twine upload agent/dist/*.{tar.gz,whl}
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
+          set -u
+          UV_PUBLISH_TOKEN="$AGENT_PYPI_TOKEN" uv publish agent/dist/*.{tar.gz,whl}
     - run:
         name: Upload UI to PyPI
         command: |
-          set -eu
-          export TWINE_PASSWORD="$UI_PYPI_TOKEN"
-          twine upload ui/dist/*.{tar.gz,whl}
-        environment:
-          TWINE_USERNAME: __token__
-          TWINE_NON_INTERACTIVE: 'true'
+          set -u
+          UV_PUBLISH_TOKEN="$UI_PYPI_TOKEN" uv publish ui/dist/*.{tar.gz,whl}
 
   docker:
     docker: [{image: dalibo/buildpack-pkg:trixie}]

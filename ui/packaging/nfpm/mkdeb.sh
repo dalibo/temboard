@@ -84,15 +84,18 @@ mv "$deb" dist/
 dpkg-deb --info "dist/$deb"
 dpkg-deb --show --showformat '$''{Depends}\n' "dist/$deb"
 dpkg-deb --contents "dist/$deb"
-retry apt-get update --quiet
-apt-get install --yes "./dist/$deb"
-(
-	cd /
-	temboard --version
-	test -f /usr/lib/python*/dist-packages/temboardui/static/dist/.vite/manifest.json
-	test -x /usr/share/temboard/auto_configure.sh
-	test -f /usr/lib/systemd/system/temboard.service
-)
+# Skip test on CI, except Ubuntu on which we dont execute E2E tests.
+if [ "${CI-false}" = "false" ] || grep -qi ubuntu /etc/os-release ; then
+	retry apt-get update --quiet
+	apt-get install --yes "./dist/$deb"
+	(
+		cd /
+		temboard --version
+		test -f /usr/lib/python*/dist-packages/temboardui/static/dist/.vite/manifest.json
+		test -x /usr/share/temboard/auto_configure.sh
+		test -f /usr/lib/systemd/system/temboard.service
+	)
+fi
 
 #       S A V E
 

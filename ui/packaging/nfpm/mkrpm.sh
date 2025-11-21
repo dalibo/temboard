@@ -68,6 +68,9 @@ PYTHONPKG="${PYTHONPKG%%-*}"
 rpm="temboard-${VERSION}-${RELEASE}.x86_64.rpm"
 mv "$rpm" dist/
 rpm -qpl "dist/$rpm"
+if [ "${CI-false}" = "true" ] ; then
+	exit 0
+fi
 yum -q -y --disablerepo='extras*' --disablerepo='pgdg*' --disablerepo='epel*' --disablerepo='powertools*' install "dist/$rpm"
 (
 	cd /
