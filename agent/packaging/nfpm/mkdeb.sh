@@ -85,7 +85,8 @@ mv "$deb" dist/
 dpkg-deb --info "dist/$deb"
 dpkg-deb --show --showformat '$''{Depends}\n' "dist/$deb"
 dpkg-deb --contents "dist/$deb"
-if [ "${CI-false}" = "false" ] ; then
+# Skip test on CI, except Ubuntu on which we dont execute E2E tests.
+if [ "${CI-false}" = "false" ] || grep -qi ubuntu /etc/os-release ; then
 	retry apt-get update --quiet
 	apt-get install --yes "./dist/$deb"
 	(
