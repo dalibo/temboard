@@ -183,8 +183,8 @@ bash history is shared amongst these two containers.
 In UI, the second agent is pre-registered with address 0.0.0.0 and port 2346 instead of 2345.
 Second instance FQDN is `postgres1.dev`.
 
-The script `dev/switchover.sh` triggers a switchover between the two postgres
-instances. Executing `dev/switchover.sh` one more time restore the original
+The script `dev/bin/switchover.sh` triggers a switchover between the two postgres
+instances. Executing `dev/bin/switchover.sh` one more time restore the original
 topology.
 
 
