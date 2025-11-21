@@ -379,7 +379,7 @@ environment variable `VITEJS`:
     You must execute temBoard at top level directory, not in `ui/` directory.
 
 ``` console
-$ VITEJS=http://localhost:5173 temboard --debug
+$ VITEJS=http://localhost:5173 uv run temboard --debug
 ...
 2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Using ViteJS dev server at http://localhost:5173.
 2022-08-23 10:40:57 CEST temboardui[2315935] DEBUG:  vitejs: Skip reading ViteJS manifest.
