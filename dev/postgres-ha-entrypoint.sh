@@ -56,7 +56,7 @@ _ha_setup() {
         if _ha_have_i_precedence "$peerhost"; then
             echo "Elected as primary."
             # replication is configured in
-            # postgres-setup-primary.sh
+            # postgres-setup-replication.sh
         else
             echo "Elected as secondary."
             sleep 3
@@ -83,7 +83,7 @@ _ha_init_secondary() {
     _retry psql -Aqt -h "$PEER_HOST" -c 'SELECT NULL'
 
     echo "Initializing PGDATA with pg_basebackup."
-    pg_basebackup \
+    gosu postgres pg_basebackup \
         -h "$PEER_HOST" -p 5432 -U $POSTGRES_USER \
         -D "$PGDATA" \
         --format=p \
@@ -124,5 +124,5 @@ else
     echo 'PEER_HOST undefined. No HA setup.'
 fi
 
-# trigger docker-entrypoin.sh main
+# trigger docker-entrypoint.sh main
 _main "$@"
