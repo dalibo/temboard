@@ -1,11 +1,3 @@
 FROM dalibo/temboard-agent:snapshot
 
-RUN set -ex; \
-    apt-get update -y ; \
-    mkdir -p /usr/share/man/man1 /usr/share/man/man7 ; \
-    apt-get install -y --no-install-recommends \
-        python3-pip \
-        python3-hupper \
-        python3-watchdog \
-    ; \
-    :
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/bin/

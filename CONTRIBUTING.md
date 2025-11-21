@@ -93,7 +93,7 @@ You now need to run the agent. Open a second terminal to interact with the
 agent and execute the following commands.
 
 ``` console
-$ docker compose exec agent0 /bin/bash
+$ docker compose exec agent0 uv run /bin/bash
 root@91cd7e12ac3e:/var/lib/temboard-agent# sudo -Eu postgres temboard-agent
 12:41:10 temboardagent[67] DEBUG:  app: Starting temboard-agent 9.0.dev0.
 ...

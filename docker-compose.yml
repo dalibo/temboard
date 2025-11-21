@@ -88,6 +88,10 @@ services:
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
       # Actually, entrypoint set TEMBOARD_CONFIGFILE, but not for docker compose exec
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres0/temboard-agent.conf
+      UV_PROJECT: /usr/local/src/temboard  # cf. volume bind mount.
+      UV_FROZEN: "1"  # Do not touch uv.lock from agent container.
+      UV_NO_GROUP: docs e2e lint  # Skip useless tooling inside agent container.
+      UV_PROJECT_ENVIRONMENT: /var/lib/temboard-agend/venv # Privatize container venv.
     entrypoint: &agent_entrypoint [/usr/bin/tini, /usr/local/src/temboard/dev/agent-entrypoint.sh]
     command: &agent_command [sleep, infinity]
 
