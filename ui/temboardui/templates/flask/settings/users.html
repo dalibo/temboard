@@ -54,7 +54,7 @@
               data-bs-placement="bottom"
               title="Edit"
               v-on:click.prevent="$refs.userModal.edit('{{ role_item.role_name }}')">
-              <i class="fa fa-edit"></i></button>
+              <i class="fa-solid fa-pen-to-square"></i></button>
             <button
               type="button"
               class="btn btn-outline-secondary btn-sm m-1"
@@ -63,7 +63,7 @@
               title="Delete"
               data-bs-target="#modalDeleteUser"
               v-on:click.prevent="$refs.delete_modal.open('/json/users/{{ role_item.role_name }}')">
-              <i class="fa fa-trash-o"></i></button>
+              <i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
         {% endfor %}
