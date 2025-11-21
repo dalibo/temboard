@@ -38,7 +38,7 @@ _ha_setup() {
                 echo "$PEER_HOST restarted as secondary. Restarting as primary."
                 rm -f "$PGDATA/standby.signal"
             else
-                echo "$PEER_HOST restared as primary. Failback as secondary."
+                echo "$PEER_HOST restarted as primary. Failback as secondary."
                 _ha_failback
             fi
         else
