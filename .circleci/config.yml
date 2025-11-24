@@ -355,6 +355,7 @@ jobs:
             args=()
           fi
 
+          rm -vf agent/dist/*toolkit* ui/dist/*toolkit*
           find agent/dist ui/dist
 
           gh release create \
