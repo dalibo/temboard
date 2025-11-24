@@ -260,8 +260,9 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
+        # Filtering on arch prevent persisting _last.deb.
         - 'agent/dist/*_all.deb'
-        - 'ui/dist/*.deb'
+        - 'ui/dist/*_amd64.deb'
 
   e2e:
     parameters:
