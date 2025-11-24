@@ -56,5 +56,5 @@ _psql "$primary" -c "SELECT * FROM pg_stat_replication;" | grep "$secondary"
 # Check secondary is in recovery.
 _psql "$secondary" -c "SELECT pg_is_in_recovery();" | grep t
 
-: "New Primary is $primary (postgres://postgres:postgres@0.0.0.0:$((1 + ${primary#postgres}))5432/postgres))"
-: "New Secondary is $secondary (postgres://postgres:postgres@0.0.0.0:$((1 + ${secondary#postgres}))5432/postgres))"
+: "New Primary is $primary (postgres://postgres:postgres@0.0.0.0:$((1 + ${primary#postgres}))5432/postgres)"
+: "New Secondary is $secondary (postgres://postgres:postgres@0.0.0.0:$((1 + ${secondary#postgres}))5432/postgres)"

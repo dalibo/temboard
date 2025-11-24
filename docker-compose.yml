@@ -57,6 +57,7 @@ services:
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
       -c, cluster_name=postgres0,
+      -c, wal_keep_size=128MB,
     ]
 
   agent0:
@@ -88,6 +89,10 @@ services:
       TEMBOARD_SSL_KEY: /usr/local/src/temboard/agent/share/temboard-agent_CHANGEME.key
       # Actually, entrypoint set TEMBOARD_CONFIGFILE, but not for docker compose exec
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres0/temboard-agent.conf
+      UV_PROJECT: /usr/local/src/temboard  # cf. volume bind mount.
+      UV_FROZEN: "1"  # Do not touch uv.lock from agent container.
+      UV_NO_GROUP: docs e2e lint  # Skip useless tooling inside agent container.
+      UV_PROJECT_ENVIRONMENT: /var/lib/temboard-agend/venv # Privatize container venv.
     entrypoint: &agent_entrypoint [/usr/bin/tini, /usr/local/src/temboard/dev/agent-entrypoint.sh]
     command: &agent_command [sleep, infinity]
 
@@ -118,6 +123,7 @@ services:
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
       -c, cluster_name=postgres1,
+      -c, wal_keep_size=128MB,
     ]
 
   agent1:
@@ -158,7 +164,6 @@ services:
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
-    - wal:/var/lib/postgresql/archive/
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
     healthcheck:
       test: ["CMD-SHELL", "psql -h localhost -U postgres -c \"SELECT 'HAS_STATEMENTS' FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pg_stat_statements';\""]

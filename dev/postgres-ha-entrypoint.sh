@@ -15,6 +15,8 @@
 # If a postgres is down, restart it manually with docker compose.
 # If you need to reset the setup, trash with make clean.
 
+export PAGER=
+
 # shellcheck source=/dev/null
 . /usr/local/bin/docker-entrypoint.sh
 
@@ -24,21 +26,20 @@ _ha_setup() {
     chown postgres:postgres /var/lib/postgresql/archive
 
     echo "Waiting for $PEER_HOST to have network."
-    if ! peerhost="$(_retry getent hosts "$PEER_HOST")"; then
-        echo "$PEER_HOST down. Can't elect primary."
-        exit 1
+    if ! peerhost="$(_retryfast getent hosts "$PEER_HOST")"; then
+        echo "$PEER_HOST down? Running standalone."
     fi
 
     if [ "$DATABASE_ALREADY_EXISTS" = "true" ]; then
         # We are in restarting mode.
         # Check if the other node is primary.
         # Or guess based on IP.
-        if is_in_recovery=$(_retry env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c 'SELECT pg_is_in_recovery();'); then
+        if is_in_recovery=$(_retryfast env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c 'SELECT pg_is_in_recovery();'); then
             if [ "$is_in_recovery" = "t" ]; then
                 echo "$PEER_HOST restarted as secondary. Restarting as primary."
                 rm -f "$PGDATA/standby.signal"
             else
-                echo "$PEER_HOST restared as primary. Failback as secondary."
+                echo "$PEER_HOST restarted as primary. Failback as secondary."
                 _ha_failback
             fi
         else
@@ -57,7 +58,7 @@ _ha_setup() {
         if _ha_have_i_precedence "$peerhost"; then
             echo "Elected as primary."
             # replication is configured in
-            # postgres-setup-primary.sh
+            # postgres-setup-replication.sh
         else
             echo "Elected as secondary."
             sleep 3
@@ -84,7 +85,7 @@ _ha_init_secondary() {
     _retry psql -Aqt -h "$PEER_HOST" -c 'SELECT NULL'
 
     echo "Initializing PGDATA with pg_basebackup."
-    pg_basebackup \
+    gosu postgres pg_basebackup \
         -h "$PEER_HOST" -p 5432 -U $POSTGRES_USER \
         -D "$PGDATA" \
         --format=p \
@@ -95,7 +96,7 @@ _ha_init_secondary() {
 
 _ha_failback() {
     # offline pg_demote.
-    touch "$PGDATA/standby.signal"
+    gosu postgres touch "$PGDATA/standby.signal"
     echo "Waiting for primary to come up."
     _retry env PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$PEER_HOST" -U "$POSTGRES_USER" -Aqt -c "SELECT pg_switch_wal();"
     echo "Rewind pgdata to failback."
@@ -106,8 +107,21 @@ _ha_failback() {
         --no-ensure-shutdown
 }
 
+_retryfast() {
+    for i in {2..4}; do
+        if "$@"; then
+            return
+        else
+            echo "Retrying in one second, attempt #$i."
+            sleep 1
+        fi
+    done
+
+    "$@"
+}
+
 _retry() {
-    for i in {2..7}; do
+    for i in {2..8}; do
         if "$@"; then
             return
         else
@@ -125,5 +139,5 @@ else
     echo 'PEER_HOST undefined. No HA setup.'
 fi
 
-# trigger docker-entrypoin.sh main
+# trigger docker-entrypoint.sh main
 _main "$@"

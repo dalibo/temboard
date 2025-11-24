@@ -20,7 +20,8 @@ develop-%:: .env
 	cd ui/; npm install-clean
 	cd ui/; npm run build
 	uv run $(MAKE) repository
-	docker compose build --pull
+	docker image remove --force dalibo/temboard-agent:dev
+	docker compose build --pull agent0
 	docker compose up -d
 	@echo
 	@echo
@@ -239,3 +240,6 @@ docker-build-ui:
 		--build-arg VERSION=$(DEBIANVERSION) \
 		--tag dalibo/temboard:snapshot \
 		ui/
+
+# Disable pager for psql.
+export PAGER=
