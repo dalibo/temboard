@@ -26,7 +26,7 @@ SYSUSER="${SYSUSER-temboard}"
 
 export PGUSER=${PGUSER-postgres}
 export PGHOST=${PGHOST-/var/run/postgresql}
-psql=(psql -Xd "$PGUSER")
+psql=(psql -Xd "$PGUSER" --pset pager=off)
 
 if [ -d "$PGHOST" ] ; then
 	# If local, sudo to PGUSER.

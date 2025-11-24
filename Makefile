@@ -240,3 +240,6 @@ docker-build-ui:
 		--build-arg VERSION=$(DEBIANVERSION) \
 		--tag dalibo/temboard:snapshot \
 		ui/
+
+# Disable pager for psql.
+export PAGER=

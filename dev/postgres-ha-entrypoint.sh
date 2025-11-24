@@ -15,6 +15,8 @@
 # If a postgres is down, restart it manually with docker compose.
 # If you need to reset the setup, trash with make clean.
 
+export PAGER=
+
 # shellcheck source=/dev/null
 . /usr/local/bin/docker-entrypoint.sh
 
