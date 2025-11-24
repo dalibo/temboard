@@ -51,3 +51,24 @@ members = ["agent", "ui", "toolkit"]
 temboard = { workspace = true }
 temboard-agent = { workspace = true }
 temboard-toolkit = { workspace = true }
+
+[tool.ruff]
+target-version = "py39"
+force-exclude = true
+extend-exclude = ["_vendor"]
+
+[tool.ruff.lint]
+extend-select = [
+    "I",  # Sort imports
+]
+ignore = [
+    "E721",  # Do not compare types, use `isinstance()`
+]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+line-ending = "lf"
+docstring-code-format = true
