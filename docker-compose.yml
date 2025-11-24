@@ -162,7 +162,6 @@ services:
     volumes:
     - data-stable:/var/lib/postgresql/data
     - run-stable:/var/run/postgresql
-    - wal:/var/lib/postgresql/archive/
     - ./ui/share/sql/pg_stat_statements-create-extension.sql:/docker-entrypoint-initdb.d/pg_stat_statements-create-extension.sql
     healthcheck:
       test: ["CMD-SHELL", "psql -h localhost -U postgres -c \"SELECT 'HAS_STATEMENTS' FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pg_stat_statements';\""]
