@@ -8,11 +8,11 @@ from contextlib import closing
 import psycopg2
 from psycopg2.extensions import parse_dsn
 from psycopg2.extras import PhysicalReplicationConnection
+from temboardtoolkit.utils import utcnow
 
 from ...inventory import SysInfo
 from ...plugins.maintenance.functions import INDEX_BTREE_BLOAT_SQL
 from ...queries import QUERIES
-from ...toolkit.utils import utcnow
 from . import db
 
 logger = logging.getLogger(__package__)

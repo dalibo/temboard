@@ -4,7 +4,7 @@ import pytest
 
 
 def test_spec_and_value():
-    from temboardui.toolkit.configuration import OptionSpec, Value
+    from temboardtoolkit.configuration import OptionSpec, Value
 
     spec = OptionSpec(section="temboard", name="verbose", default=False)
     assert repr(spec)
@@ -16,11 +16,7 @@ def test_spec_and_value():
 
 
 def test_spec_lifetime(mocker):
-    from temboardui.toolkit.configuration import (
-        MergedConfiguration,
-        OptionSpec,
-        UserError,
-    )
+    from temboardtoolkit.configuration import MergedConfiguration, OptionSpec, UserError
 
     def my_validator(x):
         if x == "__ERROR__":
@@ -61,7 +57,7 @@ def test_spec_lifetime(mocker):
 
 
 def test_argument_for_spec(capsys):
-    from temboardui.toolkit.configuration import OptionSpec
+    from temboardtoolkit.configuration import OptionSpec
 
     parser = argparse.ArgumentParser()
     spec = OptionSpec("section", "name", default=2345)
@@ -82,7 +78,7 @@ def test_argument_for_spec(capsys):
 
 
 def test_remove_specs():
-    from temboardui.toolkit.configuration import MergedConfiguration, OptionSpec
+    from temboardtoolkit.configuration import MergedConfiguration, OptionSpec
 
     def my_validator(x):
         if x == "__ERROR__":
@@ -112,12 +108,12 @@ def test_remove_specs():
 
 
 def test_load(mocker):
-    mocker.patch("temboardui.toolkit.configuration.os.chdir")
+    mocker.patch("temboardtoolkit.configuration.os.chdir")
 
     from argparse import Namespace
 
-    from temboardui.toolkit.app import configparser
-    from temboardui.toolkit.configuration import MergedConfiguration, OptionSpec
+    from temboardtoolkit.app import configparser
+    from temboardtoolkit.configuration import MergedConfiguration, OptionSpec
 
     s = "temboard"
     specs = [
@@ -154,8 +150,8 @@ def test_load(mocker):
 
 
 def test_load_configparser():
-    from temboardui.toolkit.app import configparser
-    from temboardui.toolkit.configuration import iter_configparser_values
+    from temboardtoolkit.app import configparser
+    from temboardtoolkit.configuration import iter_configparser_values
 
     parser = configparser.RawConfigParser()
     parser.add_section("section0")
@@ -170,11 +166,11 @@ def test_load_configparser():
 
 
 def test_pwd_denied(mocker):
-    mod = "temboardui.toolkit.configuration"
+    mod = "temboardtoolkit.configuration"
     mocker.patch(mod + ".iter_configparser_values")
     cd = mocker.patch(mod + ".os.chdir")
 
-    from temboardui.toolkit.configuration import MergedConfiguration
+    from temboardtoolkit.configuration import MergedConfiguration
 
     config = MergedConfiguration()
     config.temboard = dict(configfile="pouet")
@@ -184,7 +180,7 @@ def test_pwd_denied(mocker):
 
 
 def test_required():
-    from temboardui.toolkit.configuration import (
+    from temboardtoolkit.configuration import (
         MergedConfiguration,
         OptionSpec,
         UserError,

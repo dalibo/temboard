@@ -47,7 +47,9 @@ fi
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
 uv pip install \
-	--pre --no-deps --only-binary :all: --requirement "$TOP_SRCDIR/vendor.txt" \
+	--pre --no-deps \
+	--requirement "$TOP_SRCDIR/vendor.txt" \
+	"$TOP_SRCDIR/dist/temboard_toolkit-0.0.0-py3-none-any.whl" \
 	--target "$DESTDIR/usr/lib/python$pythonv/site-packages/temboardui/_vendor"
 
 #       B U I L D

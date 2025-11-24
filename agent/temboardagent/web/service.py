@@ -4,10 +4,10 @@ from socket import error as SocketError
 from wsgiref.simple_server import ServerHandler, WSGIRequestHandler, make_server
 
 from bottle import debug, default_app
+from temboardtoolkit import syncio
 
 from .. import __version__
 from ..errors import UserError
-from ..toolkit import syncio
 
 logger = logging.getLogger(__package__)
 

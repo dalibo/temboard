@@ -2,8 +2,8 @@ import logging
 from datetime import datetime
 
 from bottle import default_app, request
+from temboardtoolkit import taskmanager
 
-from temboardagent.toolkit import taskmanager
 from temboardagent.tools import validate_parameters
 
 from ...web.app import CustomBottle

@@ -7,9 +7,10 @@ from time import time
 from urllib.error import HTTPError
 
 from .errors import TemboardError
+from .log import LastnameFilter
 from .utils import ensure_bytes
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(LastnameFilter.root + ".http")
 
 
 class TemboardHTTPError(TemboardError):

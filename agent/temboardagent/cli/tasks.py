@@ -9,9 +9,10 @@
 
 import logging.config
 
-from ..toolkit.app import SubCommand
-from ..toolkit.errors import UserError
-from ..toolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+from temboardtoolkit.app import SubCommand
+from temboardtoolkit.errors import UserError
+from temboardtoolkit.taskmanager import FlushTasksMixin, RunTaskMixin
+
 from .app import app
 
 logger = logging.getLogger(__name__)

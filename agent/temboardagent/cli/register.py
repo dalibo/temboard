@@ -8,9 +8,10 @@ from textwrap import dedent
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 
+from temboardtoolkit.app import SubCommand
+from temboardtoolkit.http import TemboardClient
+
 from ..errors import UserError
-from ..toolkit.app import SubCommand
-from ..toolkit.http import TemboardClient
 from ..tools import validate_parameters
 from .app import app
 

@@ -149,9 +149,9 @@ jobs:
     - attach_workspace:
         at: *working_directory
     - run:
-        name: Build Agent & UI
+        name: Build source artifacts
         command: |
-          make -j 2 dist
+          make -j 3 dist
     - persist_to_workspace:
         root: .
         paths:
@@ -180,39 +180,30 @@ jobs:
             - v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
             - v1-uv
       - run:
+          name: Whitespaces
+          command: |
+            # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
+            git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
+      - run:
           name: Setup python environment
           environment:
             UV_NO_GROUP: docs
           command: |
             make install-3.9
       - run:
-          name: Agent
+          name: Ruff
           environment:
             UV_NO_SYNC: "1"
           command: |
-            # See https://discuss.circleci.com/t/commit-range-environment-variable/10410
-            git --no-pager diff --check $(git merge-base origin/master $CIRCLE_SHA1)..$CIRCLE_SHA1
-            uv run ruff check agent/
-            uv run ruff format --check agent/
-            uv run check-manifest --no-build-isolation agent/
-            uv run pytest --full-trace agent/tests/unit/
+            uv run ruff check
+            uv run ruff format --check
       - run:
-          name: UI
+          name: Unit tests
           environment:
             UV_NO_SYNC: "1"
           command: |
             set -x
-            uv run ruff check ui/
-            uv run ruff format --check ui/
-            uv run check-manifest --no-build-isolation ui/
-            uv run pytest --full-trace ui/tests/unit/
-      - run:
-          name: Lint E2E
-          environment:
-            UV_NO_SYNC: "1"
-          command: |
-            uv run ruff check tests/
-            uv run ruff format --check tests/
+            uv run pytest --full-trace agent/tests/unit/ ui/tests/unit/ toolkit/tests/
       - save_cache:
           key: v1-uv-{{ checksum "uv.lock" }}-{{ checksum "agent/vendor.txt" }}-{{ checksum "ui/vendor.txt"}}
           paths: ["~/.cache/uv/"]

@@ -4,7 +4,7 @@ import sqlite3
 from textwrap import dedent
 from time import time as current_time
 
-from ...toolkit.utils import JSONEncoder
+from temboardtoolkit.utils import JSONEncoder
 
 
 def bootstrap(path, dbname):

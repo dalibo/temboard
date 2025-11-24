@@ -1,5 +1,5 @@
 def test_filter_pg_version():
-    from temboardui.toolkit.queries import filter_pragma_version
+    from temboardtoolkit.queries import filter_pragma_version
 
     assert filter_pragma_version("pouet", pg_version=150000)
 

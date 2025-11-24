@@ -7,7 +7,13 @@ if True:  # Vendoring
     vendor_dir = os.path.join(parent_dir, "_vendor")
     sys.path[:0] = [vendor_dir]
 
+import temboardtoolkit.log
+
 from .version import __version__  # noqa
 
 if "DEBUG" not in os.environ and "CI" not in os.environ:
     warnings.filterwarnings("ignore")
+
+
+# Configure toolkit root logger name before importing toolkit's getLogger.
+temboardtoolkit.log.LastnameFilter.root = __name__

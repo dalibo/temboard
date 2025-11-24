@@ -40,22 +40,9 @@ pgconf = "temboardagent.plugins.pgconf:PgConfPlugin"
 statements = "temboardagent.plugins.statements:StatementsPlugin"
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-include = ["temboardagent*"]
-
-[tool.setuptools.package-data]
-temboardagent = ["queries/*.sql"]
-
-[tool.check-manifest]
-ignore = [
-    "*/__pycache__/*",
-    "temboardagent/toolkit",
-    "temboardagent/toolkit/*",
-    "temboardagent/toolkit/tasklist/*",
-]
+[tool.uv.build-backend]
+module-name = "temboardagent"
+module-root = ""

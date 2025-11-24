@@ -1,0 +1,12 @@
+[project]
+name = "temboard-toolkit"
+version = "0.0.0"
+classifiers = ["Private :: Do Not Upload"]
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "temboardtoolkit"
+module-root = ""

@@ -3,7 +3,7 @@ from datetime import datetime
 from tempfile import NamedTemporaryFile
 
 import pytest
-from temboardui.toolkit.errors import StorageEngineError
+from temboardtoolkit.errors import StorageEngineError
 
 DBNAME = ":memory:"
 
@@ -16,7 +16,7 @@ def execute(conn, query, args=()):
 
 
 def test_bootstrap():
-    from temboardui.toolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.tasklist import sqlite3_engine
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -26,8 +26,8 @@ def test_bootstrap():
 
 
 def test_insert():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -86,8 +86,8 @@ def test_insert():
 
 
 def test_update():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -138,7 +138,7 @@ def test_update():
 
 
 def test_delete():
-    from temboardui.toolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.tasklist import sqlite3_engine
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -161,8 +161,8 @@ def test_delete():
 
 
 def test_get():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -209,8 +209,8 @@ def test_get():
 
 
 def test_list():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -275,8 +275,8 @@ def test_list():
 
 
 def test_exists():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -306,8 +306,8 @@ def test_exists():
 
 
 def test_count_by_status():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -363,8 +363,8 @@ def test_count_by_status():
 
 
 def test_recover():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -417,8 +417,8 @@ def test_recover():
 
 
 def test_list_to_do():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -521,8 +521,8 @@ def test_list_to_do():
 
 
 def test_purge():
-    from temboardui.toolkit.tasklist import sqlite3_engine
-    from temboardui.toolkit.taskmanager import Task
+    from temboardtoolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.taskmanager import Task
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
@@ -583,7 +583,7 @@ def test_purge():
 
 
 def test_vacuum():
-    from temboardui.toolkit.tasklist import sqlite3_engine
+    from temboardtoolkit.tasklist import sqlite3_engine
 
     engine = sqlite3_engine.TaskListSQLite3Engine(DBNAME)
     engine.bootstrap()
