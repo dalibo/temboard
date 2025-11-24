@@ -57,6 +57,7 @@ services:
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
       -c, cluster_name=postgres0,
+      -c, wal_keep_size=128MB,
     ]
 
   agent0:
@@ -122,6 +123,7 @@ services:
       -c, log_statement=all,
       -c, "log_line_prefix=%m [%p]: [%l-1] app=%a,db=%d,client=%h,user=%u ",
       -c, cluster_name=postgres1,
+      -c, wal_keep_size=128MB,
     ]
 
   agent1:
