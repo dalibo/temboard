@@ -289,8 +289,8 @@ class OpenMetricsWriter:
         if name not in self.declared_metrics:
             self.fo.write(
                 dedent(f"""\
-            # HELP {metric} {self.known_metrics[name]['help']}
-            # TYPE {metric} {self.known_metrics[name]['type']}
+            # HELP {metric} {self.known_metrics[name]["help"]}
+            # TYPE {metric} {self.known_metrics[name]["type"]}
             """)
             )
             if unit != "nounit":
