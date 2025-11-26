@@ -8,6 +8,7 @@ COPY (
 			e.name AS "Environment",
 			i.agent_address AS "Agent Address",
 			i.agent_port AS "Agent Port",
+      i.discover->'databases'#>>'{}' AS "Databases",
 			string_agg(DISTINCT plugin_name, ',') AS "Plugins",
 			i.comment AS "Comment"
 		FROM application.instances AS i
