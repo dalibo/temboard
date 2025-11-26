@@ -426,8 +426,7 @@ This helps reading diff, handling conflicts when rebasing.
 Building packages for RHEL, Debian and compatible clones requires Docker and Docker Compose for isolation.
 UI and agent each have `packaging/nfpm/` directory with a Makefile and scripts to build DEB and RPM packages.
 
-The builder script searches for wheels in respective `dist/`
-and if not found, tries to download wheel from PyPI.
+The builder script searches for wheels in respective `dist/`.
 Use top level `make dist` to generate wheels.
 
 

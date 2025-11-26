@@ -7,12 +7,6 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.python.org/pypi/temboard" target="_blank">
-    <img src="https://img.shields.io/pypi/v/temboard.svg" alt="PyPI version" />
-  </a>
-  <a href="https://www.python.org/" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/temboard.svg" alt="Supported Python versions" />
-  </a>
   <a href="https://circleci.com/gh/dalibo/temboard" target="_blank">
     <img src="https://circleci.com/gh/dalibo/temboard.svg?style=shield" alt="CI status" />
   </a>

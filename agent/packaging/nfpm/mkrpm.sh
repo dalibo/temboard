@@ -38,13 +38,8 @@ RELEASE="1$(rpm --eval '%{dist}')"
 #       I N S T A L L
 
 
-whl="dist/temboard_agent-$VERSION-py3-none-any.whl"
-if ! [ -f "$whl" ] ; then
-	"${pip[@]}" download --only-binary :all: --no-deps --pre --dest "dist/" "temboard-agent==$VERSION"
-fi
-
 # Install from sources
-"${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
+"${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "dist/temboard_agent-$VERSION-py3-none-any.whl"
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
 uv pip install \
