@@ -172,8 +172,6 @@ def agent_sharedir():
     candidates = [
         # rpm/deb
         "/usr/share/temboard-agent",
-        # pip install
-        "/usr/local/share/temboard-agent",
         # development
         "agent/share/",
     ]

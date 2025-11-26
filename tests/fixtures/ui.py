@@ -425,8 +425,6 @@ def ui_sharedir():
     candidates = [
         # rpm/deb
         "/usr/share/temboard",
-        # pip install
-        "/usr/local/share/temboard",
         # development
         "ui/share/",
     ]

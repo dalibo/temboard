@@ -37,13 +37,8 @@ RELEASE=0dlb1${codename}1
 
 #       I N S T A L L
 
-whl="dist/temboard-$pep440v-py3-none-any.whl"
-if ! [ -f "$whl" ] ; then
-	pip3 download --only-binary :all: --no-deps --pre --dest "dist/" "temboard==$pep440v"
-fi
-
 # Install from sources
-pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps "$whl"
+pip3 install --pre --root "$DESTDIR" --prefix /usr --no-deps "dist/temboard-$pep440v-py3-none-any.whl"
 
 # Fake --install-layout=deb, when using wheel.
 pythonv=$(python3 --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')

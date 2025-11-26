@@ -189,10 +189,6 @@ clean-static:  #: Clean UI browser assets.
 	rm -vrf \
 		ui/temboardui/static/dist
 
-download-eggs:  #: Download Python eggs from PyPI
-	pip3 download --no-deps --dest agent/dist/ temboard-agent==$(VERSION)
-	pip3 download --no-deps --dest ui/dist/ temboard==$(VERSION)
-
 YUM_LABS?=../yum-labs
 CURL=curl --fail --create-dirs --location --silent --show-error
 GH_DOWNLOAD=https://github.com/dalibo/temboard/releases/download/v$(VERSION)

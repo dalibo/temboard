@@ -365,16 +365,6 @@ jobs:
             --title "${CIRCLE_TAG#v}" \
             -F <(make -s release-notes VERSION=${CIRCLE_TAG#v}) \
             "${args[@]}"
-    - run:
-        name: Upload Agent to PyPI
-        command: |
-          set -u
-          UV_PUBLISH_TOKEN="$AGENT_PYPI_TOKEN" uv publish agent/dist/*.{tar.gz,whl}
-    - run:
-        name: Upload UI to PyPI
-        command: |
-          set -u
-          UV_PUBLISH_TOKEN="$UI_PYPI_TOKEN" uv publish ui/dist/*.{tar.gz,whl}
 
   docker:
     docker: [{image: dalibo/buildpack-pkg:trixie}]

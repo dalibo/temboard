@@ -8,15 +8,7 @@ license = "PostgreSQL"
 authors = [
     {name = "Dalibo", email = "contact@dalibo.com"},
 ]
-classifiers = [
-    "Environment :: No Input/Output (Daemon)",
-    "Intended Audience :: System Administrators",
-    "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Topic :: Database :: Database Engines/Servers",
-    "Topic :: System :: Monitoring",
-]
+classifiers = ["Private :: Do Not Upload"]
 dependencies = [
     "cryptography",
 ]

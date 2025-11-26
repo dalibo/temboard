@@ -19,6 +19,7 @@ You need manual steps when upgrading UI.
 - Packages for Debian Trixie.
 - Packages for RHEL 10.
 - Add cookie_timeout to UI configuration.
+- Drop PyPI availability. Use APT/YUM repositories or GitHub releases.
 
 
 ## 9.0.0
