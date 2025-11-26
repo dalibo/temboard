@@ -105,6 +105,7 @@ class Discover:
 
         d["postgres"] = {}
         d["system"] = {}
+        d["databases"] = ""
         d["temboard"] = {}
 
         d["temboard"]["bin"] = sys.argv[0]
@@ -121,6 +122,8 @@ class Discover:
             with self.app.postgres.maybe_connect(conn) as pgconn:
                 logger.debug("Inspecting Postgres instance.")
                 collect_postgres(d, pgconn)
+                logger.debug("Inspecting Postgres instance databases.")
+                collect_databases(d, pgconn)
         except Exception as e:
             logger.error("Failed to collect Postgres data: %s", e)
             d["postgres"] = old_postgres
@@ -192,6 +195,11 @@ def collect_postgres(data, conn):
         data["postgres"][row["name"]] = v
     pid_file_path = find_pid_file(data["postgres"])
     data["postgres"]["pid"] = get_postmaster_pid(pid_file_path)
+
+
+def collect_databases(data, conn):
+    d = conn.queryone(QUERIES["discover-databases"])
+    data["databases"] = d["databases"]
 
 
 def get_postmaster_pid(pid_file):
