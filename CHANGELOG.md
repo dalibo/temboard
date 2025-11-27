@@ -21,6 +21,7 @@ You need manual steps when upgrading UI.
 - Add cookie_timeout to UI configuration.
 - Drop PyPI availability. Use APT/YUM repositories or GitHub releases.
 - Deprecated: agent plugin administration is ignored
+- Add Databases list in CSV Export
 
 
 ## 9.0.0
