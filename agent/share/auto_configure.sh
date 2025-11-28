@@ -102,7 +102,6 @@ generate_configuration() {
     local has_statements=$1
     shift
 
-    local pg_ctl
     local port
     local version
 
@@ -223,22 +222,6 @@ generate_configuration() {
 	EOF
 }
 
-search_bindir() {
-    # Usage: search_bindir pgversion
-
-    # Search for bin directory where pg_ctl is installed for this version.
-
-    local pgversion=$1
-    shift
-    for d in /usr/lib/postgresql/$pgversion /usr/pgsql-$pgversion; do
-        if [ -x "$d/bin/pg_ctl" ]; then
-            echo "$d/bin"
-            return
-        fi
-    done
-    return 1
-}
-
 setup_pq() {
     # Ensure used libpq vars are defined for configuration template.
 
@@ -257,12 +240,6 @@ setup_pq() {
     log "Configuring for cluster at ${PGDATA}."
 
     read -r PGVERSION <"${PGDATA}/PG_VERSION"
-    if ! command -v pg_ctl &>/dev/null; then
-        if bindir=$(search_bindir "$PGVERSION"); then
-            log "Using ${bindir}/pg_ctl."
-            export PATH=$bindir:$PATH
-        fi
-    fi
 
     # Instance name defaults to cluster_name. If unset (e.g. Postgres 9.4),
     # use the tail of ${PGDATA} after ~postgres has been removed. If PGDATA

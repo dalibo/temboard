@@ -2,10 +2,16 @@
 
 set -x
 
+export PGHOST="${PGHOST-/var/run/postgresql}"
+export PGPORT=${PGPORT-5432}
+export PGUSER=${PGUSER-postgres}
+export PGPASSWORD=${PGPASSWORD-}
+export PGDATABASE=${PGDATABASE-postgres}
+
 # Create postgres user matching postgres container one.
-POSTGRES_UID=$(stat -c "%u" "/var/lib/postgresql")
-POSTGRES_GID=$(stat -c "%g" "/var/lib/postgresql")
 if ! getent passwd postgres &>/dev/null ; then
+	POSTGRES_UID=$(stat -c "%u" "${PGHOST}")
+	POSTGRES_GID=$(stat -c "%g" "${PGHOST}")
 	groupadd --system --gid "${POSTGRES_GID}" postgres
 	useradd --system \
 		--home-dir /var/lib/postgresql --no-create-home \
@@ -17,28 +23,29 @@ if ! getent passwd postgres &>/dev/null ; then
 fi
 chown -R postgres: ~postgres /etc/temboard-agent /var/lib/temboard-agent
 
-export PGHOST=${PGHOST-${TEMBOARD_HOSTNAME}}
-export PGPORT=${PGPORT-5432}
-export PGUSER=${PGUSER-postgres}
-export PGPASSWORD=${PGPASSWORD-}
-export PGDATABASE=${PGDATABASE-postgres}
+# Wait until postgres is up
+for _ in {10..0} ; do
+	if  psql -Atc 'SELECT 1' ; then
+		break
+	else
+		sleep 0.5
+	fi
+done
 
 conf=$(find /etc/temboard-agent -name temboard-agent.conf)
 if [ -z "${conf}" ] ; then
-	for _ in {10..0} ; do
-		if PGHOST=/var/run/postgresql psql -Atc 'SELECT 1' ; then
-			break
-		else
-			sleep 0.5
-		fi
-	done
 
-	if ! PGHOST=/var/run/postgresql /usr/share/temboard-agent/auto_configure.sh "${TEMBOARD_UI_URL}" ; then
+	if ! /usr/share/temboard-agent/auto_configure.sh "${TEMBOARD_UI_URL}" ; then
 		cat /var/log/temboard-agent-auto-configure.log >&2
 		exit 1
 	fi
 	conf="$(find /etc/temboard-agent -name temboard-agent.conf)"
 fi
+
+# Clean PG* used for setup. libpq for temBoard is configured only by config
+# file.
+# shellcheck disable=2086
+unset ${!PG*}
 
 export TEMBOARD_CONFIGFILE="$conf"
 
@@ -52,12 +59,6 @@ register() {
 		--port "${TEMBOARD_REGISTER_PORT-2345}" \
 		--environment "${TEMBOARD_ENVIRONMENT-default}"
 }
-
-wait-for-it "${PGHOST}:${PGPORT}"
-# Clean PG* used for setup. libpq for temBoard is configured only by config
-# file.
-# shellcheck disable=2086
-unset ${!PG*}
 
 if [[ "${*} " =~ "temboard-agent " ]] ; then
 	hostportpath=${TEMBOARD_UI_URL#*://}
