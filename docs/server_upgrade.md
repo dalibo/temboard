@@ -12,6 +12,62 @@ and restart the service manually.
 
 -->
 
+
+## From 9.0 to 10.0
+
+=== "RHEL"
+
+    Stop the service.
+
+    ``` bash
+    sudo systemctl stop temboard
+    ```
+
+    Update the package.
+
+    ``` bash
+    sudo yum install temboard
+    ```
+
+    Upgrade the database schema.
+
+    ``` bash
+    sudo -u temboard temboard migratedb upgrade
+    ```
+
+    Start the service.
+
+    ``` bash
+    sudo systemctl start temboard
+    ```
+
+=== "Debian"
+
+    Stop the service.
+
+    ``` bash
+    sudo systemctl stop temboard
+    ```
+
+    Update the package.
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard
+    ```
+
+    Upgrade the database schema.
+
+    ``` bash
+    sudo -u temboard temboard migratedb upgrade
+    ```
+
+    Start the service.
+
+    ``` bash
+    sudo systemctl start temboard
+    ```
+
 ## From 9.0.0 to 9.0.1
 
 === "RHEL"

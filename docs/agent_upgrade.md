@@ -9,6 +9,43 @@ and restart the service manually.
 
 -->
 
+## From 9.0 to 10.0
+
+You need to upgrade the temBoard Server **BEFORE** upgrading the temBoard Agents.
+
+See [temBoard Server Upgrade](server_upgrade.md)
+
+Here's the compatibility matrix:
+
+|                      | temBoard Server v9              | temBoard Server v10          |
+|----------------------|---------------------------------|-----------------------------|
+| temBoard Agent v9    | Compatible                      | Compatible                  |
+| temBoard Agent v10   | Not Supported                   | Compatible                  |
+
+In other words:
+
+* temboard Server v10 can manage temBoard Agents v9 and v10.
+* temboard Server v9 cannot manage temBoard Agents v10
+
+Once the temBoard Server has been upgraded to v10, you can upgrade the agents with the
+classic commands:
+
+=== "RHEL"
+
+    ``` bash
+    sudo yum install temboard-agent
+    ```
+
+=== "Debian / Ubuntu"
+
+    ``` bash
+    sudo apt update
+    sudo apt install temboard-agent
+    ```
+
+Note: the former administation plugin is now obsolete you can remove the
+`[administration]` section from the agent configuration file.
+
 ## From 8.2 to 9.0
 
 You need to upgrade the temBoard Server **BEFORE** upgrading the temBoard Agents.
