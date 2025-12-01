@@ -1,6 +1,6 @@
 [project]
 name = "temboard"
-version = "10.0a3"
+version = "10.0rc1"
 description = "temBoard User Interface."
 readme = "README.md"
 requires-python = ">=3.9,<3.14"
