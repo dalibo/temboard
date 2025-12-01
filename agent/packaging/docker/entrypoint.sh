@@ -55,7 +55,7 @@ register() {
 	wait-for-it localhost:2345 -t 60
 
 	temboard-agent register \
-		--host "${TEMBOARD_REGISTER_HOST-$COMPOSE_SERVICE}" \
+		--host "${TEMBOARD_REGISTER_HOST}" \
 		--port "${TEMBOARD_REGISTER_PORT-2345}" \
 		--environment "${TEMBOARD_ENVIRONMENT-default}"
 }
