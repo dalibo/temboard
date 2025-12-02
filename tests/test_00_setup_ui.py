@@ -143,7 +143,7 @@ def test_autossl(ui):
     assert response.headers["location"].startswith("https://")
 
 
-def test_login_logout(browser, ui, ui_url):
+def test_login_logout(browser, ui_url):
     browser.get(ui_url + "/")
 
     browser.select("#inputUsername").send_keys("admin")
@@ -155,3 +155,10 @@ def test_login_logout(browser, ui, ui_url):
 
     browser.select("li.nav-item.dropdown a").click()
     browser.select("a[href='/logout']").click()
+
+
+def test_login_forgot_password_page(browser, ui_url):
+    browser.get(ui_url + "/")
+    browser.select('a[href="/reset-password"]').click()
+    elem_inputIdentifier = browser.select("#inputIdentifier")
+    assert elem_inputIdentifier.get_attribute("placeholder") == "Username or Email"
