@@ -155,8 +155,11 @@ release:  #: Tag and push a new git release.
 	@grep -Fq "$(VERSION)" agent/pyproject.toml
 	@echo Checking version is PEP440 compliant.
 	@pep440deb "$(VERSION)" >/dev/null
+	@uv lock
+	@echo Checking the changes to uv.lock concerns only the version
+	@! git diff ./uv.lock | grep '^+[^+]' | grep -v 'revision =' | grep -v 'version = "$(VERSION)"'
 	@echo Creating release commit.
-	@git commit --only --quiet agent/pyproject.toml ui/pyproject.toml -m "Version $(VERSION)"
+	@git commit --only --quiet agent/pyproject.toml ui/pyproject.toml uv.lock -m "Version $(VERSION)"
 	@echo Checking source tree is clean.
 	@git diff --quiet
 	@echo Tagging v$(VERSION).
