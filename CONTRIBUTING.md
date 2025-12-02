@@ -507,7 +507,7 @@ APT repositories.
 
 To release a new version:
 
-- Checkout release branch : master for v8.
+- Checkout release branch : master or v8.
 - Edit `ui/pyproject.toml` and `agent/pyproject.toml` without
   committing. The version must be the same and follow [PEP440].
 - Check, commit, tag and push using `make release`.
