@@ -52,6 +52,8 @@ export default defineConfig({
         maintenance: "/maintenance.js",
         monitoring: "/monitoring.js",
         notifications: "/notifications.js",
+        resetPassword: "/reset-password.js",
+        resetPasswordForm: "/reset-password-form.js",
         statements: "/statements.js",
         configuration: "/pgconf.js",
         temboard: "/temboard.js",
