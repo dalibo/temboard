@@ -97,7 +97,10 @@ def create_app(temboard_app):
 
     @app.after_request
     def refresh_cookie(resp):
-        if request.endpoint == "logout":
+        # There are two cases in which we don't want to update the cookie validity.
+        # logout: The cookie should be deleted.
+        # login: The cookie is recreated, so the old one may be broken (e.g., password changed).
+        if request.endpoint in ("logout", "json_login"):
             return resp
         cookie = request.cookies.get("temboard")
         if cookie:
