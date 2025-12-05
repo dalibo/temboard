@@ -31,8 +31,12 @@ def post_settings(pgconn, new=None):
         raise HTTPError(406, "Requires a mapping of settings and values.")
     if not new:
         raise HTTPError(406, "No settings.")
-
+    current = {
+        setting["name"]: setting["current_setting"] for setting in get_settings(pgconn)
+    }
     for name, setting in new.items():
+        if current[name] == setting:
+            continue
         if setting is None:
             raise HTTPError(406, "Setting value is required.")
         if len(setting) > 1024:
