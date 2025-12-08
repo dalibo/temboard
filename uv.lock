@@ -1225,7 +1225,7 @@ wheels = [
 
 [[package]]
 name = "temboard"
-version = "10.0rc2"
+version = "10.0.0"
 source = { editable = "ui" }
 dependencies = [
     { name = "cryptography" },
@@ -1236,7 +1236,7 @@ requires-dist = [{ name = "cryptography" }]
 
 [[package]]
 name = "temboard-agent"
-version = "10.0rc2"
+version = "10.0.0"
 source = { editable = "agent" }
 dependencies = [
     { name = "cryptography" },
