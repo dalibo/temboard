@@ -5,7 +5,7 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
-## UNRELEASED
+## 10.0.0
 
 You need manual steps when upgrading UI.
 
@@ -20,8 +20,11 @@ You need manual steps when upgrading UI.
 - Packages for RHEL 10.
 - Add cookie_timeout to UI configuration.
 - Drop PyPI availability. Use APT/YUM repositories or GitHub releases.
-- Deprecated: agent plugin administration is ignored
-- Add Databases list in CSV Export
+- Deprecated: agent plugin administration is ignored.
+- Add Databases list in CSV Export.
+- Allow password reset in login page.
+- Add pagination in the UI home page.
+- UI colorblind-friendly improvements.
 
 
 ## 9.0.0
