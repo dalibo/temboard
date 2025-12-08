@@ -33,7 +33,7 @@ classic commands:
 === "RHEL"
 
     ``` bash
-    sudo yum install temboard-agent
+    sudo dnf install temboard-agent
     ```
 
 === "Debian / Ubuntu"

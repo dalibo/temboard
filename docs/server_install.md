@@ -51,22 +51,23 @@ Keep them for later use by auto-configuration script.
 
 === "RHEL"
 
-    [Dalibo Labs YUM repository](https://yum.dalibo.org/labs/) serves latest stable RPM for temBoard.
-    Start by enabling Dalibo Labs YUM repository.
+    [Dalibo Labs RPM repository](https://yum.dalibo.org/labs/) serves latest stable
+    RPM for temBoard.
+    Start by enabling that repository.
 
     ``` console
-    $ sudo yum install -y epel-release
-    $ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
+    $ sudo dnf install -y epel-release
+    $ sudo dnf install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
     ```
 
     !!! warning
 
         Do **NOT** use temBoard rpm from PGDG. They are known to be broken.
 
-    With the YUM repository configured, you can install temBoard UI with:
+    With the RPM repository configured, you can install temBoard UI with:
 
     ``` console
-    $ sudo yum install temboard
+    $ sudo dnf install temboard
     $ temboard --version
     ```
 
@@ -77,15 +78,14 @@ Keep them for later use by auto-configuration script.
     the following commands :
 
     ``` console
-    $ sudo yum install yum-utils
-    $ yumdownloader --resolve --destdir /tmp/temboard-packages temboard
+    $ dnf download --resolve --destdir /tmp/temboard-packages temboard
     ```
 
     Then the downloaded packages can be transfered to the production server and
     installed with
 
     ``` console
-    $ yum --disablerepo=* localinstall *.rpm
+    $ dnf --disablerepo=* install *.rpm
     ```
 
 

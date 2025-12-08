@@ -26,7 +26,7 @@ and restart the service manually.
     Update the package.
 
     ``` bash
-    sudo yum install temboard
+    sudo dnf install temboard
     ```
 
     Upgrade the database schema.

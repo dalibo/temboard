@@ -23,12 +23,12 @@ In order to run temBoard agent, you need:
 
 === "RHEL"
 
-    temBoard RPM are published on [Dalibo Labs YUM repository]. temBoard agent supports
-    RHEL/CentOS 8 and 9. Start by enabling Dalibo Labs YUM repository.
+    temBoard RPM are published on [Dalibo Labs RPM repository].
+    Start by enabling that repo.
 
     ``` console
-    $ sudo yum install -y epel-release
-    $ sudo yum install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
+    $ sudo dnf install -y epel-release
+    $ sudo dnf install -y https://yum.dalibo.org/labs/dalibo-labs-4-1.noarch.rpm
     ```
 
     !!! Warning
@@ -36,10 +36,10 @@ In order to run temBoard agent, you need:
         Do **NOT** use temBoard agent rpm from PGDG. They are known to be
         broken.
 
-    With the YUM repository configured, you can install temBoard agent with:
+    With the RPM repository configured, you can install temBoard agent with:
 
     ``` console
-    $ sudo yum install temboard-agent
+    $ sudo dnf install temboard-agent
     $ temboard-agent --version
     ```
 
@@ -50,15 +50,14 @@ In order to run temBoard agent, you need:
     with the following commands :
 
     ``` console
-    $ sudo yum install yum-utils
-    $ yumdownloader --resolve --destdir /tmp/temboard-packages temboard-agent
+    $ dnf download --resolve --destdir /tmp/temboard-packages temboard-agent
     ```
 
     Then the downloaded packages can be transfered to the production server and
-    installed with
+    installed with :
 
     ``` console
-    $ yum --disablerepo=* localinstall *.rpm
+    $ dnf --disablerepo=* localinstall *.rpm
     ```
 
 === "Debian"
@@ -203,4 +202,4 @@ temBoard agent 17-main stopped and cleaned.
 
 ( Replace `17/main` with the version and name of the PostgreSQL monitored instance. )
 
-[Dalibo Labs YUM Repository]: https://yum.dalibo.org/labs/
+[Dalibo Labs RPM Repository]: https://yum.dalibo.org/labs/
