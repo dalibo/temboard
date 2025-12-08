@@ -1,3 +1,17 @@
+
+<p align="center">
+# PyPI DEPRECATION NOTICE
+
+As of December 2025 we no longer publish packages on PyPI. Therefore you should not use
+`pip` to install temBoard. We recommend that you use the DEB / RPM packages instead.
+
+Please refer to the [latest documentation] for more details.
+
+[latest documentation]: https://temboard.readthedocs.io/en/latest/
+
+</p>
+
+
 <p align="center">
     <img src="https://github.com/dalibo/temboard/raw/master/docs/assets/temboard-logo-slogan.png" />
 </p>
