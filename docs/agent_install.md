@@ -80,6 +80,11 @@ In order to run temBoard agent, you need:
     # temboard-agent --version
     ```
 
+=== "Pip"
+
+    Since version 10, installing temBoard with pip is not possible.
+    The last version published on PyPI is obsolete.
+
 
 ## Configure
 

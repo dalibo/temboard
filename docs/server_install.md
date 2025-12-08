@@ -88,10 +88,10 @@ Keep them for later use by auto-configuration script.
     $ yum --disablerepo=* localinstall *.rpm
     ```
 
-
 === "Debian"
 
-    [Dalibo Labs APT repository](https://apt.dalibo.org/labs/) serves DEB packages fro temBoard.
+    [Dalibo Labs APT repository](https://apt.dalibo.org/labs/) serves DEB packages for
+    temBoard.
     Start by enabling Dalibo Labs APT repository.
 
     ``` console
@@ -107,6 +107,10 @@ Keep them for later use by auto-configuration script.
     # temboard --version
     ```
 
+=== "Pip"
+
+    Since version 10, installing temBoard with pip is not possible.
+    The last version published on PyPI is obsolete.
 
 # Configure
 
