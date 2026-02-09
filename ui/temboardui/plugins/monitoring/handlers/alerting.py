@@ -109,7 +109,7 @@ def checks(request):
                 .first()
             )
             enabled_before = check.enabled
-
+            is_getting_disabled = False
             if "enabled" in row:
                 enabled_after = bool(row.get("enabled"))
                 check.enabled = enabled_after
