@@ -159,14 +159,14 @@ function getFields() {
     {
       key: "total_exec_time",
       label: "Total",
-      formatter: formatDuration,
+      formatter: (value) => formatDuration(value, true),
       class: "text-end border-start",
       sortable: true,
     },
     {
       key: "mean_time",
       label: "AVG",
-      formatter: formatDuration,
+      formatter: (value) => formatDuration(value, true),
       class: "text-end",
       sortable: true,
     },
@@ -502,8 +502,7 @@ function onFromToUpdate(from_, to_) {
         </BCard>
       </template>
       <template v-slot:cell()="data">
-        <span v-if="typeof data.value === 'number'">{{ data.value.toFixed(data.value % 1 ? 3 : 0) }}</span>
-        <span v-else v-html="data.value"></span>
+        <span v-html="data.field.formatter ? data.field.formatter(data.value, data.key, data.item) : data.value"></span>
       </template>
       <template v-slot:empty="scope">
         <div class="text-center">
