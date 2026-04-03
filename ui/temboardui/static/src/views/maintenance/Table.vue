@@ -529,7 +529,7 @@ fetchData();
           </p>
           <p class="text-danger" v-if="table.bloat_bytes / table.table_bytes > 0.5">
             <i class="fa-solid fa-exclamation-triangle"></i>Overall table bloat is high. You should consider running a
-            Full VACUUUM.
+            Full VACUUM.
             <br />
             <span class="ps-4 text-body-secondary margin-start">
               Table bloat wastes space and slows down queries.
@@ -537,7 +537,7 @@ fetchData();
           </p>
           <p class="text-danger" v-if="table.index_bloat_bytes / table.index_bytes > 0.5">
             <i class="fa-solid fa-exclamation-triangle"></i>Overall index bloat is high. You should consider running a
-            Full VACUUUM or REINDEX.
+            Full VACUUM or REINDEX.
             <br />
             <span class="ps-4 text-body-secondary margin-start">
               Index bloat wastes space and slows down queries.
