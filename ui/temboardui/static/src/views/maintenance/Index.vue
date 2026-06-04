@@ -88,10 +88,10 @@ fetchData();
           </button>
           <div class="dropdown-menu">
             <h6 class="dropdown-header">Sort by:</h6>
-            <a v-for="(criteria, key) in sortCriterias" class="dropdown-item" href="#" v-on:click="sortCriteria = key">
+            <button v-for="(criteria, key) in sortCriterias" class="dropdown-item" v-on:click="sortCriteria = key">
               <i :class="['fa-solid fa-fw', { 'fa-check': sortCriteria == key }]"></i>
               {{ criteria[0] }}
-            </a>
+            </button>
           </div>
         </div>
       </div>

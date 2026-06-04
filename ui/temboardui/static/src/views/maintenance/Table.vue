@@ -561,15 +561,14 @@ fetchData();
           </button>
           <div class="dropdown-menu">
             <h6 class="dropdown-header">Sort by:</h6>
-            <a
+            <button
               v-for="(criteria, key) in indexSortCriterias"
               class="dropdown-item"
-              href="#"
               v-on:click="indexSortCriteria = key"
             >
               <i :class="['fa-solid fa-fw', { 'fa-check': indexSortCriteria == key }]"></i>
               {{ criteria[0] }}
-            </a>
+            </button>
           </div>
         </div>
       </div>
