@@ -22,11 +22,11 @@ const schemaName = ref(props.schema);
 const sortCriteria = ref("total_bytes");
 const sortCriterias = ref({
   name: ["Name", "asc"],
-  total_bytes: ["Database Size", "desc"],
-  tables_bytes: ["Tables Size", "desc"],
-  tables_bloat_ratio: ["Tables Bloat", "desc"],
-  indexes_bytes: ["Indexes Size", "desc"],
-  indexes_bloat_ratio: ["Indexes Bloat", "desc"],
+  total_bytes: ["Total Size", "desc"],
+  table_bytes: ["Table Size", "desc"],
+  bloat_ratio: ["Table Bloat", "desc"],
+  index_bytes: ["Index Size", "desc"],
+  index_bloat_ratio: ["Index Bloat", "desc"],
   toast_bytes: ["Toast Size", "desc"],
 });
 const indexSortCriteria = ref("total_bytes");
