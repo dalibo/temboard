@@ -182,7 +182,7 @@ class Role(Model):
             active=self.is_active,
             admin=self.is_admin,
             groups=[g.name for g in self.groups],
-            environments=[g.environment.name for g in self.groups],
+            environments=[g.environment.name for g in self.groups if g.environment],
         )
 
     def select_environments(self):
