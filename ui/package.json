@@ -44,7 +44,11 @@
     "vite": "^8.1.5"
   },
   "lint-staged": {
-    "*.{js,css,vue}": "prettier --write"
+    "*.{js,css,vue}": "prettier --write",
+    "*.py": [
+      "ruff check",
+      "ruff format --check"
+    ]
   },
   "allowScripts": {
     "vue-demi@0.14.8": true,
