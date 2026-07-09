@@ -12,6 +12,7 @@ from urllib.request import Request, urlopen
 
 from flask import current_app as app
 from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.exc import NoResultFound
 
 from temboardui.errors import TemboardUIError
@@ -96,6 +97,7 @@ def get_role_by_cookie(session, content):
         try:
             role = (
                 session.query(Role)
+                .options(selectinload(Role.groups))
                 .filter(Role.role_name == str(c_role_name), Role.is_active.is_(True))
                 .one()
             )
