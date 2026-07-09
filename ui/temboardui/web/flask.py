@@ -84,7 +84,7 @@ def create_app(temboard_app):
     SQLAlchemy(app)
     APIKeyMiddleware(app)
     UserMiddleware(app)
-    AuthMiddleware(app)
+    AuthenticationMiddleware(app)
     app.register_error_handler(Exception, error_handler)
 
     # unsafe-eval is for jquery. unsafe-inline because we have
@@ -246,7 +246,7 @@ class APIKeyMiddleware:
         g.apikey = key
 
 
-class AuthMiddleware:
+class AuthenticationMiddleware:
     # Flask extension enforcing authentication
 
     def __init__(self, app=None):
