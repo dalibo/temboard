@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, relationship
 from temboardtoolkit.utils import utcnow
 
+from ..acl import TRN
 from . import QUERIES
 
 Model = declarative_base()
@@ -61,6 +62,18 @@ class ApiKey(Model):
     @property
     def expired(self):
         return self.edate < utcnow()
+
+    @property
+    def trn(self):
+        return TRN("core", "apikey", str(self.id))
+
+    @property
+    def role_trns(self):
+        return self.trn.parents
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class Plugin(Model):
@@ -199,6 +212,22 @@ class Role(Model):
             .columns(Instance.__mapper__.c.values())
         )
 
+    @property
+    def trn(self):
+        return TRN("core", "user", self.role_name)
+
+    @property
+    def role_trns(self):
+        trns = set()
+        trns.update(self.trn.parents)
+        for g in self.groups:
+            trns.update(g.trn.parents)
+        return list(trns)
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
+
 
 class StubRole:
     # Fake object for roles not in database.
@@ -255,6 +284,14 @@ class Group(Model):
         return text(QUERIES["group-delete-membership"]).bindparams(
             group=name, role=username
         )
+
+    @property
+    def trn(self):
+        return TRN("core", "group", self.name)
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class Environment(Model):
@@ -326,6 +363,14 @@ class Environment(Model):
             color=self.color,
             dba_group=self.dba_group.name,
         )
+
+    @property
+    def trn(self):
+        return TRN("core", "environment", self.name)
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class Instance(Model):
@@ -522,6 +567,18 @@ class Instance(Model):
 
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
+
+    @property
+    def trn(self):
+        return TRN(
+            "core",
+            "instance",
+            f"{self.environment.name}/{self.agent_address}:{self.agent_port}",
+        )
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class ACLRule(Model):
