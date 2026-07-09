@@ -522,3 +522,43 @@ class Instance(Model):
 
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
+
+
+class ACLRule(Model):
+    __tablename__ = "acl"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    role = Column(types.UnicodeText)
+    action = Column(types.UnicodeText)
+    resource = Column(types.UnicodeText)
+    deny = Column(types.Boolean)
+    cdate = Column(types.TIMESTAMP(timezone=True))
+    origin = Column(types.UnicodeText)
+
+    @classmethod
+    def insert(cls, role, action, resource, deny=False):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-insert"]).bindparams(
+                role=role, action=action, resource=resource, deny=deny
+            )
+        )
+
+    @classmethod
+    def delete(cls, role, action, resource):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-delete"]).bindparams(
+                role=role, action=action, resource=resource
+            )
+        )
+
+    @classmethod
+    def match(cls, roles, actions, resources):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-get"]).bindparams(
+                roles=roles, actions=actions, resources=resources
+            )
+        )
+
+    def __repr__(self):
+        return f"<ACL stmt deny={self.deny} {self.role} for {self.action} on {self.resource}>"
