@@ -2,17 +2,15 @@
 from flask import current_app, g, jsonify, request
 
 from ...model import orm
-from ...web.flask import apikey_allowed, instance_proxy
+from ...web.flask import instance_proxy
 
 
 @instance_proxy.route("/monitoring/metrics")
-@apikey_allowed
 def get_metrics():
     return current_app.instance.proxy()
 
 
 @current_app.route("/json/prometheus/targets")
-@apikey_allowed
 def get_prometheus_targets():
     # Prometheus HTTP service discovery. Each agent metrics endpoint is
     # scraped through temBoard UI proxy, hence the target is temBoard UI

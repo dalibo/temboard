@@ -27,7 +27,7 @@ from temboardui.application import (
 from temboardui.errors import TemboardUIError
 
 from ...model import orm
-from ..flask import admin_required, anonymous_allowed, transaction, validating
+from ..flask import transaction, validating
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,6 @@ def logout():
 
 
 @app.route("/login")
-@anonymous_allowed
 def login():
     if g.current_user:
         return redirect("/home")
@@ -48,7 +47,6 @@ def login():
 
 
 @app.route(r"/json/login", methods=["POST"])
-@anonymous_allowed
 def json_login():
     username = request.json["username"]
     password = request.json["password"]
@@ -82,13 +80,11 @@ def json_login():
 
 
 @app.route("/reset-password", methods=["GET"])
-@anonymous_allowed
 def reset_password():
     return render_template("reset-password.html", headerbar=False)
 
 
 @app.route("/json/reset-password", methods=["POST"])
-@anonymous_allowed
 def json_reset_pwd():
     if request.method == "POST":
         data = request.json
@@ -156,7 +152,6 @@ def get_role_name_for_token(token):
 
 
 @app.route("/reset-password/<token>", methods=["GET"])
-@anonymous_allowed
 def reset_token(token):
     try:
         get_role_name_for_token(token)
@@ -167,7 +162,6 @@ def reset_token(token):
 
 
 @app.route("/json/reset-password/<token>", methods=["POST"])
-@anonymous_allowed
 def json_reset_password(token):
     try:
         role_name = get_role_name_for_token(token)
@@ -200,13 +194,11 @@ def json_reset_password(token):
 
 
 @app.route("/json/users")
-@admin_required
 def get_users():
     return jsonify([u.asdict() for u in orm.Role.all().with_session(g.db_session)])
 
 
 @app.route("/json/users", methods=["POST"])
-@admin_required
 @transaction
 def post_user():
     if "password" not in request.json:
@@ -217,7 +209,6 @@ def post_user():
 
 
 @app.route("/json/users/<name>")
-@admin_required
 def get_user(name):
     user = orm.Role.get(name).with_session(g.db_session).one_or_none()
     if user is None:
@@ -226,7 +217,6 @@ def get_user(name):
 
 
 @app.route("/json/users/<name>", methods=["PUT"])
-@admin_required
 @transaction
 def put_user(name=None, user=None):
     if user is None:
@@ -261,7 +251,6 @@ def put_user(name=None, user=None):
 
 
 @app.route("/json/users/<name>", methods=["DELETE"])
-@admin_required
 @transaction
 def delete_user(name):
     result = g.db_session.execute(orm.Role.delete(name))
@@ -271,7 +260,6 @@ def delete_user(name):
 
 
 @app.route("/json/groups/<path:groupname>/members/<username>")
-@admin_required
 def get_group_membership(groupname, username):
     row = g.db_session.execute(orm.Group.select_membership(groupname, username)).first()
     if not row:
@@ -281,7 +269,6 @@ def get_group_membership(groupname, username):
 
 
 @app.route("/json/groups/<path:groupname>/members", methods=["POST"])
-@admin_required
 @transaction
 def post_group_membership(groupname):
     gr = orm.Group.get(groupname).with_session(g.db_session).one_or_none()
@@ -295,7 +282,6 @@ def post_group_membership(groupname):
 
 
 @app.route("/json/groups/<path:groupname>/members/<username>", methods=["DELETE"])
-@admin_required
 @transaction
 def delete_group_membership(groupname, username):
     """Remove a user from a group."""

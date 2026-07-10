@@ -10,13 +10,12 @@ from temboardtoolkit.utils import utcnow
 
 from ... import agentclient
 from ...model import QUERIES, orm
-from ..flask import admin_required, transaction, validating
+from ..flask import transaction, validating
 
 logger = logging.getLogger(__name__)
 
 
 @current_app.route("/json/environments")
-@admin_required
 def get_environments():
     return flask.jsonify(
         [e.asdict() for e in orm.Environment.all().with_session(g.db_session)]
@@ -24,14 +23,12 @@ def get_environments():
 
 
 @current_app.route("/json/environments", methods=["POST"])
-@admin_required
 @transaction
 def post_environments():
     return put_environment(environment=orm.Environment(dba_group=orm.Group()))
 
 
 @current_app.route("/json/environments/<name>")
-@admin_required
 def get_environment(name):
     environment = orm.Environment.get(name).with_session(g.db_session).first()
     if environment is None:
@@ -40,7 +37,6 @@ def get_environment(name):
 
 
 @current_app.route("/json/environments/<name>/members")
-@admin_required
 def get_environment_members(name):
     return flask.jsonify(
         [
@@ -51,7 +47,6 @@ def get_environment_members(name):
 
 
 @current_app.route("/json/environments/<name>", methods=["PUT"])
-@admin_required
 @transaction
 def put_environment(name=None, environment=None):
     if environment is None:
@@ -72,7 +67,6 @@ def put_environment(name=None, environment=None):
 
 
 @current_app.route("/json/environments/<name>", methods=["DELETE"])
-@admin_required
 @transaction
 def delete_environment(name):
     # Delete DBA group, cascding to environment.
@@ -116,7 +110,6 @@ def post_instance():
 
 
 @current_app.route("/json/instances/<address>/<port>")
-@admin_required
 def get_instance(address, port):
     try:
         instance = orm.Instance.get(address, port).with_session(g.db_session).one()
@@ -126,7 +119,6 @@ def get_instance(address, port):
 
 
 @current_app.route("/json/instances/<address>/<port>", methods=["PUT"])
-@admin_required
 @transaction
 def put_instance(address=None, port=None, instance=None):
     if not instance:
@@ -171,7 +163,6 @@ def put_instance(address=None, port=None, instance=None):
 
 
 @current_app.route("/json/instances/<address>/<port>", methods=["DELETE"])
-@admin_required
 @transaction
 def delete_instance(address, port):
     out = g.db_session.execute(orm.Instance.delete(address, port))
@@ -182,7 +173,6 @@ def delete_instance(address, port):
 
 # Special proxy for unregistered instance.
 @current_app.route("/json/instances/<address>/<port>/discover")
-@admin_required
 def discover(address, port):
     client = agentclient.TemboardAgentClient.factory(
         current_app.temboard.config, address, port, username=g.current_user.role_name
@@ -201,7 +191,6 @@ def discover(address, port):
 
 
 @current_app.route("/instances.csv")
-@admin_required
 def get_instances_csv():
     search = flask.request.args.get("filter")
     pattern = "%%%s%%" % search if search else "%"
