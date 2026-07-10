@@ -6,8 +6,8 @@ import functools
 import json
 import logging
 import os
-from ipaddress import ip_address, ip_network
 from io import StringIO
+from ipaddress import ip_address, ip_network
 
 import jinja2
 from flask import (
@@ -26,10 +26,11 @@ from temboardtoolkit.utils import utcnow
 from tornado.web import decode_signed_value
 from werkzeug.exceptions import HTTPException
 
+from ..acl import TRN, ACLResult, expand_actions
 from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie
 from ..model import Session
-from ..model.orm import ApiKey, StubRole
+from ..model.orm import ACLRule, Anonymous, ApiKey, StubRole
 from .tornado import serialize_querystring
 from .vitejs import ViteJSExtension
 
@@ -130,6 +131,8 @@ def finalize_app():
     # instance_routes and instance_proxy must be registered after plugins loading.
     app.register_blueprint(instance_proxy)
     app.register_blueprint(instance_routes)
+
+    AuthorizationsMiddleware(app)
 
     return app
 
@@ -270,21 +273,6 @@ class AuthenticationMiddleware:
         if not func:
             abort(404)
 
-        apikey_allowed = getattr(func, "__apikey_allowed", False)
-        if apikey_allowed and g.apikey:
-            logger.debug("Endpoint authorized by API key.")
-            return
-
-        anonymous_allowed = getattr(func, "__anonymous_allowed", False)
-        if not anonymous_allowed and g.current_user is None:
-            logger.debug("Refusing anonymous access.")
-            abort(401)
-
-        admin_required = getattr(func, "__admin_required", False)
-        if admin_required and not g.current_user.is_admin:
-            logger.debug("Refusing access to non-admin user.")
-            abort(403)
-
 
 class UserMiddleware:
     # Flask extension to load current user.
@@ -362,16 +350,6 @@ class InstanceMiddleware:
         if not g.instance:
             abort(404)
 
-        func = self.app.view_functions.get(request.endpoint)
-        apikey_allowed = g.apikey and getattr(func, "__apikey_allowed", False)
-        user_allowed = (
-            g.current_user
-            and g.db_session.execute(
-                g.instance.has_dba(g.current_user.role_name)
-            ).scalar()
-        )
-        if not apikey_allowed and not user_allowed:
-            abort(403)
         g.instance.status = None
         prefix = current_app.blueprints[request.blueprint].url_prefix
         request.instance_path = request.url_rule.rule.replace(prefix, "")
@@ -434,22 +412,63 @@ class InstanceMiddleware:
             raise abort(408, "Plugin %s not activated." % name)
 
 
-def anonymous_allowed(func):
-    # Decorator marking a route as public.
-    func.__anonymous_allowed = True
-    return func
+class AuthorizationsMiddleware:
+    def __init__(self, app=None):
+        self.app = app
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        app.before_request(self.check)
+
+    def check(self, role=None, action=None, resource=None):
+        func = self.app.view_functions.get(request.endpoint)
+        if getattr(func, "__nocheck", None):
+            return
+
+        if role:
+            roles = TRN.parse(role).parents
+        elif g.apikey:
+            role = g.apikey.trn
+            roles = [str(trn) for trn in g.apikey.role_trns]
+        elif g.current_user:
+            role = g.current_user.role_name
+            roles = [str(trn) for trn in g.current_user.role_trns]
+        else:
+            role = Anonymous.trn()
+            roles = [str(trn) for trn in Anonymous.role_trns()]
+
+        action = action or f"{request.method}:{request.url_rule.rule}"
+        actions = expand_actions(action)
+
+        if resource:
+            resources = TRN.parse(resource).parents
+        elif hasattr(g, "instance") and g.instance:
+            resource = str(g.instance.trn)
+            resources = [str(trn) for trn in g.instance.resource_trns]
+        else:
+            resource = "*"
+            resources = ["*"]
+
+        if request.url_rule and request.url_rule.rule.startswith("/static"):
+            return
+
+        statements = (
+            ACLRule.match(roles, actions, resources).with_session(g.db_session).all()
+        )
+        denies = [s for s in statements if s.deny]
+        if not statements:
+            result = ACLResult(role, action, resource, "implicitDeny")
+        elif denies:
+            result = ACLResult(role, action, resource, "denied", statements)
+        else:
+            result = ACLResult(role, action, resource, statements=statements)
+
+        result.raise_for_decision()
 
 
-def apikey_allowed(func):
-    # Decorator allowing a route by apikey auth
-    func.__apikey_allowed = True
-    return func
-
-
-def admin_required(func):
-    # Similar to flask_security.roles_required, but limited to admin role.
-    func.__admin_required = True
-    return func
+def nocheck(func):
+    func.__nocheck = True
 
 
 def transaction(func):

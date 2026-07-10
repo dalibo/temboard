@@ -1,5 +1,5 @@
 import pytest
-from temboardui.acl import TRN
+from temboardui.acl import TRN, expand_actions
 
 
 def test_trn_parse():
@@ -46,3 +46,12 @@ def test_trn_parents():
     assert str(parents[2]) == "trn:temboard:core:*:*"
     assert str(parents[3]) == "trn:temboard:*:*:*"
     assert str(parents[4]) == "*"
+
+
+def test_expand_action():
+    action = "POST:/login"
+    actions = expand_actions(action)
+    assert len(actions) == 3
+    assert actions[0] == "*"
+    assert actions[1] == "*:/login"
+    assert actions[2] == "POST:/login"

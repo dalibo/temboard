@@ -1,3 +1,10 @@
+import logging
+
+from flask import abort
+
+logger = logging.getLogger(__name__)
+
+
 class TRN:
     """
     TRN represent a temboard role/ressource name.
@@ -58,3 +65,47 @@ class TRN:
         trns.append(trn)
         trns.append("*")
         return trns
+
+
+class ACLResult:
+    def __init__(self, role, action, resource, decision="allowed", statements=None):
+        self.role = role
+        self.action = action
+        self.resource = resource
+        self.decision = decision
+        self.statements = statements or []
+
+    def raise_for_decision(self):
+        log_prefix = "Access <%s %s on %s> "
+        log_args = (self.role, self.action, self.resource or "*")
+
+        if self.decision == "allowed":
+            logger.debug(
+                log_prefix + "allowed by %s",
+                *log_args,
+                ", ".join(repr(s) for s in self.statements),
+            )
+            return True
+        else:
+            if self.decision == "implicitDeny":
+                logger.debug(log_prefix + "implicitly denied.", *log_args)
+            else:
+                logger.debug(
+                    log_prefix + "denied by %s",
+                    *log_args,
+                    ", ".join(repr(s) for s in self.statements if s.deny),
+                )
+        raise abort(403)
+
+
+def expand_actions(action):
+    """Returns the list of pattern relevant for this action."""
+    actions = ["*"]
+    if action != "*":
+        method, _, endpoint = action.partition(":")
+        if method != "*":
+            actions.append("*:" + endpoint)
+        elif endpoint != "*":
+            actions.append(method + ":*")
+        actions.append(action)
+    return actions

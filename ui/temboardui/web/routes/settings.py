@@ -3,11 +3,9 @@ from flask import current_app as app
 
 from ...application import send_mail, send_sms
 from ...model import orm
-from ..flask import admin_required
 
 
 @app.route("/settings/instances")
-@admin_required
 def settings_instances():
     return render_template(
         "settings/instances.html",
@@ -17,7 +15,6 @@ def settings_instances():
 
 
 @app.route("/settings/environments")
-@admin_required
 def settings_environments():
     return render_template(
         "settings/environments.html",
@@ -27,13 +24,11 @@ def settings_environments():
 
 
 @app.route("/settings/environments/<name>/members")
-@admin_required
 def settings_environment_members(name):
     return render_template("settings/members.html", sidebar=True, environment=name)
 
 
 @app.route("/settings/users")
-@admin_required
 def settings_users():
     return render_template(
         "settings/users.html",
@@ -43,7 +38,6 @@ def settings_users():
 
 
 @app.route("/settings/notifications")
-@admin_required
 def settings_notifications():
     return render_template(
         "settings/notifications.html",
@@ -54,7 +48,6 @@ def settings_notifications():
 
 
 @app.route("/json/test_email", methods=["POST"])
-@admin_required
 def post_test_email():
     email = request.json.get("email")
     if not email:
@@ -80,7 +73,6 @@ def post_test_email():
 
 
 @app.route("/json/test_sms", methods=["POST"])
-@admin_required
 def post_test_sms():
     phone = request.json.get("phone")
     if not phone:
