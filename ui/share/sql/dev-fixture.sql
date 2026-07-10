@@ -33,6 +33,11 @@ VALUES
 ('admin', (SELECT id FROM application.groups WHERE name = 'stable/dba')),
 ('admin', (SELECT id FROM application.groups WHERE name = 'mass/dba'));
 
+INSERT INTO application.acl (role, action, resource)
+VALUES
+('trn:temboard:core:group:mass/dba', '*', 'trn:temboard:core:instance:mass'),
+('trn:temboard:core:group:stable/dba', '*', 'trn:temboard:core:instance:stable');
+
 -- Pre-register agents
 
 INSERT INTO application.instances

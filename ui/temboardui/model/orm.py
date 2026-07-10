@@ -619,3 +619,13 @@ class ACLRule(Model):
 
     def __repr__(self):
         return f"<ACL stmt deny={self.deny} {self.role} for {self.action} on {self.resource}>"
+
+
+class Anonymous:
+    @staticmethod
+    def trn():
+        return TRN("*", "*", "*")
+
+    @staticmethod
+    def role_trns():
+        return [Anonymous.trn()]

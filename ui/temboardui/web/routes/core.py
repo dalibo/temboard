@@ -2,11 +2,9 @@ from flask import current_app as app
 from flask import g, jsonify, redirect
 
 from ...model.orm import Instance
-from ..flask import admin_required, anonymous_allowed
 
 
 @app.route("/")
-@anonymous_allowed
 def index():
     if g.current_user:
         return redirect("/home")
@@ -27,7 +25,6 @@ def get_instance_home():
 
 
 @app.route("/json/plugins")
-@admin_required
 def get_plugins():
     """List plugins."""
     return jsonify(sorted(app.temboard.config.temboard.plugins))
