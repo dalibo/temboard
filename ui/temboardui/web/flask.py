@@ -85,6 +85,7 @@ def create_app(temboard_app):
     APIKeyMiddleware(app)
     UserMiddleware(app)
     AuthenticationMiddleware(app)
+    InstanceMiddleware(app)
     app.register_error_handler(Exception, error_handler)
 
     # unsafe-eval is for jquery. unsafe-inline because we have
@@ -126,11 +127,9 @@ def finalize_app():
     app = current_app
     app.secret_key = app.temboard.config.temboard.cookie_secret
 
-    # This middleware registers instance_proxy blueprint, loads g.instance
-    # object and provides helpers in app.instance. instance is loaded only for
-    # instance_proxy blueprint. instance_proxy must be registered after plugins
-    # loading.
-    InstanceMiddleware(app)
+    # instance_routes and instance_proxy must be registered after plugins loading.
+    app.register_blueprint(instance_proxy)
+    app.register_blueprint(instance_routes)
 
     return app
 
@@ -332,11 +331,8 @@ class InstanceMiddleware:
 
     def init_app(self, app):
         app.instance = self
-        app.register_blueprint(instance_proxy)
-        app.register_blueprint(instance_routes)
-        brf = app.before_request_funcs
-        brf[instance_proxy.name] = [self.load_instance_before_request]
-        brf[instance_routes.name] = [self.load_instance_before_request]
+
+        app.before_request(self.load_instance_before_request)
 
         @app.teardown_request
         def teardown_instance(*_):
@@ -350,6 +346,15 @@ class InstanceMiddleware:
             return dict(instance=g.instance)
 
     def load_instance_before_request(self):
+        # instance is loaded only for
+        # instance_routes and instance_proxy blueprint
+        current_blueprint = ""
+        allowed_blueprints = ["instance_proxy", "instance_routes"]
+        if request.endpoint:
+            current_blueprint = request.endpoint.split(".")[0]
+        if current_blueprint not in allowed_blueprints:
+            return
+
         address = request.view_args.pop("address")
         port = request.view_args.pop("port")
 
