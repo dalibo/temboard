@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 from dateutil import parser as parse_datetime
+from flask import abort, request
 from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
@@ -83,6 +84,9 @@ def get_request_ids(request):
 
 
 def parse_start_end(request):
+    # for monitoring plugin
+    # waiting for monitoring plugin to be migrated to Flask
+    # and then, use or rename parse_start_end_flask()
     start = request.handler.get_argument("start", default=None)
     end = request.handler.get_argument("end", default=None)
     try:
@@ -92,6 +96,22 @@ def parse_start_end(request):
             end = parse_datetime.parse(end)
     except ValueError:
         raise HTTPError(406, "Datetime not valid.")
+
+    return start, end
+
+
+def parse_start_end_flask():
+    # for statements plugin
+    # waiting for monitoring plugin to be migrated to Flask
+    start = request.args.get("start")
+    end = request.args.get("end")
+    try:
+        if start:
+            start = parse_datetime.parse(start)
+        if end:
+            end = parse_datetime.parse(end)
+    except ValueError:
+        abort(406, "Datetime not valid.")
 
     return start, end
 

@@ -1,11 +1,11 @@
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Statements{% end %}
+{% block title %}temBoard / {{instance}} / Statements{% endblock %}
 
 {% block head %}
-{% for link in vitejs.css_links_for('statements.js') %}{% raw link %}{% end %}
-<link href="/css/dygraph.css" rel="stylesheet" />
-{% end %}
+{% for link in vitejs.css_links_for('statements.js') %}{{ link | safe }}{% endfor %}
+<link href="/static/css/dygraph.css" rel="stylesheet" />
+{% endblock %}
 
 {% block content %}
 
@@ -13,10 +13,10 @@
   <statements />
 </div>
 
-<script src="/js/dygraph.min.js"></script>
+<script src="/static/js/dygraph.min.js"></script>
 <script type="module" src="{{ vitejs.url_for('statements.js') }}"></script>
 <script>
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/statements/data";
 var chartApiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/statements/chart";
 </script>
-{% end %}
+{% endblock %}
