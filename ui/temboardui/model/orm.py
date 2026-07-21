@@ -612,6 +612,22 @@ class ACLRule(Model):
         )
 
     @classmethod
+    def rename_role(cls, before, after):
+        before = str(TRN("core", "group", before))
+        after = str(TRN("core", "group", after))
+        return Query(cls).from_statement(
+            text(QUERIES["acl-rename-role"]).bindparams(before=before, after=after)
+        )
+
+    @classmethod
+    def rename_resource(cls, before, after):
+        before = str(TRN("core", "instance", before))
+        after = str(TRN("core", "instance", after))
+        return Query(cls).from_statement(
+            text(QUERIES["acl-rename-resource"]).bindparams(before=before, after=after)
+        )
+
+    @classmethod
     def match(cls, roles, actions, resources):
         return Query(cls).from_statement(
             text(QUERIES["acl-get"]).bindparams(
