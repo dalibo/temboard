@@ -9,6 +9,7 @@ from temboardtoolkit import validators
 from temboardtoolkit.utils import utcnow
 
 from ... import agentclient
+from ...acl import TRN
 from ...model import QUERIES, orm
 from ..flask import transaction, validating
 
@@ -49,8 +50,14 @@ def get_environment_members(name):
 @current_app.route("/json/environments/<name>", methods=["PUT"])
 @transaction
 def put_environment(name=None, environment=None):
-    if environment is None:
-        environment = orm.Environment.get(name).with_session(g.db_session).first()
+    if environment is None and (
+        environment := orm.Environment.get(name).with_session(g.db_session).first()
+    ):
+        orm.ACLRule.delete(
+            str(TRN("core", "group", f"{environment.name}/dba")),
+            "*",
+            str(TRN("core", "instance", environment.name)),
+        ).with_session(g.db_session).first()
     if environment is None:
         flask.abort(404, "No such environment.")
 
@@ -58,6 +65,11 @@ def put_environment(name=None, environment=None):
         environment.name = validators.slug(flask.request.json["name"])
     environment.description = flask.request.json["description"]
     environment.dba_group.name = f"{environment.name}/dba"
+    orm.ACLRule.insert(
+        str(TRN("core", "group", environment.dba_group.name)),
+        "*",
+        str(TRN("core", "instance", environment.name)),
+    ).with_session(g.db_session).first()
     # Used as profile name in /settings/environment/<>/members
     environment.dba_group.description = "DBA"
     g.db_session.add(environment)  # When called from post_environment
@@ -73,6 +85,11 @@ def delete_environment(name):
     result = g.db_session.execute(orm.Group.delete(f"{name}/dba"))
     if result.rowcount == 0:
         flask.abort(404, "No such environment.")
+    orm.ACLRule.delete(
+        str(TRN("core", "group", f"{name}/dba")),
+        "*",
+        str(TRN("core", "instance", name)),
+    ).with_session(g.db_session).first()
     return flask.jsonify()
 
 
