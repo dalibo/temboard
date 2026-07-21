@@ -45,5 +45,12 @@
   },
   "lint-staged": {
     "*.{js,css,vue}": "prettier --write"
+  },
+  "allowScripts": {
+    "vue-demi@0.14.8": true,
+    "@fortawesome/fontawesome-common-types@6.5.2": true,
+    "@fortawesome/fontawesome-svg-core@6.5.2": true,
+    "@fortawesome/free-solid-svg-icons@6.5.2": true,
+    "esbuild@0.21.5": true
   }
 }
