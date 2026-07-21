@@ -25,10 +25,12 @@ export default defineConfig({
     assetsDir: ".",
     rollupOptions: {
       output: {
-        manualChunks: {
-          "highlight.js": ["highlight.js"],
-          "bootstrap-vue-next": ["bootstrap-vue-next"],
-          vue: ["vue"],
+        codeSplitting: {
+          groups: [
+            { name: "highlight.js", test: /node_modules[\\/]highlight\.js/ },
+            { name: "bootstrap-vue-next", test: /node_modules[\\/]bootstrap-vue-next/ },
+            { name: "vue", test: /node_modules[\\/]vue/ },
+          ],
         },
       },
       input: {

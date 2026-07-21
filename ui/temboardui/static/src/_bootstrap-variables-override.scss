@@ -5,8 +5,8 @@ $cat2: #fa9e78;
 $navbar-inverse-bg: $primary;
 $link-color: lighten(saturate($primary, 15%), 15%);
 
-@import "../node_modules/bootstrap/scss/functions";
-@import "../node_modules/bootstrap/scss/variables";
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
 
 $input-border-focus: $link-color;
 $grid-gutter-width: 20px;
