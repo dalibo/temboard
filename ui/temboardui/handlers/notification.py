@@ -1,14 +1,16 @@
-from ..web.tornado import app, render_template
+from flask import current_app, g, render_template
+
+from ..web.flask import instance_routes
 
 
-@app.instance_route(r"/notifications")
-def notifications(request):
-    notifications = request.instance.get("/notifications")
-    request.instance.fetch_status()
+@instance_routes.route("/notifications")
+def notifications():
+    notifications = current_app.instance.request("/notifications").json()
+    current_app.instance.fetch_status()
     return render_template(
         "notifications.html",
-        instance=request.instance,
+        instance=g.instance,
         notifications=notifications,
         plugin="notifications",
-        role=request.current_user,
+        role=g.current_user,
     )
