@@ -1,52 +1,53 @@
 import logging
 
-from temboardui.web.tornado import HTTPError, csvify
 
 from ..chartdata import get_metric_data_csv, get_unavailability_csv
 from ..tools import get_request_ids, parse_start_end
-from . import blueprint, render_template
+from flask import abort, current_app, g, render_template, request
+from ....web.flask import csvify, instance_routes
 
 logger = logging.getLogger(__name__)
 
 
-@blueprint.instance_route("/monitoring")
-def index(request):
-    request.instance.check_active_plugin("monitoring")
-    request.instance.fetch_status()
+@instance_routes.route("/monitoring")
+def index():
+    current_app.instance.check_active_plugin("monitoring")
+    current_app.instance.fetch_status()
     return render_template(
-        "index.html",
-        role=request.current_user,
-        instance=request.instance,
+        "monitoring/index.html",
+        role=g.current_user,
+        instance=g.instance,
         plugin="monitoring",
+        vitejs=current_app.vitejs,
     )
 
 
-@blueprint.instance_route("/monitoring/unavailability")
-def unavailability(request):
+@instance_routes.route("/monitoring/unavailability")
+def unavailability():
     try:
-        host_id, instance_id = get_request_ids(request)
+        host_id, instance_id = get_request_ids()
     except NameError as e:
         logger.info("%s. No data.", e)
         return csvify(data=[])
 
-    start, end = parse_start_end(request)
-    data = get_unavailability_csv(request.db_session, start, end, host_id, instance_id)
+    start, end = parse_start_end()
+    data = get_unavailability_csv(g.db_session, start, end, host_id, instance_id)
     return csvify(data)
 
 
-@blueprint.instance_route(r"/monitoring/data/([a-z\-_.0-9]{1,64})$")
-def data_metric(request, metric_name):
-    key = request.handler.get_argument("key", default=None)
+@instance_routes.route(r"/monitoring/data/<metric_name>")
+def data_metric(metric_name):
+    key = request.args.get("key")
     try:
-        host_id, instance_id = get_request_ids(request)
+        host_id, instance_id = get_request_ids()
     except NameError as e:
         logger.info("%s. No data.", e)
         return csvify(data=[])
 
-    start, end = parse_start_end(request)
+    start, end = parse_start_end()
     try:
         data = get_metric_data_csv(
-            request.db_session,
+            g.db_session,
             metric_name,
             start,
             end,
@@ -55,6 +56,6 @@ def data_metric(request, metric_name):
             key=key,
         )
     except IndexError:
-        raise HTTPError(404, "Unknown metric.")
+        raise abort(400, "Unknown metric.")
 
     return csvify(data=data)

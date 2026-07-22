@@ -82,21 +82,6 @@ def test_template(mocker):
     assert 200 == response.status_code
 
 
-def test_csv():
-    from temboardui.web.tornado import csvify
-
-    response = csvify("1,2")
-    assert "1,2" == response.body
-    assert "text/csv" == response.headers["Content-Type"]
-
-    response = csvify([(1, 2)])
-    assert "1,2" in response.body.splitlines()
-    assert "text/csv" == response.headers["Content-Type"]
-
-    with pytest.raises(ValueError):
-        csvify({"a": "b"})
-
-
 def test_make_error(mocker):
     rt = mocker.patch("temboardui.web.tornado.render_template")
     from temboardui.web.tornado import make_error

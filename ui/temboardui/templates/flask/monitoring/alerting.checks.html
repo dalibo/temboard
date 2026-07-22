@@ -1,6 +1,6 @@
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Monitoring{% end %}
+{% block title %}temBoard / {{instance}} / Monitoring{% endblock %}
 
 {% block content %}
 <div id="app">
@@ -12,4 +12,4 @@
 var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
 </script>
 
-{% end %}
+{% endblock %}

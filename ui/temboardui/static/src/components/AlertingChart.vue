@@ -333,6 +333,7 @@ function updateCheck() {
     method: "post",
     dataType: "json",
     beforeSend: showWaiter,
+    contentType: "application/json",
     data: JSON.stringify({
       checks: [
         {
