@@ -3,15 +3,13 @@ import logging
 from datetime import datetime
 from textwrap import dedent
 
-import tornado.escape
-import tornado.web
 
 from temboardui.plugins.monitoring.model.orm import Check, CheckState
-from temboardui.web.tornado import HTTPError, jsonify
 
 from ..alerting import check_specs, check_state_detail, checks_info
 from ..tools import get_request_ids, parse_start_end
-from . import blueprint, render_template
+from ....web.flask import instance_routes
+from flask import abort, current_app, g, json, jsonify, render_template, request
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ logger = logging.getLogger(__name__)
 def sql_json_query(request, query, *args):
     # Helper to query JSON output from PostgreSQL.
 
-    cur = request.db_session.connection().connection.cursor()
+    cur = g.db_session.connection().connection.cursor()
     query = cur.mogrify(query, args)
     data_buffer = io.StringIO()
     cur.copy_expert(query, data_buffer)
@@ -27,17 +25,17 @@ def sql_json_query(request, query, *args):
     data = data_buffer.getvalue()
     data_buffer.close()
     try:
-        return tornado.escape.json_decode(data)
+        return json.loads(data)
     except Exception as e:
         logger.error("Failed to parse JSON from Postgres: %s", e)
         logger.error("Postgres output is: %r", data)
         return []
 
 
-@blueprint.instance_route(r"/alerting/alerts.json")
-def alerts(request):
+@instance_routes.route(r"/alerting/alerts.json")
+def alerting_alerts():
     try:
-        host_id, instance_id = get_request_ids(request)
+        host_id, instance_id = get_request_ids()
     except NameError as e:
         logger.info("Unknown host or no data: %s." % e)
         return jsonify([])
@@ -57,50 +55,48 @@ def alerts(request):
     ) TO STDOUT
     """)  # noqa
 
-    # Tornado refuses to send lists as JSON. We must explicitly use jsonify.
-    # Cf. https://github.com/tornadoweb/tornado/issues/1009
-    return jsonify(sql_json_query(request, query, host_id, instance_id))
+    return sql_json_query(request, query, host_id, instance_id)
 
 
-@blueprint.instance_route(r"/alerting")
-def index(request):
-    request.instance.fetch_status()
+@instance_routes.route(r"/alerting")
+def alerting_index():
+    current_app.instance.fetch_status()
     return render_template(
-        "alerting.checks.html",
-        role=request.current_user,
-        instance=request.instance,
+        "monitoring/alerting.checks.html",
+        role=g.current_user,
+        instance=g.instance,
         plugin="alerting",  # we cheat here
     )
 
 
-@blueprint.instance_route("/alerting/checks.json", methods=["GET", "POST"])
-def checks(request):
+@instance_routes.route("/alerting/checks.json", methods=["GET", "POST"])
+def alerting_checks():
     try:
-        host_id, instance_id = get_request_ids(request)
+        host_id, instance_id = get_request_ids()
     except NameError as e:
         logger.info("Unknown host or no data: %s." % e)
         return jsonify([])
 
     if "GET" == request.method:
-        data = checks_info(request.db_session, host_id, instance_id)
+        data = checks_info(g.db_session, host_id, instance_id)
         for datum in data:
             spec = check_specs[datum["name"]]
             if "value_type" in spec:
                 datum["value_type"] = spec["value_type"]
         return jsonify(data)
     else:
-        post = tornado.escape.json_decode(request.body)
+        post = request.json
         if "checks" not in post or type(post.get("checks")) is not list:
-            raise HTTPError(400, "Post data not valid.")
+            raise abort(400, "Post data not valid.")
 
         for row in post["checks"]:
             if row.get("name") not in check_specs:
-                raise HTTPError(404, "Unknown check '%s'" % row.get("name"))
+                raise abort(400, "Unknown check '%s'" % row.get("name"))
 
         for row in post["checks"]:
             # Find the check from its name
             check = (
-                request.db_session.query(Check)
+                g.db_session.query(Check)
                 .filter(
                     Check.name == str(row.get("name")),
                     Check.host_id == host_id,
@@ -118,26 +114,26 @@ def checks(request):
             if "warning" in row:
                 warning = row.get("warning")
                 if type(warning) not in (int, float):
-                    raise HTTPError(400, "Post data not valid.")
+                    raise abort(400, "Post data not valid.")
                 check.warning = warning
             if "critical" in row:
                 critical = row.get("critical")
                 if type(critical) not in (int, float):
-                    raise HTTPError(400, "Post data not valid.")
+                    raise abort(400, "Post data not valid.")
                 check.critical = critical
             if "description" in row:
                 check.description = row.get("description")
 
-            request.db_session.merge(check)
+            g.db_session.merge(check)
 
             if is_getting_disabled:
-                cs = request.db_session.query(CheckState).filter(
+                cs = g.db_session.query(CheckState).filter(
                     CheckState.check_id == check.check_id
                 )
                 for i in cs:
                     i.state = "UNDEF"
-                    request.db_session.merge(i)
-                    request.db_session.execute(
+                    g.db_session.merge(i)
+                    g.db_session.execute(
                         "SELECT monitoring.append_state_changes(:d, :i,"
                         ":s, :k, :v, :w, :c)",
                         {
@@ -151,14 +147,14 @@ def checks(request):
                         },
                     )
 
-        request.db_session.commit()
+        g.db_session.commit()
 
         return {}
 
 
-@blueprint.instance_route(r"/alerting/([a-z\-_.0-9]{1,64})")
-def check(request, name):
-    host_id, instance_id = get_request_ids(request)
+@instance_routes.route(r"/alerting/<name>")
+def alerting_check(name):
+    host_id, instance_id = get_request_ids()
     query = dedent("""\
     SELECT *
     FROM monitoring.checks
@@ -166,26 +162,26 @@ def check(request, name):
       AND instance_id = :instance_id
       AND name = :check_name
     """)
-    res = request.db_session.execute(
+    res = g.db_session.execute(
         query, dict(host_id=host_id, instance_id=instance_id, check_name=name)
     )
     check = res.fetchone()
     spec = check_specs[name]
-    request.instance.fetch_status()
+    current_app.instance.fetch_status()
     return render_template(
-        "alerting.check.html",
-        role=request.current_user,
-        instance=request.instance,
+        "monitoring/alerting.check.html",
+        role=g.current_user,
+        instance=g.instance,
         plugin="alerting",  # we cheat here
         check=check,
         value_type=spec.get("value_type"),
     )
 
 
-@blueprint.instance_route(r"/alerting/check_changes/([a-z\-_.0-9]{1,64}).json")
-def check_changes(request, name):
-    host_id, instance_id = get_request_ids(request)
-    start, end = parse_start_end(request)
+@instance_routes.route(r"/alerting/check_changes/<name>.json")
+def alerting_check_changes(name):
+    host_id, instance_id = get_request_ids()
+    start, end = parse_start_end()
 
     query = dedent("""\
     COPY (
@@ -203,13 +199,13 @@ def check_changes(request, name):
     )
 
 
-@blueprint.instance_route(r"/alerting/state_changes/([a-z\-_.0-9]{1,64}).json")
-def state_changes(request, name):
-    host_id, instance_id = get_request_ids(request)
-    start, end = parse_start_end(request)
-    key = request.handler.get_argument("key", default=None)
+@instance_routes.route(r"/alerting/state_changes/<name>.json")
+def alerting_state_changes(name):
+    host_id, instance_id = get_request_ids()
+    start, end = parse_start_end()
+    key = request.args.get("key")
     if name not in check_specs:
-        raise HTTPError(404, "Unknown check '%s'" % name)
+        raise abort(400, "Unknown check '%s'" % name)
 
     query = dedent("""\
     COPY (
@@ -228,13 +224,13 @@ def state_changes(request, name):
     )
 
 
-@blueprint.instance_route(r"/alerting/states/([a-z\-_.0-9]{1,64}).json")
-def states(request, name):
-    host_id, instance_id = get_request_ids(request)
+@instance_routes.route(r"/alerting/states/<name>.json")
+def alerting_states(name):
+    host_id, instance_id = get_request_ids()
     if name not in check_specs:
-        raise HTTPError(404, "Unknown check '%s'" % name)
+        raise abort(400, "Unknown check '%s'" % name)
 
-    detail = check_state_detail(request.db_session, host_id, instance_id, name)
+    detail = check_state_detail(g.db_session, host_id, instance_id, name)
     for d in detail:
         spec = check_specs[name]
         if "value_type" in spec:

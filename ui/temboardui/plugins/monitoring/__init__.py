@@ -20,7 +20,6 @@
 #
 
 import logging
-import os
 import shutil
 from datetime import datetime, timedelta
 
@@ -30,8 +29,6 @@ except ImportError:
     from itertools import izip_longest as zip_longest
 from textwrap import dedent
 
-import tornado.escape
-import tornado.web
 from psycopg2.extensions import AsIs
 from sqlalchemy.exc import DataError, IntegrityError, ProgrammingError
 from sqlalchemy.sql import text
@@ -48,7 +45,6 @@ from ...core import refresh_discover
 from ...model import QUERIES, Session
 from ...model import orm as coreorm
 from .alerting import check_specs
-from .handlers import blueprint
 from .model.db import insert_availability
 from .model.orm import Check, CollectorStatus, Host, Instance
 from .tools import (
@@ -81,22 +77,10 @@ class MonitoringPlugin:
         self.app.config.add_specs(self.options_specs)
 
     def load(self):
-        plugin_path = os.path.dirname(os.path.realpath(__file__))
-        # Import Tornado handlers
-        __import__(__name__ + ".handlers.alerting")
-        __import__(__name__ + ".handlers.monitoring")
         # Import Flask routes
         __import__(__name__ + ".routes")
-        self.app.tornado_app.add_rules(blueprint.rules)
-        self.app.tornado_app.add_rules(
-            [
-                (
-                    r"/js/monitoring/(.*)",
-                    tornado.web.StaticFileHandler,
-                    {"path": plugin_path + "/static/js"},
-                )
-            ]
-        )
+        __import__(__name__ + ".handlers.monitoring")
+        __import__(__name__ + ".handlers.alerting")
         self.app.worker_pool.add(workers)
         self.app.scheduler.add(workers)
 

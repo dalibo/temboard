@@ -1,10 +1,10 @@
-{% extends ../../../templates/base.html %}
+{% extends "base.html" %}
 
-{% block title %}temBoard / {{instance}} / Monitoring{% end %}
+{% block title %}{{ super() }}/ Monitoring{% endblock %}
 
 {% block head %}
 <link href="/css/dygraph.css" rel="stylesheet" />
-{% end %}
+{% endblock %}
 
 {% block content %}
 
@@ -19,4 +19,4 @@ var apiUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitor
 var unavailabilityUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring/unavailability";
 </script>
 
-{% end %}
+{% endblock %}

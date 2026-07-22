@@ -4,7 +4,7 @@ from decimal import Decimal
 from flask import current_app, g, jsonify, render_template
 from sqlalchemy.sql import column, extract, func, select, text
 
-from temboardui.plugins.monitoring.tools import parse_start_end_flask as parse_start_end
+from temboardui.plugins.monitoring.tools import parse_start_end
 
 from ...web.flask import instance_routes
 from . import Biggest, Biggestsum, diff, to_epoch, total_hit, total_read

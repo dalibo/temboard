@@ -6,7 +6,7 @@ from flask import abort, request
 from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
-from ...web.tornado import HTTPError
+from flask import g
 from .alerting import bootstrap_checks, check_specs
 from .model import db
 from .model.orm import Check, CheckState, CollectorStatus, Host, Instance
@@ -77,32 +77,13 @@ def get_instance_id(session, host_id, port):
     return instance_id
 
 
-def get_request_ids(request):
-    host_id = get_host_id(request.db_session, request.instance.hostname)
-    instance_id = get_instance_id(request.db_session, host_id, request.instance.pg_port)
+def get_request_ids():
+    host_id = get_host_id(g.db_session, g.instance.hostname)
+    instance_id = get_instance_id(g.db_session, host_id, g.instance.pg_port)
     return host_id, instance_id
 
 
-def parse_start_end(request):
-    # for monitoring plugin
-    # waiting for monitoring plugin to be migrated to Flask
-    # and then, use or rename parse_start_end_flask()
-    start = request.handler.get_argument("start", default=None)
-    end = request.handler.get_argument("end", default=None)
-    try:
-        if start:
-            start = parse_datetime.parse(start)
-        if end:
-            end = parse_datetime.parse(end)
-    except ValueError:
-        raise HTTPError(406, "Datetime not valid.")
-
-    return start, end
-
-
-def parse_start_end_flask():
-    # for statements plugin
-    # waiting for monitoring plugin to be migrated to Flask
+def parse_start_end():
     start = request.args.get("start")
     end = request.args.get("end")
     try:

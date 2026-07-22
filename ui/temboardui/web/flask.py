@@ -1,16 +1,19 @@
 # Flask WSGI app is served by Tornado's fallback handler.
 
 import contextlib
+import csv
 import functools
 import json
 import logging
 import os
 from ipaddress import ip_address, ip_network
+from io import StringIO
 
 import jinja2
 from flask import (
     Blueprint,
     Flask,
+    Response,
     abort,
     current_app,
     g,
@@ -468,3 +471,19 @@ def validating():
         yield
     except ValueError as e:
         raise abort(408, str(e))
+
+
+def csvify(data, status_code=200):
+    if isinstance(data, list):
+        fo = StringIO()
+        writer = csv.writer(fo)
+        for row in data:
+            writer.writerow(row)
+        data = fo.getvalue()
+    elif not isinstance(data, (str, bytes)):
+        raise ValueError("Malformed CSV data")
+    return Response(
+        data,
+        status=status_code,
+        headers={"Content-Type": "text/csv"},
+    )
