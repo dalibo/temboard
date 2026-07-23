@@ -1,5 +1,6 @@
 <script setup>
-import { Modal, Popover } from "bootstrap";
+import { Modal } from "bootstrap";
+import { vBPopover } from "bootstrap-vue-next";
 import $ from "jquery";
 import { onMounted, ref } from "vue";
 
@@ -88,8 +89,6 @@ function getStatus() {
     dataType: "json",
     success: function (data) {
       configurationStatus.value = data;
-      const popoverTriggerList = contentEl.value.querySelectorAll('[data-bs-toggle="popover"]');
-      [...popoverTriggerList].map((el) => new Popover(el));
     },
     error: function (xhr) {
       showError(xhr);
@@ -98,9 +97,6 @@ function getStatus() {
 }
 
 function submitForm() {
-  const popoverTriggerList = contentEl.value.querySelectorAll('[data-bs-toggle="popover"]');
-  const popoverList = [...popoverTriggerList].map((el) => new Popover(el));
-  popoverList.forEach((p) => p.dispose());
   const formData = { settings: [] };
   clearError();
   let names = [];
@@ -339,11 +335,7 @@ function isSelected(value, setting) {
                     </select>
                     <input
                       v-else
-                      data-bs-toggle="popover"
-                      data-bs-trigger="hover"
-                      data-bs-placement="top"
-                      data-bs-html="true"
-                      :data-bs-content="generatePopoverContent(settingRow)"
+                      v-b-popover.hover.top="generatePopoverContent(settingRow)"
                       type="text"
                       class="form-control form-control-sm"
                       :name="settingRow['name']"
@@ -356,12 +348,7 @@ function isSelected(value, setting) {
                       type="button"
                       class="btn btn-link"
                       :id="'buttonResetDefault_' + settingRow['name']"
-                      data-bs-toggle="popover"
-                      data-bs-trigger="hover"
-                      data-bs-placement="right"
-                      :title="settingRow['name']"
-                      data-bs-html="true"
-                      :data-bs-content="'Reset to: ' + settingRow['boot_val']"
+                      v-b-popover.hover.right="'Reset to: ' + settingRow['boot_val']"
                       @click="cancel(settingRow['name'], settingRow['boot_val'])"
                     >
                       <span class="fa-solid fa-undo" aria-hidden="true"></span>

@@ -1,5 +1,5 @@
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { Popover, Tooltip } from "bootstrap";
+import { Tooltip } from "bootstrap";
 import $ from "jquery";
 import { createApp } from "vue";
 
@@ -54,9 +54,7 @@ $(() => {
     window.dispatchEvent(new Event("resize"));
   });
 
-  // Popover and tooltip initialization
-  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-  [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
+  // Tooltip initialization
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
 });

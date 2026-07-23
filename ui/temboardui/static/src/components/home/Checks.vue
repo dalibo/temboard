@@ -1,4 +1,5 @@
 <script setup>
+import { vBPopover } from "bootstrap-vue-next";
 import _ from "lodash";
 import { computed } from "vue";
 
@@ -31,15 +32,7 @@ function popoverContent(instance) {
 </script>
 
 <template>
-  <div
-    class="d-inline-block"
-    data-bs-toggle="popover"
-    :data-bs-content="popoverContent(props.instance)"
-    data-bs-trigger="hover"
-    data-bs-placement="bottom"
-    data-bs-container="body"
-    data-bs-html="true"
-  >
+  <div class="d-inline-block" v-b-popover.hover.bottom.body="popoverContent(props.instance)">
     <span class="badge text-bg-critical me-1" v-if="!available" title="Unable to connect to Postgres">
       <i class="fa fa-fw fa-unlink"></i>
       UNAVAILABLE</span

@@ -1,7 +1,7 @@
 <script setup>
 // Global: clearError, showError
 import { useFullscreen } from "@vueuse/core";
-import { Popover, Tooltip } from "bootstrap";
+import { vBTooltip } from "bootstrap-vue-next";
 import $ from "jquery";
 import _ from "lodash";
 import moment from "moment";
@@ -24,8 +24,6 @@ const start = ref(moment().subtract(1, "hours"));
 const end = ref(moment());
 const refreshDate = ref(null);
 const refreshInterval = ref(3 * 1000);
-let popoverList = [];
-let tooltipList = [];
 
 // Pagination variables
 const currentPage = ref(1);
@@ -77,10 +75,6 @@ const paginatedInstances = computed(() => {
 onMounted(() => {
   refreshCards();
   window.setInterval(refreshCards, refreshInterval.value);
-  nextTick(() => {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
-  });
   window.addEventListener("resize", handleResize);
 
   const savedRowsPerPage = localStorage.getItem("rowsPerPage");
@@ -112,15 +106,7 @@ function fetchInstances() {
   clearError();
   $.ajax("/json/instances/home")
     .done((data) => {
-      popoverList.forEach((p) => p.dispose());
-      tooltipList.forEach((t) => t.dispose());
       instances.value = data;
-      nextTick(() => {
-        const popoverTriggerList = root.value.querySelectorAll('[data-bs-toggle="popover"]');
-        popoverList = [...popoverTriggerList].map((el) => new Popover(el, { sanitize: false }));
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        tooltipList = [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
-      });
     })
     .fail((xhr) => {
       showError(xhr);
@@ -297,12 +283,9 @@ watch(totalPages, (newValue) => {
         </div>
       </div>
       <div class="col text-center" v-if="environments.length === 1">
-        <span
-          class="lead"
-          v-bind:title="'Showing instances of environment ' + environments[0]"
-          data-bs-toggle="tooltip"
-          >{{ environments[0] }}</span
-        >
+        <span class="lead" v-b-tooltip="'Showing instances of environment ' + environments[0]">{{
+          environments[0]
+        }}</span>
       </div>
       <div class="col">
         <p class="text-secondary text-end mt-2 mb-0 me-4">

@@ -1,7 +1,7 @@
 <script setup>
 import { UseTimeAgo } from "@vueuse/components";
 import { useFullscreen } from "@vueuse/core";
-import { Popover } from "bootstrap";
+import { BPopover, vBTooltip } from "bootstrap-vue-next";
 import { filesize } from "filesize";
 import $ from "jquery";
 import { computed, onMounted, ref } from "vue";
@@ -52,7 +52,6 @@ let tpsChart;
 let loadAverageChart;
 
 let timeRange;
-let popoverList = [];
 
 const cpuTooltip = computed(() => {
   const count = discover.value.system.cpu_count;
@@ -250,25 +249,7 @@ function updateAlerts() {
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
     success: function (data) {
-      // remove any previous popover to avoid conflicts with
-      // recycled div elements
-      popoverList.forEach((p) => p.dispose());
       alerts.value = data;
-      window.setTimeout(function () {
-        const popoverTriggerList = divAlertsEl.value.querySelectorAll("[data-bs-toggle-popover]");
-        popoverList = [...popoverTriggerList].map(
-          (el) =>
-            new Popover(el, {
-              placement: "top",
-              container: "body",
-              boundary: "window",
-              content: function (el) {
-                return $(el).find(".popover-content")[0].outerHTML.replace("d-none", "");
-              },
-              html: true,
-            }),
-        );
-      }, 1);
     },
     error: function (xhr) {
       window.showError(xhr);
@@ -477,13 +458,7 @@ onMounted(() => {
               <div class="col-6 small text-center">
                 <div class="chart-title">
                   CPU &times; {{ discover.system.cpu_count }}
-                  <i
-                    id="cpu-info"
-                    class="fa-solid fa-info-circle text-body-secondary"
-                    data-bs-toggle="tooltip"
-                    :title="cpuTooltip"
-                  >
-                  </i>
+                  <i id="cpu-info" class="fa-solid fa-info-circle text-body-secondary" v-b-tooltip="cpuTooltip"> </i>
                 </div>
                 <div id="total-cpu" class="fw-bold" v-html="totalCpu"></div>
                 <div class="card-body p-2 chart-small">
@@ -665,12 +640,8 @@ onMounted(() => {
           </div>
           <div class="text-body-secondary text-center" v-if="alerts.length == 0">No alerts</div>
           <div v-cloak class="mb-0" ref="divAlertsEl">
-            <template v-for="alert in alerts">
-              <div
-                class="bg-light mb-1"
-                :data-bs-toggle-popover="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
-                data-bs-trigger="hover"
-              >
+            <BPopover v-for="alert in alerts">
+              <template #target>
                 <div class="p-1">
                   <div class="float-end text-body-secondary text-end">{{ moment(alert.datetime).fromNow() }}<br /></div>
                   <div>
@@ -685,25 +656,22 @@ onMounted(() => {
                       </span>
                     </a>
                   </div>
-                  <div
-                    class="popover-content text-body-secondary d-none"
-                    v-if="alert.state == 'WARNING' || alert.state == 'CRITICAL'"
-                  >
-                    {{ moment(alert.datetime).format() }}<br />
-                    <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">
-                      <i class="fa fa-fw" :class="[stateIcon(alert.state)]"></i>
-                      {{ alert.state }}
-                    </span>
-                    <br />
-                    <span class="fw-bold">
-                      {{ alert.value }}
-                    </span>
-                    <br />
-                    Thresholds: warning {{ alert.warning }} / critical {{ alert.critical }}
-                  </div>
                 </div>
+              </template>
+              <div class="text-body-secondary">
+                {{ moment(alert.datetime).format() }}<br />
+                <span v-bind:class="'badge text-bg-' + alert.state.toLowerCase()">
+                  <i class="fa fa-fw" :class="[stateIcon(alert.state)]"></i>
+                  {{ alert.state }}
+                </span>
+                <br />
+                <span class="fw-bold">
+                  {{ alert.value }}
+                </span>
+                <br />
+                Thresholds: warning {{ alert.warning }} / critical {{ alert.critical }}
               </div>
-            </template>
+            </BPopover>
           </div>
         </div>
       </div>

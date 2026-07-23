@@ -1,4 +1,5 @@
 <script setup>
+import { vBTooltip } from "bootstrap-vue-next";
 import $ from "jquery";
 import { computed, provide, ref } from "vue";
 
@@ -126,7 +127,7 @@ function onFromToUpdate(from_, to_) {
     <div class="card w-100 mb-2" v-for="key in sortedKeys">
       <div class="p-2">
         <div class="text-center">
-          <span class="badge" v-bind:class="stateBgClass(key.state)" data-bs-toggle="tooltip" title="Current status">
+          <span class="badge" v-bind:class="stateBgClass(key.state)" v-b-tooltip="'Current status'">
             <i class="fa fa-fw" :class="[stateIcon(key.state)]"></i>
             {{ key.state }}</span
           >

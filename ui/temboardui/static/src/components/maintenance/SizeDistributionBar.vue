@@ -1,4 +1,6 @@
 <script setup>
+import { vBPopover } from "bootstrap-vue-next";
+
 const props = defineProps([
   "height",
   "total",
@@ -39,11 +41,7 @@ function popoverContent(cat) {
       class="progress-bar"
       role="progressbar"
       :style="toWidthPercent(cat1raw, total)"
-      data-bs-toggle="popover"
-      data-bs-trigger="hover"
-      data-bs-placement="bottom"
-      data-bs-html="true"
-      :data-bs-content="popoverContent('cat1')"
+      v-b-popover.hover.bottom="popoverContent('cat1')"
     >
       <div class="progress rounded-0">
         <div
@@ -62,11 +60,7 @@ function popoverContent(cat) {
       class="progress-bar"
       role="progressbar"
       :style="toWidthPercent(cat2raw, total)"
-      data-bs-toggle="popover"
-      data-bs-trigger="hover"
-      data-bs-placement="bottom"
-      data-bs-html="true"
-      :data-bs-content="popoverContent('cat2')"
+      v-b-popover.hover.bottom="popoverContent('cat2')"
     >
       <div class="progress rounded-0">
         <div
@@ -85,10 +79,7 @@ function popoverContent(cat) {
       class="progress-bar bg-secondary"
       role="progressbar"
       :style="toWidthPercent(cat3raw, total)"
-      data-bs-toggle="popover"
-      data-bs-trigger="hover"
-      data-bs-placement="bottom"
-      :data-bs-content="popoverContent('cat3')"
+      v-b-popover.hover.bottom="popoverContent('cat3')"
     ></div>
   </div>
 </template>
