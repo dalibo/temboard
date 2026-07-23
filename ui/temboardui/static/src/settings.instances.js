@@ -1,3 +1,4 @@
+import { Tooltip } from "bootstrap";
 import DataTablesLib from "datatables.net-bs5";
 import "datatables.net-buttons-bs5";
 import DataTable from "datatables.net-vue3";
@@ -71,6 +72,7 @@ createApp({
           ],
         },
       });
+      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new Tooltip(el));
     });
   },
 }).mount("#vue-app");

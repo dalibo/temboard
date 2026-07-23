@@ -1,6 +1,7 @@
 <script setup>
 import { UseClipboard } from "@vueuse/components";
 import { Modal } from "bootstrap";
+import { vBTooltip } from "bootstrap-vue-next";
 import { BTable } from "bootstrap-vue-next";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
@@ -255,7 +256,7 @@ function reset() {
     </ul>
     <div class="row d-flex justify-content-between">
       <div class="col-auto">
-        <span class="d-inline-block" data-bs-toggle="tooltip" title="Terminate the backends selected below">
+        <span class="d-inline-block" v-b-tooltip="'Terminate the backends selected below'">
           <button
             id="killButton"
             type="button"

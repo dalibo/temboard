@@ -1,4 +1,5 @@
 <script setup>
+import { vBTooltip } from "bootstrap-vue-next";
 import Dygraph from "dygraphs";
 import "dygraphs/dist/dygraph.css";
 import $ from "jquery";
@@ -81,11 +82,10 @@ defineExpose({ fetchLoad1, fetchTPS });
               <i class="fa-solid fa-database"></i>
               <a
                 :href="dashboard_url"
-                :title="
+                v-b-tooltip.body="
                   instance.pg_version_summary + ' listening on ' + [instance.hostname, instance.pg_port].join(':')
                 "
                 class="instance-link"
-                data-bs-toggle="tooltip"
               >
                 {{ instance.hostname }}:{{ instance.pg_port }}
               </a>
@@ -118,10 +118,7 @@ defineExpose({ fetchLoad1, fetchTPS });
             @chart-rendered="setLastTPS"
             ref="tps_chart"
             class="sparkline-container"
-            data-bs-toggle="tooltip"
-            data-bs-title="Transations / sec (last hour)"
-            data-bs-container="body"
-            data-bs-placement="bottom"
+            v-b-tooltip.bottom.body="'Transations / sec (last hour)'"
           >
           </Sparkline>
         </div>
@@ -130,12 +127,7 @@ defineExpose({ fetchLoad1, fetchTPS });
           <span class="badge text-bg-secondary" v-if="load1_last">
             {{ load1_last }}
           </span>
-          <div
-            ref="chart"
-            data-bs-toggle="tooltip"
-            data-bs-title="Load average (last hour)"
-            data-bs-placement="bottom"
-          ></div>
+          <div ref="chart" v-b-tooltip.bottom.body="'Load average (last hour)'"></div>
           <Sparkline
             :data="load1_data"
             :start="start"
@@ -144,9 +136,7 @@ defineExpose({ fetchLoad1, fetchTPS });
             @chart-rendered="setLastLoad1"
             ref="load1_chart"
             class="sparkline-container"
-            data-bs-toggle="tooltip"
-            data-bs-title="Load average (last hour)"
-            data-bs-placement="bottom"
+            v-b-tooltip.bottom.body="'Load average (last hour)'"
           >
           </Sparkline>
         </div>

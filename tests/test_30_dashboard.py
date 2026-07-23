@@ -2,6 +2,8 @@ import os
 from time import sleep
 
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 
 
 def test_dashboard(browser, registered_agent, ui_url):
@@ -17,15 +19,15 @@ def test_dashboard(browser, registered_agent, ui_url):
     assert 0 <= int(cpu) <= 100
 
     browser.hover("#cpu-info")
-    sleep(0.1)
-    tooltip = browser.select("#cpu-info").get_attribute("aria-describedby")
-    cpuinfo = browser.select(f"#{tooltip}").text
-    assert " \xd7 " in cpuinfo
+    wait = WebDriverWait(browser, 10)
+    wait.until(
+        lambda d: " \xd7 "
+        in d.find_element(By.CSS_SELECTOR, "[role='tooltip'] .tooltip-inner").text
+    )
 
     # Vanish tooltip
     browser.hover("body")
-    sleep(0.1)
-    browser.absent(f"#{tooltip}")
+    wait.until(lambda _: browser.absent("[role='tooltip']"))
 
     memory, percent = browser.select("#total-memory").text.split()
     assert "%" == percent
