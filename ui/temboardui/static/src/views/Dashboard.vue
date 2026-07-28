@@ -561,7 +561,7 @@ onMounted(() => {
             <div class="text-center small p-0">
               <span class="chart-title"> Loadaverage </span>
               <div class="position-absolute top-0 right-0 pe-1">
-                <span id="loadaverage" class="badge text-bg-primary">{{ loadAverage }}</span>
+                <span id="loadaverage" class="badge text-bg-primary">{{ loadAverage.toPrecision(2) }}</span>
               </div>
             </div>
             <div class="card-body p-2">
