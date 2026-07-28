@@ -1,6 +1,8 @@
 import pytest
 from fixtures.utils import retry_fast
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 def test_create(prod, browser):
@@ -44,7 +46,11 @@ def test_add_member(alice_member, browse_prod_members):
 def test_remove_member(alice_member, browse_prod_members):
     browser = browse_prod_members
     browser.select("tbody tr:nth-child(1) button").click()
-    username = browser.select(".modal-body strong").text
+    wait = WebDriverWait(browser, 10)
+    element = wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".modal-body strong"))
+    )
+    username = element.text
     assert username.startswith("a")  # admin or alice
     browser.select("#buttonDelete").click()
     browser.absent("tbody tr:nth-child(2)")
