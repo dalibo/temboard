@@ -64,13 +64,13 @@ const cpuTooltip = computed(() => {
  * updateDashboard() callback.
  */
 function refreshDashboard() {
-  window.clearError();
   $.ajax({
     url: "/proxy/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/dashboard",
     type: "GET",
     async: true,
     contentType: "application/json",
     success: function (data) {
+      window.clearError();
       status.value = data.status;
       updateDashboard(data);
       updateTps([data]);
@@ -245,10 +245,10 @@ function updateTps(data) {
  * Update status and alerts
  */
 function updateAlerts() {
-  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/alerts.json",
     success: function (data) {
+      window.clearError();
       alerts.value = data;
     },
     error: function (xhr) {
@@ -256,10 +256,10 @@ function updateAlerts() {
     },
   });
 
-  window.clearError();
   $.ajax({
     url: "/server/" + props.instance.agentAddress + "/" + props.instance.agentPort + "/alerting/checks.json",
     success: function (data) {
+      window.clearError();
       states.value = data;
     },
     error: function (xhr) {
