@@ -81,7 +81,7 @@ function refreshDashboard() {
         // force a reload of the page, should lead to the server login page
         location.href = location.href;
       }
-      window.showError(chr);
+      window.showError(xhr);
     },
   });
 }
