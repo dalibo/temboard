@@ -225,7 +225,9 @@ def put_user(name=None, user=None):
         flask.abort(404, "No such user.")
 
     j = request.json
-    user.is_admin = j["is_admin"]
+    admin_changed = False
+    if user.is_admin != j["is_admin"]:
+        admin_changed = True
     user.is_active = j["is_active"]
     if j["name"] in {"temboard"}:
         raise flask.abort(400, "Reserved user name.")
@@ -245,6 +247,14 @@ def put_user(name=None, user=None):
             user.role_password = hash_password(user.role_name, j["password"]).decode(
                 "utf-8"
             )
+    if admin_changed:
+        gr = orm.Group.get("admins").with_session(g.db_session).one_or_none()
+        if not gr:
+            flask.abort(404, "No such group.")
+        if j["is_admin"]:
+            g.db_session.execute(gr.insert_member(j["name"]))
+        else:
+            g.db_session.execute(orm.Group.delete_member("admins", j["name"]))
     g.db_session.flush()
 
     return flask.jsonify(user.asdict())

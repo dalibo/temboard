@@ -129,7 +129,6 @@ class Role(Model):
     role_email = Column(types.UnicodeText)
     role_phone = Column(types.UnicodeText)
     is_active = Column(types.Boolean)
-    is_admin = Column(types.Boolean)
 
     groups = relationship(
         "Group", secondary=memberships, back_populates="members", lazy="raise"
@@ -149,7 +148,6 @@ class Role(Model):
                     Role.role_email,
                     Role.role_phone,
                     Role.is_active,
-                    Role.is_admin,
                     Group.id,
                     Group.name,
                     Environment.id,
@@ -177,7 +175,6 @@ class Role(Model):
                     Role.role_email,
                     Role.role_phone,
                     Role.is_active,
-                    Role.is_admin,
                     Group.id,
                     Group.name,
                     Environment.id,
@@ -211,6 +208,13 @@ class Role(Model):
             .bindparams(role_name=self.role_name)
             .columns(Instance.__mapper__.c.values())
         )
+
+    @property
+    def is_admin(self):
+        for gr in self.groups:
+            if gr.name == "admins":
+                return True
+        return False
 
     @property
     def trn(self):
@@ -279,8 +283,8 @@ class Group(Model):
             group=self.name, role=username
         )
 
-    @classmethod
-    def delete_member(self, name, username):
+    @staticmethod
+    def delete_member(name, username):
         return text(QUERIES["group-delete-membership"]).bindparams(
             group=name, role=username
         )
