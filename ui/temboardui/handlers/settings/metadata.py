@@ -1,6 +1,6 @@
 import logging
 
-from temboardui.web.tornado import admin_required, app, render_template
+from temboardui.web.tornado import app, render_template
 
 from ...version import inspect_versions
 
@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 @app.route(r"/settings/metadata")
-@admin_required
 def metadata(request):
     versions_info = inspect_versions()
     infos = {

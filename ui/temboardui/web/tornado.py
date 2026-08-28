@@ -13,28 +13,14 @@ from tornado.template import Loader as TemplateLoader
 from tornado.web import Application as TornadoApplication
 from tornado.web import HTTPError, RequestHandler
 
+from ..acl import ACLResult, expand_actions
 from ..agentclient import TemboardAgentClient
 from ..application import get_instance, get_role_by_cookie
 from ..errors import TemboardUIError
 from ..model import Session as DBSession
+from ..model.orm import ACLRule, Anonymous
 
 logger = logging.getLogger(__name__)
-
-
-def admin_required(func):
-    # Similar to flask_security.roles_required, but limited to admin role.
-    func.__admin_required = True
-    return func
-
-
-def anonymous_allowed(func):
-    # Reverse of flask_security.login_required.
-    #
-    # In temboard, very few pages are anonymous. Thus we have implicit
-    # login_required. This behaviour can be disabled by using
-    # @anonymous_allowed.
-    func.__anonymous_allowed = True
-    return func
 
 
 def serialize_querystring(query):
@@ -364,51 +350,55 @@ def add_json_middleware(func):
     return json_middleware
 
 
-def add_user_instance_middleware(func):
-    # Ensures user is allowed to access to the instance
-    @functools.wraps(func)
-    def user_instance_middleware(request, *args):
-        user = request.current_user
-
-        if user is None:
-            # Not logged in
-            raise HTTPError(401, "Restricted area.")
-
-        user_allowed = request.db_session.execute(
-            request.instance.has_dba(user.role_name)
-        ).scalar()
-        if not user_allowed:
-            raise HTTPError(403, "Restricted area.")
-
-        return func(request, *args)
-
-    return user_instance_middleware
-
-
 class UserHelper:
     @classmethod
     def add_middleware(cls, func):
         @functools.wraps(func)
         def user_middleware(request, *args):
-            role = request.current_user = request.handler.current_user
-
-            anonymous_allowed = getattr(func, "__anonymous_allowed", False)
-            if not anonymous_allowed and role is None:
-                logger.debug("Redirecting anonymous to /login.")
-                raise Redirect("/login")
-
-            admin_required = getattr(func, "__admin_required", False)
-            if admin_required and not role.is_admin:
-                logger.debug("Refusing access to non-admin user.")
-                raise HTTPError(403)
-
+            request.current_user = request.handler.current_user
             return func(request, *args)
 
         return user_middleware
 
 
-# Ensure @functools.wraps preserves User middleware attributes.
-functools.WRAPPER_UPDATES += ("__admin_required", "__anonymous_allowed")
+class AuthorizationsHelper:
+    @classmethod
+    def add_middleware(cls, func):
+        @functools.wraps(func)
+        def authorizations_middleware(request, *args):
+            if request.current_user:
+                role = request.current_user.role_name
+                roles = [str(trn) for trn in request.current_user.role_trns]
+            else:
+                role = Anonymous.trn()
+                roles = [str(trn) for trn in Anonymous.role_trns()]
+
+            action = f"{request.method}:{request.uri}"
+            actions = expand_actions(action)
+            if hasattr(request, "instance") and request.instance:
+                resource = str(request.instance.trn)
+                resources = [str(trn) for trn in request.instance.resource_trns]
+            else:
+                resource = "*"
+                resources = ["*"]
+            statements = (
+                ACLRule.match(roles, actions, resources)
+                .with_session(request.db_session)
+                .all()
+            )
+            denies = [s for s in statements if s.deny]
+            if not statements:
+                result = ACLResult(role, action, resource, "implicitDeny")
+            elif denies:
+                result = ACLResult(role, action, resource, "denied", statements)
+            else:
+                result = ACLResult(role, action, resource, statements=statements)
+
+            result.raise_for_decision()
+
+            return func(request, *args)
+
+        return authorizations_middleware
 
 
 class Blueprint:
@@ -462,13 +452,8 @@ class Blueprint:
         def decorator(func):
             logger_name = func.__module__ + "." + func.__name__
 
+            func = AuthorizationsHelper.add_middleware(func)
             if with_instance:
-                if url.startswith("/server/") or url.startswith("/proxy/"):
-                    # Limit user/instance access control to /server/ and
-                    # /proxy/.
-                    # Admin area access control has already been performed
-                    func = add_user_instance_middleware(func)
-
                 func = InstanceHelper.add_middleware(func)
             func = UserHelper.add_middleware(func)
 

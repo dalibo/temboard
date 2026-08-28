@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, relationship
 from temboardtoolkit.utils import utcnow
 
+from ..acl import TRN
 from . import QUERIES
 
 Model = declarative_base()
@@ -61,6 +62,18 @@ class ApiKey(Model):
     @property
     def expired(self):
         return self.edate < utcnow()
+
+    @property
+    def trn(self):
+        return TRN("core", "apikey", str(self.id))
+
+    @property
+    def role_trns(self):
+        return self.trn.parents
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class Plugin(Model):
@@ -116,7 +129,6 @@ class Role(Model):
     role_email = Column(types.UnicodeText)
     role_phone = Column(types.UnicodeText)
     is_active = Column(types.Boolean)
-    is_admin = Column(types.Boolean)
 
     groups = relationship(
         "Group", secondary=memberships, back_populates="members", lazy="raise"
@@ -136,7 +148,6 @@ class Role(Model):
                     Role.role_email,
                     Role.role_phone,
                     Role.is_active,
-                    Role.is_admin,
                     Group.id,
                     Group.name,
                     Environment.id,
@@ -164,7 +175,6 @@ class Role(Model):
                     Role.role_email,
                     Role.role_phone,
                     Role.is_active,
-                    Role.is_admin,
                     Group.id,
                     Group.name,
                     Environment.id,
@@ -181,8 +191,8 @@ class Role(Model):
             phone=self.role_phone,
             active=self.is_active,
             admin=self.is_admin,
-            groups=[g.name for g in self.groups],
-            environments=[g.environment.name for g in self.groups],
+            groups=[g.name for g in self.groups if g.environment],
+            environments=[g.environment.name for g in self.groups if g.environment],
         )
 
     def select_environments(self):
@@ -198,6 +208,29 @@ class Role(Model):
             .bindparams(role_name=self.role_name)
             .columns(Instance.__mapper__.c.values())
         )
+
+    @property
+    def is_admin(self):
+        for gr in self.groups:
+            if gr.name == "admins":
+                return True
+        return False
+
+    @property
+    def trn(self):
+        return TRN("core", "user", self.role_name)
+
+    @property
+    def role_trns(self):
+        trns = set()
+        trns.update(self.trn.parents)
+        for g in self.groups:
+            trns.update(g.trn.parents)
+        return trns
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class StubRole:
@@ -250,11 +283,19 @@ class Group(Model):
             group=self.name, role=username
         )
 
-    @classmethod
-    def delete_member(self, name, username):
+    @staticmethod
+    def delete_member(name, username):
         return text(QUERIES["group-delete-membership"]).bindparams(
             group=name, role=username
         )
+
+    @property
+    def trn(self):
+        return TRN("core", "group", self.name)
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
 
 
 class Environment(Model):
@@ -326,6 +367,14 @@ class Environment(Model):
             color=self.color,
             dba_group=self.dba_group.name,
         )
+
+    @property
+    def trn(self):
+        return TRN("core", "environment", self.name)
+
+    @property
+    def resource_trn(self):
+        return self.trn.parents
 
 
 class Instance(Model):
@@ -522,3 +571,65 @@ class Instance(Model):
 
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
+
+    @property
+    def trn(self):
+        return TRN(
+            "core",
+            "instance",
+            f"{self.environment.name}/{self.agent_address}:{self.agent_port}",
+        )
+
+    @property
+    def resource_trns(self):
+        return self.trn.parents
+
+
+class ACLRule(Model):
+    __tablename__ = "acl"
+    __table_args__ = {"schema": "application"}
+
+    id = Column(types.BigInteger, primary_key=True)
+    role = Column(types.UnicodeText)
+    action = Column(types.UnicodeText)
+    resource = Column(types.UnicodeText)
+    deny = Column(types.Boolean)
+    cdate = Column(types.TIMESTAMP(timezone=True))
+    origin = Column(types.UnicodeText)
+
+    @classmethod
+    def insert(cls, role, action, resource, deny=False):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-insert"]).bindparams(
+                role=role, action=action, resource=resource, deny=deny
+            )
+        )
+
+    @classmethod
+    def delete(cls, role, action, resource):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-delete"]).bindparams(
+                role=role, action=action, resource=resource
+            )
+        )
+
+    @classmethod
+    def match(cls, roles, actions, resources):
+        return Query(cls).from_statement(
+            text(QUERIES["acl-get"]).bindparams(
+                roles=roles, actions=actions, resources=resources
+            )
+        )
+
+    def __repr__(self):
+        return f"<ACL stmt deny={self.deny} {self.role} for {self.action} on {self.resource}>"
+
+
+class Anonymous:
+    @staticmethod
+    def trn():
+        return TRN("*", "*", "*")
+
+    @staticmethod
+    def role_trns():
+        return [Anonymous.trn()]

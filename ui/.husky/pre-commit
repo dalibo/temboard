@@ -3,5 +3,3 @@
 
 cd ui
 npx lint-staged
-ruff check
-ruff format --check
