@@ -455,10 +455,10 @@ mkchanges.sh scripts signs changes with your GPG key matching these environment 
  Use `build-<codename>` target like this:
 
 ``` bash
-make -C ui/packaging/nfpm/ build-bullseye
+make -C ui/packaging/nfpm/ build-trixie
 ```
 
-`codename` is one of `trixie`, `bookworm` or `bullseye` for Debian
+`codename` is one of `trixie` or `bookworm` for Debian
 and `noble` or `jammy` for Ubuntu.
 `agent/packaging/nfpm/Makefile` provides the same targets.
 

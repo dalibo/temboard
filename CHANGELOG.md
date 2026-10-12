@@ -5,6 +5,11 @@ CI release job extracts changes from this file and attaches them as GitHub relea
 Ensure you use consistent title format.
 -->
 
+## Unreleased
+
+- Remove bullseye support.
+
+
 ## 10.0.0
 
 You need manual steps when upgrading UI.
