@@ -1,6 +1,6 @@
 <script setup>
 import { Plan } from "pev2";
-import "pev2/dist/style.css";
+import "pev2/dist/pev2.css";
 import { ref, watch } from "vue";
 
 import ModalDialog from "../components/ModalDialog.vue";
