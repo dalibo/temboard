@@ -3,6 +3,7 @@ import { UseClipboard } from "@vueuse/components";
 import { Modal } from "bootstrap";
 import { vBTooltip } from "bootstrap-vue-next";
 import { BTable } from "bootstrap-vue-next";
+import "bootstrap-vue-next/dist/bootstrap-vue-next.css";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
@@ -102,7 +103,7 @@ String.prototype.trunc =
     return this.length > n ? this.substr(0, n - 1) + "&hellip;" : this;
   };
 
-function human2bytes(value) {
+function human2bytes({ value }) {
   const val = parseFloat(value);
   if (_.isFinite(val)) {
     const suffix = value.slice(-1);
@@ -112,7 +113,7 @@ function human2bytes(value) {
   return value;
 }
 
-function formatDurationSeconds(duration) {
+function formatDurationSeconds({ value: duration }) {
   return formatDuration(duration * 1000, true);
 }
 
@@ -149,6 +150,8 @@ const filteredSessions = computed(() => {
   });
 });
 
+const sortBy = ref([{ key: "duration", order: "desc" }]);
+
 function highlight(src) {
   return hljs.highlight(src, { language: "sql" }).value;
 }
@@ -171,7 +174,7 @@ const fields = computed(() => {
     fields = fields.concat([{ label: "W", key: "wait", class: "text-center" }]);
   } else {
     fields = fields.concat([
-      { label: "Lock Rel.", data: "relation", class: "text-end" },
+      { label: "Lock Rel.", key: "relation", class: "text-end" },
       { label: "Lock Mode", key: "mode" },
       { label: "Lock Type", key: "type" },
     ]);
@@ -333,8 +336,7 @@ function reset() {
           class="table-query mt-1 small"
           @row-hovered="pause"
           @row-unhovered="!freezed && resume()"
-          sort-by="duration"
-          sort-desc
+          v-model:sort-by="sortBy"
         >
           <template v-slot:cell()="data">
             <span v-html="data.value" :class="{ 'text-danger fw-bold': data.value == 'Y' }"></span>

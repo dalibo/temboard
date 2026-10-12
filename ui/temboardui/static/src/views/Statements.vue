@@ -6,7 +6,6 @@ import {
   BFormGroup,
   BFormInput,
   BInputGroup,
-  BInputGroupAppend,
   BPagination,
   BRow,
   BSpinner,
@@ -14,6 +13,7 @@ import {
   BTh,
   BTr,
 } from "bootstrap-vue-next";
+import "bootstrap-vue-next/dist/bootstrap-vue-next.css";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
 import "highlight.js/styles/default.css";
@@ -41,7 +41,7 @@ const dbid = ref(route.query.dbid);
 const queryid = ref(route.query.queryid);
 const userid = ref(route.query.userid);
 const datname = ref(null);
-const sortBy = ref("total_exec_time");
+const sortBy = ref([{ key: "total_exec_time", order: "asc" }]);
 const filter = ref("");
 const from = ref(null);
 const to = ref(null);
@@ -51,6 +51,7 @@ const perPage = ref(20);
 const dateRangePickerEl = ref(null);
 
 const fields = computed(getFields);
+const expandedItems = ref([]);
 const fromTo = computed(() => "" + from.value + to.value);
 
 watch(fromTo, fetchData);
@@ -108,7 +109,7 @@ function fetchData() {
       statements.value = data.data;
       // automatically show detail if a single query is displayed
       if (queryid.value) {
-        statements.value[0]._showDetails = true;
+        expandedItems.value = [].concat(statements.value[0]);
       }
       totalRows.value = statements.value.length;
 
@@ -159,14 +160,14 @@ function getFields() {
     {
       key: "total_exec_time",
       label: "Total",
-      formatter: (value) => formatDuration(value, true),
+      formatter: ({ value }) => formatDuration(value, true),
       class: "text-end border-start",
       sortable: true,
     },
     {
       key: "mean_time",
       label: "AVG",
-      formatter: (value) => formatDuration(value, true),
+      formatter: ({ value }) => formatDuration(value, true),
       class: "text-end",
       sortable: true,
     },
@@ -224,7 +225,7 @@ function getFields() {
   });
 }
 
-function formatSize(bytes) {
+function formatSize({ value: bytes }) {
   bytes *= 8192;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   if (bytes == 0) {
@@ -344,8 +345,8 @@ function createOrUpdateCharts(data) {
       colors: cudColors,
       axes: {
         y: {
-          valueFormatter: formatSize,
-          axisLabelFormatter: formatSize,
+          valueFormatter: (value) => formatSize({ value }),
+          axisLabelFormatter: (value) => formatSize({ value }),
         },
       },
     }),
@@ -440,9 +441,9 @@ function onFromToUpdate(from_, to_) {
         <BFormGroup label="Filter" label-cols-sm="3" label-align-sm="right" label-for="filterInput" class="mb-0">
           <BInputGroup>
             <BFormInput v-model="filter" type="search" id="filterInput" placeholder="Type to Search"></BFormInput>
-            <BInputGroupAppend>
+            <template #append>
               <BButton id="buttonClearFilter" :disabled="!filter" @click="filter = ''">Clear</BButton>
-            </BInputGroupAppend>
+            </template>
           </BInputGroup>
         </BFormGroup>
       </div>
@@ -451,12 +452,12 @@ function onFromToUpdate(from_, to_) {
       striped
       small
       :items="statements"
+      :expanded-items="expandedItems"
       :fields="fields"
       :sort-by="sortBy"
       :busy="isLoading"
       :current-page="currentPage"
       :per-page="perPage"
-      sort-desc
       show-empty
       v-cloak
       :filter="filter"
@@ -492,7 +493,7 @@ function onFromToUpdate(from_, to_) {
           {{ row.item.datname }}
         </a>
       </template>
-      <template v-slot:row-details="row">
+      <template #row-expansion="row">
         <BCard class="detail">
           <BRow class="mb-2">
             <BCol>
@@ -502,7 +503,7 @@ function onFromToUpdate(from_, to_) {
         </BCard>
       </template>
       <template v-slot:cell()="data">
-        <span v-html="data.field.formatter ? data.field.formatter(data.value, data.key, data.item) : data.value"></span>
+        <span v-html="data.value"></span>
       </template>
       <template v-slot:empty="scope">
         <div class="text-center">

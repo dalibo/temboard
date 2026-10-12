@@ -1,5 +1,5 @@
 <script setup>
-import { vBPopover } from "bootstrap-vue-next";
+import { BPopover } from "bootstrap-vue-next";
 
 const props = defineProps([
   "height",
@@ -37,49 +37,49 @@ function popoverContent(cat) {
 
 <template>
   <div class="progress border rounded-0" :style="{ height: props.height + 'px' }">
-    <div
-      class="progress-bar"
-      role="progressbar"
-      :style="toWidthPercent(cat1raw, total)"
-      v-b-popover.hover.bottom="popoverContent('cat1')"
-    >
-      <div class="progress rounded-0">
-        <div
-          class="progress-bar bg-cat1"
-          role="progressbar"
-          :style="toWidthPercent(cat1raw - cat1bisraw, cat1raw)"
-        ></div>
-        <div
-          class="progress-bar bg-cat1 progress-bar-striped-small"
-          role="progressbar"
-          :style="toWidthPercent(cat1bisraw, cat1raw)"
-        ></div>
-      </div>
-    </div>
-    <div
-      class="progress-bar"
-      role="progressbar"
-      :style="toWidthPercent(cat2raw, total)"
-      v-b-popover.hover.bottom="popoverContent('cat2')"
-    >
-      <div class="progress rounded-0">
-        <div
-          class="progress-bar bg-cat2"
-          role="progressbar"
-          :style="toWidthPercent(cat2raw - cat2bisraw, cat2raw)"
-        ></div>
-        <div
-          class="progress-bar bg-cat2 progress-bar-striped-small"
-          role="progressbar"
-          :style="toWidthPercent(cat2bisraw, cat2raw)"
-        ></div>
-      </div>
-    </div>
-    <div
-      class="progress-bar bg-secondary"
-      role="progressbar"
-      :style="toWidthPercent(cat3raw, total)"
-      v-b-popover.hover.bottom="popoverContent('cat3')"
-    ></div>
+    <BPopover>
+      <template #target>
+        <div class="progress-bar" role="progressbar" :style="toWidthPercent(cat1raw, total)">
+          <div class="progress rounded-0">
+            <div
+              class="progress-bar bg-cat1"
+              role="progressbar"
+              :style="toWidthPercent(cat1raw - cat1bisraw, cat1raw)"
+            ></div>
+            <div
+              class="progress-bar bg-cat1 progress-bar-striped-small"
+              role="progressbar"
+              :style="toWidthPercent(cat1bisraw, cat1raw)"
+            ></div>
+          </div>
+        </div>
+      </template>
+      <div v-html="popoverContent('cat1')" />
+    </BPopover>
+    <BPopover>
+      <template #target>
+        <div class="progress-bar" role="progressbar" :style="toWidthPercent(cat2raw, total)">
+          <div class="progress rounded-0">
+            <div
+              class="progress-bar bg-cat2"
+              role="progressbar"
+              :style="toWidthPercent(cat2raw - cat2bisraw, cat2raw)"
+            ></div>
+            <div
+              class="progress-bar bg-cat2 progress-bar-striped-small"
+              role="progressbar"
+              :style="toWidthPercent(cat2bisraw, cat2raw)"
+            ></div>
+          </div>
+        </div>
+      </template>
+      <div v-html="popoverContent('cat2')" />
+    </BPopover>
+    <BPopover>
+      <template #target>
+        <div class="progress-bar bg-secondary" role="progressbar" :style="toWidthPercent(cat3raw, total)"></div>
+      </template>
+      <div v-html="popoverContent('cat3')" />
+    </BPopover>
   </div>
 </template>
