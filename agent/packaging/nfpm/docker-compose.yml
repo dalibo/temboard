@@ -24,10 +24,6 @@ services:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:bookworm
 
-  bullseye:
-    <<: *mkdeb
-    image: dalibo/buildpack-pkg:bullseye
-
   jammy:
     <<: *mkdeb
     image: dalibo/buildpack-pkg:jammy
