@@ -29,7 +29,7 @@
     "pev2": "^1.12.1",
     "vue": "^3.4.21",
     "vue-multiselect": "^3.0.0",
-    "vue-router": "^4.4.0"
+    "vue-router": "^5.4.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
