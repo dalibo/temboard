@@ -20,7 +20,7 @@
     "datatables.net-buttons-bs5": "^4.1.2",
     "datatables.net-vue3": "^3.0.8",
     "daterangepicker": "^3.1.0",
-    "dygraphs": "^2.2.1",
+    "dygraphs": "^2.2.2",
     "filesize": "^10.1.2",
     "highlight.js": "^11.9.0",
     "jquery": "^3.7.1",
