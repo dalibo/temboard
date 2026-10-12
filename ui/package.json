@@ -33,7 +33,7 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@vitejs/plugin-vue": "^6.0.10",
-    "autoprefixer": "^10.4.19",
+    "autoprefixer": "^10.6.1",
     "husky": "^8.0.3",
     "lint-staged": "^17.1.0",
     "postcss": "^8.4.38",
