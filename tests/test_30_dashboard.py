@@ -3,6 +3,7 @@ from time import sleep
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
@@ -27,7 +28,9 @@ def test_dashboard(browser, registered_agent, ui_url):
 
     # Vanish tooltip
     browser.hover("body")
-    wait.until(lambda _: browser.absent("[role='tooltip']"))
+    wait.until(
+        EC.invisibility_of_element_located((By.CSS_SELECTOR, "[role='tooltip']"))
+    )
 
     memory, percent = browser.select("#total-memory").text.split()
     assert "%" == percent

@@ -1,5 +1,5 @@
 <script setup>
-import { vBPopover } from "bootstrap-vue-next";
+import { BPopover } from "bootstrap-vue-next";
 import _ from "lodash";
 import { computed } from "vue";
 
@@ -14,6 +14,9 @@ const checks = computed(() => {
 });
 
 function popoverContent(instance) {
+  if (!available.value) {
+    return `<span class="badge text-bg-danger">Unable to connect to Postgres</span>`;
+  }
   // don't show OK states
   const filtered = instance.checks.filter((check) => {
     return !["OK", "UNDEF"].includes(check.state);
@@ -32,21 +35,26 @@ function popoverContent(instance) {
 </script>
 
 <template>
-  <div class="d-inline-block" v-b-popover.hover.bottom.body="popoverContent(props.instance)">
-    <span class="badge text-bg-critical me-1" v-if="!available" title="Unable to connect to Postgres">
-      <i class="fa fa-fw fa-unlink"></i>
-      UNAVAILABLE</span
-    >
-    <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL">
-      <i class="fa fa-fw" :class="stateIcon('CRITICAL')"></i>
-      {{ checks.CRITICAL }}</span
-    >
-    <span class="badge text-bg-warning me-1" v-if="checks.WARNING">
-      <i class="fa fa-fw" :class="stateIcon('WARNING')"></i>
-      {{ checks.WARNING }}</span
-    >
-    <span class="badge text-bg-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK"
-      >OK</span
-    >
-  </div>
+  <BPopover>
+    <template #target>
+      <div class="d-inline-block">
+        <span class="badge text-bg-critical me-1" v-if="!available">
+          <i class="fa fa-fw fa-unlink"></i>
+          UNAVAILABLE</span
+        >
+        <span class="badge text-bg-critical me-1" v-if="checks.CRITICAL">
+          <i class="fa fa-fw" :class="stateIcon('CRITICAL')"></i>
+          {{ checks.CRITICAL }}</span
+        >
+        <span class="badge text-bg-warning me-1" v-if="checks.WARNING">
+          <i class="fa fa-fw" :class="stateIcon('WARNING')"></i>
+          {{ checks.WARNING }}</span
+        >
+        <span class="badge text-bg-ok me-1" v-if="!checks.WARNING && !checks.CRITICAL && !checks.UNDEF && checks.OK"
+          >OK</span
+        >
+      </div>
+    </template>
+    <div v-html="popoverContent(props.instance)"></div>
+  </BPopover>
 </template>

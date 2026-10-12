@@ -1,6 +1,6 @@
 <script setup>
 import { Modal } from "bootstrap";
-import { vBPopover } from "bootstrap-vue-next";
+import { BPopover } from "bootstrap-vue-next";
 import $ from "jquery";
 import { onMounted, ref } from "vue";
 
@@ -333,27 +333,34 @@ function isSelected(value, setting) {
                         {{ v }}
                       </option>
                     </select>
-                    <input
-                      v-else
-                      v-b-popover.hover.top="generatePopoverContent(settingRow)"
-                      type="text"
-                      class="form-control form-control-sm"
-                      :name="settingRow['name']"
-                      :id="'input' + settingRow['name']"
-                      :placeholder="settingRow['name']"
-                      :value="settingRow['setting'] !== null ? settingRow['setting_raw'] : ''"
-                    />
-                    <button
-                      v-if="settingRow['setting'] != settingRow['boot_val']"
-                      type="button"
-                      class="btn btn-link"
-                      :id="'buttonResetDefault_' + settingRow['name']"
-                      v-b-popover.hover.right="'Reset to: ' + settingRow['boot_val']"
-                      @click="cancel(settingRow['name'], settingRow['boot_val'])"
-                    >
-                      <span class="fa-solid fa-undo" aria-hidden="true"></span>
-                      Reset to default
-                    </button>
+                    <BPopover v-else>
+                      <template #target>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          :name="settingRow['name']"
+                          :id="'input' + settingRow['name']"
+                          :placeholder="settingRow['name']"
+                          :value="settingRow['setting'] !== null ? settingRow['setting_raw'] : ''"
+                        />
+                      </template>
+                      <div v-html="generatePopoverContent(settingRow)" />
+                    </BPopover>
+                    <BPopover>
+                      <template #target>
+                        <button
+                          v-if="settingRow['setting'] != settingRow['boot_val']"
+                          type="button"
+                          class="btn btn-link"
+                          :id="'buttonResetDefault_' + settingRow['name']"
+                          @click="cancel(settingRow['name'], settingRow['boot_val'])"
+                        >
+                          <span class="fa-solid fa-undo" aria-hidden="true"></span>
+                          Reset to default
+                        </button>
+                      </template>
+                      Reset to: {{ settingRow["boot_val"] }}
+                    </BPopover>
                   </td>
                 </tr>
               </tbody>
