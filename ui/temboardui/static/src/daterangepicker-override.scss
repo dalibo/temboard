@@ -1,9 +1,10 @@
+@use "sass:color";
 $daterangepicker-active-bg-color: $primary;
 $daterangepicker-ranges-hover-bg-color: $primary;
 $daterangepicker-control-active-border-color: $primary;
 $daterangepicker-ranges-color: $primary;
-$daterangepicker-cell-hover-bg-color: lighten($primary, 50%);
-$daterangepicker-in-range-bg-color: lighten($primary, 60%);
+$daterangepicker-cell-hover-bg-color: color.adjust($primary, $lightness: 50%);
+$daterangepicker-in-range-bg-color: color.adjust($primary, $lightness: 60%);
 $daterangepicker-z-index: $zindex-dropdown !default;
 
 .daterangepicker {

@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "bootstrap-variables-override";
 @import "bootstrap";
 @import "daterangepicker-override";
@@ -35,7 +36,7 @@ a.navbar-brand {
 // For home
 @each $color, $value in $theme-colors {
   .bg-#{$color}-light {
-    background-color: lighten($value, 43);
+    background-color: color.adjust($value, $lightness: 43%);
   }
 }
 
@@ -400,7 +401,7 @@ td.date {
 }
 
 $glow-color-start: white;
-$glow-color-end: lighten($primary, 30%);
+$glow-color-end: color.adjust($primary, $lightness: 30%);
 @keyframes glowing {
   0% {
     box-shadow: 0 0 3px $glow-color-start;

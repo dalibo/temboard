@@ -1,9 +1,11 @@
+@use "sass:map";
+@use "sass:color";
 $primary: #3c424c;
 $undef: #ccc;
 $cat1: #78b8fa;
 $cat2: #fa9e78;
 $navbar-inverse-bg: $primary;
-$link-color: lighten(saturate($primary, 15%), 15%);
+$link-color: color.adjust(color.adjust($primary, $saturation: 15%), $lightness: 15%);
 
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
@@ -30,5 +32,5 @@ $custom-colors: (
   "cat1": $cat1,
   "cat2": $cat2,
 );
-$theme-colors: map-merge($theme-colors, $custom-colors);
+$theme-colors: map.merge($theme-colors, $custom-colors);
 $popover-font-size: 1rem !default;

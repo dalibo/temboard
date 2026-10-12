@@ -68,4 +68,16 @@ export default defineConfig({
       moment: "moment/moment.js",
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: [
+          'color-functions',
+          'import',
+          'global-builtin',
+          'if-function'
+        ],
+      }
+    }
+  }
 });
