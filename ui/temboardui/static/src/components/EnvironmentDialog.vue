@@ -109,8 +109,7 @@ function reset() {
               id="inputDescription"
               v-model="model.description"
               :disabled="disabled"
-              >{{ model.description }}</textarea
-            >
+              >{{ model.description }}</textarea>
           </div>
         </div>
       </div>
