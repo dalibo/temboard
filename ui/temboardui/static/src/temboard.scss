@@ -4,7 +4,6 @@
 @import "daterangepicker-override";
 @import "daterangepicker/daterangepicker";
 @import "datatables.net-bs5";
-@import "vue-multiselect/dist/vue-multiselect";
 
 html {
   font-size: 14px;
@@ -546,38 +545,6 @@ table td.auto-width {
 *:-webkit-full-screen {
   width: 100% !important;
   height: 100%;
-}
-
-.multiselect-container {
-  padding: 0;
-
-  > li.dropdown-item label {
-    padding-left: 10px;
-    margin: 0.5rem 0;
-  }
-
-  .dropdown-item {
-    &.active {
-      color: black;
-      background-color: #dfdfdf;
-    }
-
-    &.disabled {
-      color: grey;
-    }
-
-    &:not(.disabled) {
-      cursor: pointer;
-    }
-
-    label,
-    input {
-      cursor: inherit !important;
-    }
-  }
-
-  overflow-y: scroll;
-  max-height: 20em;
 }
 
 .modal-body .alert pre {
