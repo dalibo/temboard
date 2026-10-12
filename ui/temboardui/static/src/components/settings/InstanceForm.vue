@@ -1,7 +1,6 @@
 <script setup>
 import $ from "jquery";
 import { computed, onUpdated, ref, watch, watchEffect } from "vue";
-import Multiselect from "vue-multiselect";
 
 import InstanceDetails from "./InstanceDetails.vue";
 

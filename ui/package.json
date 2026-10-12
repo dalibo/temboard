@@ -28,7 +28,6 @@
     "moment": "^2.30.1",
     "pev2": "^1.12.1",
     "vue": "^3.4.21",
-    "vue-multiselect": "^3.0.0",
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
