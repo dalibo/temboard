@@ -2,11 +2,10 @@ import logging
 from datetime import datetime, timedelta
 
 from dateutil import parser as parse_datetime
-from flask import abort, request
+from flask import abort, g, request
 from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
-from flask import g
 from .alerting import bootstrap_checks, check_specs
 from .model import db
 from .model.orm import Check, CheckState, CollectorStatus, Host, Instance

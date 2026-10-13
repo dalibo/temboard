@@ -1,10 +1,10 @@
 import logging
 
+from flask import abort, current_app, g, render_template, request
 
+from ....web.flask import csvify, instance_routes
 from ..chartdata import get_metric_data_csv, get_unavailability_csv
 from ..tools import get_request_ids, parse_start_end
-from flask import abort, current_app, g, render_template, request
-from ....web.flask import csvify, instance_routes
 
 logger = logging.getLogger(__name__)
 

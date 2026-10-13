@@ -73,10 +73,7 @@ def json_data_instance():
 
     metas = g.db_session.execute(
         METAS_QUERY,
-        dict(
-            agent_address=g.instance.agent_address,
-            agent_port=g.instance.agent_port,
-        ),
+        dict(agent_address=g.instance.agent_address, agent_port=g.instance.agent_port),
     ).fetchone()
     metas = dict(metas) if metas is not None else None
     return jsonify(dict(data=statements, metas=metas))

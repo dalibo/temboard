@@ -15,6 +15,8 @@ from flask import (
 )
 from itsdangerous import SignatureExpired
 from temboardtoolkit import validators
+from tornado.web import create_signed_value
+
 from temboardui.application import (
     gen_cookie,
     get_reset_token_serializer,
@@ -23,7 +25,6 @@ from temboardui.application import (
     send_mail,
 )
 from temboardui.errors import TemboardUIError
-from tornado.web import create_signed_value
 
 from ...model import orm
 from ..flask import admin_required, anonymous_allowed, transaction, validating
