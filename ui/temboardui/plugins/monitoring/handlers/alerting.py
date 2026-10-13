@@ -3,13 +3,13 @@ import logging
 from datetime import datetime
 from textwrap import dedent
 
+from flask import abort, current_app, g, json, jsonify, render_template, request
 
 from temboardui.plugins.monitoring.model.orm import Check, CheckState
 
+from ....web.flask import instance_routes
 from ..alerting import check_specs, check_state_detail, checks_info
 from ..tools import get_request_ids, parse_start_end
-from ....web.flask import instance_routes
-from flask import abort, current_app, g, json, jsonify, render_template, request
 
 logger = logging.getLogger(__name__)
 
