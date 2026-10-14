@@ -43,7 +43,7 @@ $(() => {
   }
 
   // Sidebar collapsology
-  if (eval(localStorage.getItem("sidebarCollapsed"))) {
+  if (localStorage.getItem("sidebarCollapsed") === "true") {
     document.body.className += "sidebar-collapsed";
   }
 
