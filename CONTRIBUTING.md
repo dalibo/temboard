@@ -146,6 +146,26 @@ an unhandled exception drops in an interactive PDB debugger prompt.
 Enable debug mode by setting DEBUG=y environment variable.
 For agent, only long running commands have autoreload.
 
+## Developing the agent
+
+When working on the agent's code, it could be cumbersome to have to modify the UI code
+to test it. In order to interact directly with agent's endpoints, it's possible to query
+the agent without the need to change UI's code. For that purpose the `query-agent` can
+be used.
+
+Here's an example of a query on the agent's dashboard endpoint:
+
+```console
+uv run temboard query-agent http://0.0.0.0:2345/dashboard | jq
+```
+
+Use `--help` on the command to see other possible usage.
+
+!!! note
+
+    Don't forget to add `DEBUG=y` to the command to start the agent (See "Setup
+    Development" section) in order to benefit from agent's autoreload.
+    See [Executing in debug mode](CONTRIBUTING.md#executing-in-debug-mode).
 
 ## psql for Monitored PostgreSQL
 
