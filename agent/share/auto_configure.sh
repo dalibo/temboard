@@ -115,7 +115,7 @@ generate_configuration() {
     test -n "$port"
     log "Configuring temboard-agent to run on port ${port}."
 
-    plugins=(activity dashboard maintenance monitoring pgconf)
+    plugins=(activity dashboard maintenance monitoring pgconf explain)
     if [ -n "$has_statements" ]; then
         plugins+=(statements)
     fi
@@ -162,7 +162,6 @@ generate_configuration() {
 	ssl_key_file = ${sslkey}
 	# Enabled plugins.
 	plugins = ${qplugins[@]}
-
 	#
 	# Managed PostgreSQL instance configuration
 	#

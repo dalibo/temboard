@@ -11,6 +11,7 @@ import {
   BSpinner,
   BTable,
   BTh,
+  BTooltip,
   BTr,
 } from "bootstrap-vue-next";
 import "bootstrap-vue-next/dist/bootstrap-vue-next.css";
@@ -24,6 +25,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import DateRangePicker from "../components/DateRangePicker/DateRangePicker.vue";
+import UseExplain from "../components/UseExplain.vue";
 import { formatDuration } from "../utils/duration";
 
 hljs.registerLanguage("sql", sql);
@@ -495,6 +497,18 @@ function onFromToUpdate(from_, to_) {
       </template>
       <template #row-expansion="row">
         <BCard class="detail">
+          <div class="position-absolute top-0 right-0p-0 right-0 m-2">
+            <BTooltip :teleport-to="'body'">
+              <template #target>
+                <UseExplain v-slot="{ explain }">
+                  <button class="p-1 btn btn-secondary" @click="explain(row.item.query)">
+                    <i class="fa-fw fa-solid fa-sitemap"></i>
+                  </button>
+                </UseExplain>
+              </template>
+              Explain this query
+            </BTooltip>
+          </div>
           <BRow class="mb-2">
             <BCol>
               <pre class="sql hljs" v-html="highlight(row.item.query)"></pre>
