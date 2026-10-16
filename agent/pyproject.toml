@@ -29,6 +29,7 @@ maintenance = "temboardagent.plugins.maintenance:MaintenancePlugin"
 monitoring = "temboardagent.plugins.monitoring:MonitoringPlugin"
 pgconf = "temboardagent.plugins.pgconf:PgConfPlugin"
 statements = "temboardagent.plugins.statements:StatementsPlugin"
+explain = "temboardagent.plugins.explain:ExplainPlugin"
 
 [build-system]
 requires = ["uv_build>=0.9.10,<0.10.0"]

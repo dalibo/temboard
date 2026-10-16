@@ -2,7 +2,7 @@
 import { UseClipboard } from "@vueuse/components";
 import { Modal } from "bootstrap";
 import { vBTooltip } from "bootstrap-vue-next";
-import { BTable } from "bootstrap-vue-next";
+import { BTable, BTooltip } from "bootstrap-vue-next";
 import "bootstrap-vue-next/dist/bootstrap-vue-next.css";
 import hljs from "highlight.js/lib/core";
 import sql from "highlight.js/lib/languages/sql";
@@ -12,6 +12,7 @@ import * as _ from "lodash";
 import { computed, onMounted, ref, watch } from "vue";
 
 import ModalDialog from "../components/ModalDialog.vue";
+import UseExplain from "../components/UseExplain.vue";
 import { formatDuration } from "../utils/duration";
 
 hljs.registerLanguage("sql", sql);
@@ -47,7 +48,7 @@ function load() {
   const lastLoad = new Date();
 
   request = $.ajax({
-    url: "/proxy/" + agent_address + "/" + agent_port + "/activity",
+    url: activityApiUrl,
     type: "GET",
     beforeSend: function () {
       loading.value = true;
@@ -77,7 +78,7 @@ load();
 
 function terminate() {
   $.ajax({
-    url: "/proxy/" + agent_address + "/" + agent_port + "/activity/kill",
+    url: activityKillApiUrl,
     type: "POST",
     async: true,
     contentType: "application/json",
@@ -352,16 +353,30 @@ function reset() {
             />
           </template>
           <template v-slot:cell(query)="data">
-            <div class="position-relative clipboard-parent">
-              <UseClipboard v-slot="{ copy, copied }" :legacy="true">
-                <span
-                  class="copy invisible position-absolute top-0 right-0 pe-1 ps-1 bg-secondary text-white rounded"
-                  title="Copy to clipboard"
-                  @click="copy(data.item.query)"
-                >
-                  {{ copied ? "Copied" : "Copy" }}
-                </span>
-              </UseClipboard>
+            <div class="position-relative show-on-hover">
+              <div class="invisible position-absolute top-0 right-0p-0 right-0">
+                <UseClipboard v-slot="{ copy, copied }" :legacy="true">
+                  <BTooltip :teleport-to="'body'">
+                    <template #target>
+                      <span class="p-1 bg-secondary text-white rounded" @click="copy(data.item.query)">
+                        <i class="fa-fw fa-solid fa-clipboard"></i>
+                      </span>
+                    </template>
+                    {{ copied ? "Copied" : "Copy to clipboard" }}
+                  </BTooltip>
+                </UseClipboard>
+
+                <BTooltip :teleport-to="'body'">
+                  <template #target>
+                    <UseExplain v-slot="{ explain }">
+                      <span class="p-1 bg-secondary text-white rounded" @click="explain(data.item.query)">
+                        <i class="fa-fw fa-solid fa-sitemap"></i>
+                      </span>
+                    </UseExplain>
+                  </template>
+                  Explain this query
+                </BTooltip>
+              </div>
               <pre class="sql hljs" v-html="highlight(data.value)"></pre>
             </div>
           </template>
@@ -399,7 +414,7 @@ function reset() {
 </template>
 
 <style scoped>
-.clipboard-parent:hover .copy {
+.show-on-hover:hover .invisible {
   visibility: visible !important;
 }
 </style>

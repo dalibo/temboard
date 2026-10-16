@@ -251,7 +251,6 @@ table.table-query {
 
   td.query {
     max-width: 0;
-    overflow: hidden;
     vertical-align: middle;
     cursor: pointer;
   }
@@ -560,4 +559,11 @@ table td.auto-width {
 
 .min-h-0 {
   min-height: 0;
+}
+
+// Force constrained height on tab content in PEV2 component
+// Ensures that the scroll bar will be on the content instead of in temboard's main
+// element
+.plan-container .tab-content {
+  flex: 1 1 0;
 }
