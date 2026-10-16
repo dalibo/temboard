@@ -3,7 +3,6 @@ SELECT
 	role_email,
 	role_phone,
 	is_active,
-	is_admin,
 	g.id AS g_id,
 	g.name,
 	e.id AS e_id,
