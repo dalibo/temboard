@@ -111,3 +111,22 @@ def test_download_inventory(registered_agent, browser):
 
     assert "Hostname;Port" in header
     assert "default" in instance
+
+
+def test_prometheus_targets(registered_agent, apikey, ui):
+    res = ui.get(
+        "/json/prometheus/targets", headers={"Authorization": f"Bearer {apikey}"}
+    )
+    res.raise_for_status()
+    targets = res.json()
+    assert len(targets) == 1
+    target = targets[0]
+    assert "labels" in target
+    labels = target["labels"]
+    assert "environment" in labels
+    assert "instance" in labels
+    assert "nodename" in labels
+    assert "server" in labels
+    assert "temboard_agent" in labels
+    assert "targets" in target
+    assert len(target["targets"]) == 1
