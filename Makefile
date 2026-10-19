@@ -134,10 +134,6 @@ tests:  #: Execute all tests.
 clean-tests:  #: Clean tests runtime files
 	rm -rf tests/downloads/ tests/logs/ tests/screenshots/
 
-prom-targets: dev/prometheus/targets/temboard-dev.yaml  #: Generate Prometheus dev targets.
-dev/prometheus/targets/temboard-dev.yaml: dev/bin/mktargets .env
-	$^ > $@
-
 VERSION=$(shell uv --directory=ui/ version --short)
 BRANCH?=master
 # When stable branch v8 is created, use this:

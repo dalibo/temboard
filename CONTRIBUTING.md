@@ -491,7 +491,6 @@ file-based service discovery. You only need a couple of steps to view temBoard
 metrics in Grafana.
 
 - Start development temBoard UI and at lease one of agent0 or agent1.
-- Generate Prometheus targets using `make prom-targets`.
 - Go to [development Grafana import page](http://localhost:3000/dashboard/import).
 - Import Dashboard ID [1860](https://grafana.com/grafana/dashboards/1860)
   (*Node Exporter Full*) or [9628](https://grafana.com/grafana/dashboards/1860)
