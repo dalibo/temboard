@@ -205,6 +205,8 @@ class StubRole:
     def __init__(self, role_name):
         self.role_name = role_name
 
+    is_admin = False  # Used by flask/base.html
+
 
 class Group(Model):
     __tablename__ = "groups"
