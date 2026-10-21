@@ -41,7 +41,7 @@ def merge_agent_info(session, host_info, instance_info):
     if instance_info["available"]:
         try:
             # Try to get instance_id
-            instance_info["instance_id"] = get_instance_id(
+            instance_info["instance_id"] = db.get_instance_id(
                 session, host_id, instance_info["port"]
             )
         except Exception:
@@ -57,20 +57,9 @@ def merge_agent_info(session, host_info, instance_info):
     return host
 
 
-def get_instance_id(session, host_id, port):
-    """Get instance_id by host_id and port."""
-    instance_id = db.get_instance_id(session, host_id, port)
-    if not instance_id:
-        raise Exception(
-            "Could not find registered instance with host_id=%s and port=%s"
-            % (host_id, port)
-        )
-    return instance_id
-
-
 def get_request_ids():
     host_id = db.get_host_id(g.db_session, g.instance.hostname)
-    instance_id = get_instance_id(g.db_session, host_id, g.instance.pg_port)
+    instance_id = db.get_instance_id(g.db_session, host_id, g.instance.pg_port)
     return host_id, instance_id
 
 

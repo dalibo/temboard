@@ -45,13 +45,12 @@ from ...core import refresh_discover
 from ...model import QUERIES, Session
 from ...model import orm as coreorm
 from .alerting import check_specs
-from .model.db import get_host_id, insert_availability
+from .model.db import get_host_id, get_instance_id, insert_availability
 from .model.orm import Check, CollectorStatus, Host, Instance
 from .tools import (
     Stopwatch,
     check_preprocessed_data,
     get_instance_checks,
-    get_instance_id,
     insert_metrics,
     merge_agent_info,
     populate_host_checks,
