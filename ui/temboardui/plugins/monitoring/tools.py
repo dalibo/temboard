@@ -334,20 +334,3 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
     # This may happen when postgres is not available
     db.undef_check_states(session, all_check_ids, list(keys.keys()))
     session.commit()
-
-
-# Stolen from ldap2pg
-class Stopwatch:
-    def __init__(self):
-        self.delta = timedelta()
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.delta}>"
-
-    def __enter__(self):
-        self.start = datetime.utcnow()
-
-    def __exit__(self, *_):
-        self.last_delta = datetime.utcnow() - self.start
-        self.delta += self.last_delta
-        self.start = None

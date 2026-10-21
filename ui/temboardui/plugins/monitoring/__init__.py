@@ -32,6 +32,7 @@ from temboardtoolkit import taskmanager
 from temboardtoolkit import validators as v
 from temboardtoolkit.configuration import OptionSpec
 from temboardtoolkit.errors import UserError
+from temboardtoolkit.watch import Stopwatch
 
 from temboardui.agentclient import TemboardAgentClient
 from temboardui.application import get_instance, send_mail, send_sms
@@ -44,7 +45,6 @@ from .alerting import check_specs
 from .model.db import get_host_id, get_instance_id, insert_availability
 from .model.orm import Check, CollectorStatus, Host, Instance
 from .tools import (
-    Stopwatch,
     check_preprocessed_data,
     get_instance_checks,
     insert_metrics,
