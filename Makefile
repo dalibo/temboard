@@ -11,7 +11,7 @@ apropos:  #: Show dev Makefile help.
 
 DOCKER_MAX_VERSION=30
 develop: develop-3.9  #: Create Python venv and docker services.
-develop-%:: .env
+develop-%::
 	@dev/bin/checkdocker $(DOCKER_MAX_VERSION)
 	git config blame.ignoreRevsFile dev/git-blame-ignore-revs
 	if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $$PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
@@ -28,9 +28,6 @@ develop-%:: .env
 	@echo "    You can now execute temBoard UI with uv run temboard"
 	@echo
 	@echo
-
-.env: dev/bin/mkenv
-	$^ > $@
 
 repository:  #: Initialize temBoard UI database.
 	docker compose up -d repository
@@ -76,7 +73,7 @@ clean:  #: Trash venv and containers.
 	docker rmi --force dalibo/temboard-agent:dev
 	rm -rf .venv/ dev/venv-py* dev/build/ dev/prometheus/targets/temboard-dev.yaml
 	rm -vf ui/build/bin/prometheus ui/build/bin/promtool
-	rm -rf agent/build/ .env agent/.coverage
+	rm -rf agent/build/ agent/.coverage
 	rm -rf agent/temboardagent/_vendor ui/temboardui/_vendor
 	rm -rvf ui/build/ ui/.coverage
 	$(MAKE) clean-static
