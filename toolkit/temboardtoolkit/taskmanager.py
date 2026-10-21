@@ -747,6 +747,9 @@ class WorkerSet(list):
     def register(self, pool_size=1):
         def register(f):
             def defer(app, **kw):
+                if not app.scheduler.can_schedule():
+                    logger.debug("Would schedule %s.", f.__name__)
+                    return
                 logger.debug("Scheduling %s.", f.__name__)
                 return app.scheduler.schedule_task(f.__name__, options=kw, expire=0)
 
