@@ -230,16 +230,6 @@ def update_collector_status(
     session.merge(cs)
 
 
-def build_check_task_options(data, host_id, instance_id, checks, timestamp):
-    """Build Task options for check_data_worker worker."""
-
-    return dict(
-        host_id=host_id,
-        instance_id=instance_id,
-        data=preprocess_data(data, checks, timestamp),
-    )
-
-
 def preprocess_data(data, checks, timestamp):
     """Preprocess metrics for alerting."""
     ret = list()
