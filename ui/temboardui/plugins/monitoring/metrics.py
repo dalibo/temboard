@@ -5,7 +5,7 @@ from textwrap import dedent
 
 from temboardtoolkit.errors import UserError
 
-from .model import db
+from .inventory import get_host_id, get_instance_id
 from .model.orm import CollectorStatus, Host, Instance
 
 logger = logging.getLogger(__package__)
@@ -17,7 +17,7 @@ def merge_agent_info(session, host_info, instance_info):
 
     try:
         # Try to get host_id, based on hostname
-        host_info["host_id"] = db.get_host_id(session, host_info["hostname"])
+        host_info["host_id"] = get_host_id(session, host_info["hostname"])
     except NameError:
         # host not found
         pass
@@ -30,7 +30,7 @@ def merge_agent_info(session, host_info, instance_info):
     session.commit()
 
     # Get host_id in any case
-    host_id = db.get_host_id(session, host_info["hostname"])
+    host_id = get_host_id(session, host_info["hostname"])
     # Weird that SA does not update this.
     host.host_id = host_id
 
@@ -39,7 +39,7 @@ def merge_agent_info(session, host_info, instance_info):
     if instance_info["available"]:
         try:
             # Try to get instance_id
-            instance_info["instance_id"] = db.get_instance_id(
+            instance_info["instance_id"] = get_instance_id(
                 session, host_id, instance_info["port"]
             )
         except Exception:
