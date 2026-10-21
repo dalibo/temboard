@@ -22,11 +22,7 @@
 import logging
 import shutil
 from datetime import datetime, timedelta
-
-try:
-    from itertools import zip_longest
-except ImportError:
-    from itertools import izip_longest as zip_longest
+from itertools import zip_longest
 from textwrap import dedent
 
 from psycopg2.extensions import AsIs
