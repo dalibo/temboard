@@ -500,8 +500,7 @@ def collector(app, address, port, engine=None):
             logger.debug(
                 "New etag. old=%s new=%s", instance.discover_etag, discover_etag
             )
-            if app.scheduler.can_schedule:
-                refresh_discover.defer(app, address=address, port=port)
+            refresh_discover.defer(app, address=address, port=port)
     else:
         logger.debug("Agent did not send discover ETag.")
 

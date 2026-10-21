@@ -85,6 +85,8 @@ class Schedule(RunTaskMixin, SubCommand):
                 raise UserError("temBoard is not running.")
 
             out = worker.defer(self.app, **build_kwargs_from_args(worker, worker_args))
+            if not out:
+                logger.error("Failed to schedule %s.", args.worker_name)
             if out.content.get("error"):
                 logger.error(
                     "Failed to schedule %s: %s.", args.worker_name, out.content["error"]
