@@ -63,7 +63,6 @@ starts docker services and initializes temBoard database.
 
 ``` console
 $ make develop
-dev/bin/mkenv > .env
 git config blame.ignoreRevsFile dev/git-blame-ignore-revs
 if [ -d ~/.config/lnav/formats ] ; then ln -fsTv $PWD/dev/lnav/formats ~/.config/lnav/formats/temboard ; fi
 make -j 2 install-3.9 ui/build/bin/prometheus ui/build/bin/promtool

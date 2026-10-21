@@ -72,14 +72,15 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
     ports: [2345:2345]
+    extra_hosts: &extra_hosts
+    - "host.docker.internal:host-gateway"
     environment: &agent_env
       # Persists bash history. Eases reuse of hupper command when recreating
       # container.
       HISTFILE: /usr/local/src/temboard/dev/agent-bash_history
       PGUSER: postgres
       PSQL_HISTORY: /usr/local/src/temboard/dev/agent-psql_history
-      # Send TEMBOARD_UI_URL from .env file
-      TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
+      TEMBOARD_UI_URL: "http://host.docker.internal:8888"
       TEMBOARD_UI_USER: admin
       TEMBOARD_UI_PASSWORD: admin
       TEMBOARD_HOSTNAME: postgres0.dev
@@ -136,6 +137,7 @@ services:
     - /var/run/docker.sock:/var/run/docker.sock
     - ./:/usr/local/src/temboard/
     ports: [2346:2345]
+    extra_hosts: *extra_hosts
     environment:
       <<: *agent_env
       TEMBOARD_CONFIGFILE: /etc/temboard-agent/postgres1/temboard-agent.conf
@@ -193,13 +195,14 @@ services:
     - run-stable:/var/run/postgresql
     - /var/run/docker.sock:/var/run/docker.sock
     ports: [2347:2345]
+    extra_hosts: *extra_hosts
     depends_on:
       postgres-stable:
         condition: service_healthy
     environment:
       TEMBOARD_HOSTNAME: postgres-stable.dev
       TEMBOARD_LOGGING_LEVEL: DEBUG
-      TEMBOARD_UI_URL: "${TEMBOARD_UI_URL-}"
+      TEMBOARD_UI_URL: "http://host.docker.internal:8888"
 
   grafana:
     image: grafana/grafana:9.0.2
@@ -224,8 +227,7 @@ services:
     - ./dev/prometheus/targets:/targets
     ports:
     - 9090:9090
-    extra_hosts:
-    - "host.docker.internal:host-gateway"
+    extra_hosts: *extra_hosts
     command:
     - "--config.file=/etc/prometheus/prometheus.yml"
     - "--storage.tsdb.path=/prometheus"
