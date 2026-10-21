@@ -41,18 +41,16 @@ from temboardui.model import worker_engine
 from ...core import refresh_discover
 from ...model import QUERIES, Session
 from ...model import orm as coreorm
-from .alerting import check_specs
-from .model.db import get_host_id, get_instance_id, insert_availability
-from .model.orm import Check, CollectorStatus, Host, Instance
-from .tools import (
+from .alerting import (
     check_preprocessed_data,
+    check_specs,
     get_instance_checks,
-    insert_metrics,
-    merge_agent_info,
     populate_host_checks,
     preprocess_data,
-    update_collector_status,
 )
+from .model.db import get_host_id, get_instance_id, insert_availability
+from .model.orm import Check, CollectorStatus, Host, Instance
+from .tools import insert_metrics, merge_agent_info, update_collector_status
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
