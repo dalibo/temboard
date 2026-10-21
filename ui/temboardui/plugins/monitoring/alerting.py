@@ -1,9 +1,9 @@
 import logging
 import operator
+from textwrap import dedent
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from .model import db
 from .model.orm import Check, CheckState
 
 logger = logging.getLogger(__package__)
@@ -445,7 +445,7 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
 
         session.flush()
         # Append state change if any to history
-        db.append_state_changes(
+        append_state_changes(
             session, dt, c.check_id, cs.state, cs.key, value, warning, critical
         )
 
@@ -458,7 +458,7 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
 
     # Purge CheckState
     for check_id, ks in list(keys.items()):
-        db.purge_check_states(session, check_id, ks)
+        purge_check_states(session, check_id, ks)
         session.commit()
 
     # Get the list of check_id for the given instance
@@ -467,8 +467,27 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
 
     # Set to UNDEF each unchecked check for the given instance
     # This may happen when postgres is not available
-    db.undef_check_states(session, all_check_ids, list(keys.keys()))
+    undef_check_states(session, all_check_ids, list(keys.keys()))
     session.commit()
+
+
+def append_state_changes(session, dt, check_id, state, key, value, warning, critical):
+    session.execute(
+        dedent("""
+            SELECT monitoring.append_state_changes(
+                :datetime, :check_id, :state, :key, :value, :warning, :critical
+            )
+        """),
+        dict(
+            datetime=dt,
+            check_id=check_id,
+            state=state,
+            key=key,
+            value=value,
+            warning=warning,
+            critical=critical,
+        ),
+    )
 
 
 def preprocess_data(data, checks, timestamp):
@@ -529,3 +548,26 @@ def populate_host_checks(session, host_id, instance_id, hostinfo):
         )
         session.add(c)
     session.commit()
+
+
+def purge_check_states(session, check_id, keys):
+    session.execute(
+        dedent("""
+            DELETE FROM monitoring.check_states
+            WHERE check_id = :check_id AND NOT (key = ANY(:keys))
+        """),
+        dict(check_id=check_id, keys=keys),
+    )
+
+
+def undef_check_states(session, all_ids, to_keep_ids):
+    session.execute(
+        dedent("""
+            UPDATE monitoring.check_states
+            SET state = 'UNDEF'
+            WHERE
+                check_id = ANY(:all_ids)
+                AND NOT (check_id = ANY(:to_keep_ids))
+        """),
+        dict(all_ids=all_ids, to_keep_ids=to_keep_ids),
+    )
