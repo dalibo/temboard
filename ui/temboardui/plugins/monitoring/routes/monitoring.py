@@ -4,7 +4,8 @@ from flask import abort, current_app, g, render_template, request
 
 from ....web.flask import csvify, instance_routes
 from ..chartdata import get_metric_data_csv, get_unavailability_csv
-from ..tools import get_request_ids, parse_start_end
+from ..tools import parse_start_end
+from .params import get_request_ids
 
 logger = logging.getLogger(__name__)
 
