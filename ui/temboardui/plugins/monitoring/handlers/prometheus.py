@@ -1,8 +1,8 @@
 # Flask routes
 from flask import current_app, g, jsonify, request
 
-from ...model import orm
-from ...web.flask import apikey_allowed, instance_proxy
+from ....model import orm
+from ....web.flask import apikey_allowed, instance_proxy
 
 
 @instance_proxy.route("/monitoring/metrics")
