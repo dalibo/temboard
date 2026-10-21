@@ -603,9 +603,9 @@ onMounted(() => {
             <a href="alerting" class="small text-body-secondary">More&hellip;</a>
           </div>
         </div>
-        <div class="row small mb-2">
+        <div class="row small mb-2 g-1">
           <template v-for="state in states">
-            <div class="col-3 col-xxl-2 p-1 text-center">
+            <div class="col-3 col-xxl-2 text-center">
               <div
                 class="p-1 rounded"
                 v-bind:class="[stateBorderClass(state.state), { 'striped bg-light': !state.enabled }]"

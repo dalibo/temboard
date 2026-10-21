@@ -1,32 +1,54 @@
 <ul class="nav nav-pills flex-column">
   <li class="nav-item">
-    <a href="/settings/instances" class="nav-link">
+    <a href="/settings/instances" class="nav-link"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Instances"
+    >
       <i class="fa-solid fa-fw fa-database"></i>
       <span>Instances</span>
     </a>
   </li>
   <li class="nav-item">
-    <a href="/settings/environments" class="nav-link">
+    <a href="/settings/environments" class="nav-link"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Environments"
+    >
       <i class="fa-solid fa-fw fa-folder"></i>
       <span>Environments</span>
     </a>
   </li>
   <li class="nav-item">
-    <a href="/settings/users" class="nav-link">
+    <a href="/settings/users" class="nav-link"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Users"
+    >
       <i class="fa-solid fa-fw fa-user"></i>
       <span>Users</span>
     </a>
   </li>
   <li class="nav-item">
-    <a href="/settings/notifications" class="nav-link">
+    <a href="/settings/notifications" class="nav-link"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Alert notifications"
+    >
       <i class="fa-solid fa-fw fa-paper-plane"></i>
       <span>Alert notifications</span>
     </a>
   </li>
   <li class="nav-item">
-    <a href="/about" class="nav-link">
+    <a href="/about" class="nav-link"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="About temBoard"
+    >
       <i class="fa-solid fa-fw fa-info"></i>
       <span>About temBoard</span>
     </a>
   </li>
 </ul>
+
+{% include "collapse_sidebar_button.html" %}

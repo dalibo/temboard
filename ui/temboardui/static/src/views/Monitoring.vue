@@ -325,7 +325,7 @@ function onFromToUpdate(from_, to_) {
 
 function showMetricsSelector() {
   new Collapse("#metrics").show();
-  window.scrollTo({ top: 0 });
+  document.querySelector(".main")?.scrollTo({ top: 0, behavior: "smooth" });
 }
 </script>
 

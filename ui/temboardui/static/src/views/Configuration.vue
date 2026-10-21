@@ -127,7 +127,7 @@ function submitForm() {
     },
     complete: function () {
       getConfiguration(false);
-      window.scrollTo(0, 0);
+      document.querySelector(".main")?.scrollTo({ top: 0, behavior: "smooth" });
     },
   });
 }
