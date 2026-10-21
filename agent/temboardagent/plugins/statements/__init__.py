@@ -1,6 +1,6 @@
 import logging
 
-from bottle import HTTPError, default_app
+from bottle import HTTPError, default_app, response
 from temboardtoolkit.configuration import OptionSpec
 
 from ...tools import now
@@ -28,12 +28,13 @@ def get_statements(pgpool):
     config = app.config
     dbname = config.statements.dbname
     snapshot_datetime = now()
+    discover = app.discover.ensure_latest()
+    response.set_header("X-TemBoard-Discover-ETag", app.discover.etag)
     try:
         for connect in pgpool.auto_reconnect():
             with connect(dbname) as conn:
                 data = list(conn.query(query))
     except Exception as e:
-        discover = app.discover.ensure_latest()
         pg_version = discover["postgres"]["version_num"]
         if pg_version < 90600 or 'relation "pg_stat_statements" does not exist' in str(
             e
