@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 from dateutil import parser as parse_datetime
-from flask import abort, g, request
+from flask import abort, request
 from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
@@ -55,12 +55,6 @@ def merge_agent_info(session, host_info, instance_info):
         session.flush()
         session.commit()
     return host
-
-
-def get_request_ids():
-    host_id = db.get_host_id(g.db_session, g.instance.hostname)
-    instance_id = db.get_instance_id(g.db_session, host_id, g.instance.pg_port)
-    return host_id, instance_id
 
 
 def parse_start_end():
