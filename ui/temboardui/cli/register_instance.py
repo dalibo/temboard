@@ -192,7 +192,7 @@ class RegisterInstance(SubCommand):
         logger.debug("Fast-collect monitoring metrics.")
         if os.path.exists(self.app.scheduler.scheduler.address):
             if "monitoring" in plugins:
-                from ..plugins.monitoring import collector
+                from ..plugins.monitoring.tasks import collector
 
                 logger.info("Schedule monitoring collect for agent now.")
                 collector.defer(
