@@ -438,7 +438,12 @@ def get_instance_id(session, host_id, port):
         """),
         dict(host_id=host_id, port=port),
     ).fetchone()
-    return row[0] if row else None
+    if not row:
+        raise Exception(
+            "Could not find registered instance with host_id=%s and port=%s"
+            % (host_id, port)
+        )
+    return row[0]
 
 
 def append_state_changes(session, dt, check_id, state, key, value, warning, critical):
