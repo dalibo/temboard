@@ -5,54 +5,7 @@ from textwrap import dedent
 
 from temboardtoolkit.errors import UserError
 
-from .inventory import get_host_id, get_instance_id
-from .model.orm import CollectorStatus, Host, Instance
-
 logger = logging.getLogger(__package__)
-
-
-def merge_agent_info(session, host_info, instance_info):
-    """Update the host, instance and database information with the
-    data received from the agent."""
-
-    try:
-        # Try to get host_id, based on hostname
-        host_info["host_id"] = get_host_id(session, host_info["hostname"])
-    except NameError:
-        # host not found
-        pass
-
-    host = Host.from_dict(host_info)
-
-    # Insert or update host information
-    session.merge(host)
-    session.flush()
-    session.commit()
-
-    # Get host_id in any case
-    host_id = get_host_id(session, host_info["hostname"])
-    # Weird that SA does not update this.
-    host.host_id = host_id
-
-    # Only process instances marked as available, since only those
-    # have complete information
-    if instance_info["available"]:
-        try:
-            # Try to get instance_id
-            instance_info["instance_id"] = get_instance_id(
-                session, host_id, instance_info["port"]
-            )
-        except Exception:
-            # instance not found
-            pass
-        instance_info["host_id"] = host_id
-
-        inst = Instance.from_dict(instance_info)
-        # Insert or update instance information
-        session.merge(inst)
-        session.flush()
-        session.commit()
-    return host
 
 
 def insert_metrics(session, host_id, instance_id, data, labels=None, max_duration=30):
@@ -561,19 +514,3 @@ def generate_logfmt_records(metric, points):
                 logkey = f"{metric}_{k}"
             record[logkey] = v
         yield record
-
-
-def update_collector_status(
-    session, instance_id, status, last_pull=None, last_push=None, last_insert=None
-):
-    cs = CollectorStatus()
-    cs.instance_id = instance_id
-    cs.status = status
-    if last_pull:
-        cs.last_pull = last_pull
-    if last_push:
-        cs.last_push = last_push
-    if last_insert:
-        cs.last_insert = last_insert
-
-    session.merge(cs)

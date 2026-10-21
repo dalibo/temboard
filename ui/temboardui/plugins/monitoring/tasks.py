@@ -22,13 +22,13 @@ from .alerting import (
     populate_host_checks,
     preprocess_data,
 )
-from .inventory import get_host_id, get_instance_id
-from .metrics import (
-    insert_availability,
-    insert_metrics,
+from .inventory import (
+    get_host_id,
+    get_instance_id,
     merge_agent_info,
     update_collector_status,
 )
+from .metrics import insert_availability, insert_metrics
 from .model.orm import Check, CollectorStatus, Host, Instance
 
 logger = logging.getLogger(__package__)
