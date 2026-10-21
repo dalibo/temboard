@@ -42,19 +42,75 @@ $(() => {
     element.addClass("active");
   }
 
-  // Sidebar collapsology
-  if (localStorage.getItem("sidebarCollapsed") === "true") {
-    document.body.className += "sidebar-collapsed";
-  }
+  // One toggled state: collapsed on desktop, open as an overlay on mobile.
+  const desktopSidebar = window.matchMedia("(min-width: 992px)");
+  const setSidebarState = () => {
+    const isToggled = desktopSidebar.matches && localStorage.getItem("sidebarCollapsed") === "true";
+    document.body.classList.toggle("sidebar-toggled", isToggled);
+    $("#menu-toggle").attr("aria-expanded", desktopSidebar.matches ? !isToggled : isToggled);
+    updateSidebarTooltips();
+  };
+  setSidebarState();
+  desktopSidebar.addEventListener("change", setSidebarState);
+
+  const toggleDesktopSidebar = () => {
+    const isToggled = $(document.body).toggleClass("sidebar-toggled").hasClass("sidebar-toggled");
+    localStorage.setItem("sidebarCollapsed", isToggled);
+    $("#menu-toggle").attr("aria-expanded", !isToggled);
+    updateSidebarTooltips();
+    window.dispatchEvent(new Event("resize"));
+  };
 
   $("#menu-collapse").click(function (event) {
     event.preventDefault();
-    $(document.body).toggleClass("sidebar-collapsed");
-    localStorage.setItem("sidebarCollapsed", $(document.body).hasClass("sidebar-collapsed"));
-    window.dispatchEvent(new Event("resize"));
+    toggleDesktopSidebar();
+  });
+
+  $("#menu-toggle").click(function () {
+    if (desktopSidebar.matches) {
+      toggleDesktopSidebar();
+    } else {
+      const isToggled = $(document.body).toggleClass("sidebar-toggled").hasClass("sidebar-toggled");
+      this.setAttribute("aria-expanded", isToggled);
+    }
+  });
+
+  $(".sidebar-fixed-width a").click(function () {
+    if (!desktopSidebar.matches) {
+      $(document.body).removeClass("sidebar-toggled");
+      $("#menu-toggle").attr("aria-expanded", "false");
+    }
+  });
+
+  $(".container-fluid > .row").click(function (event) {
+    if (!desktopSidebar.matches && event.target === this && $(document.body).hasClass("sidebar-toggled")) {
+      $(document.body).removeClass("sidebar-toggled");
+      $("#menu-toggle").attr("aria-expanded", "false");
+    }
+  });
+
+  $(document).keydown(function (event) {
+    if (!desktopSidebar.matches && event.key === "Escape") {
+      $(document.body).removeClass("sidebar-toggled");
+      $("#menu-toggle").attr("aria-expanded", "false");
+    }
   });
 
   // Tooltip initialization
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   [...tooltipTriggerList].map((el) => new Tooltip(el, { sanitize: false }));
+  function updateSidebarTooltips() {
+    const collapsed = desktopSidebar.matches && document.body.classList.contains("sidebar-toggled");
+    document.querySelectorAll('#sidebar .nav-link[data-bs-toggle="tooltip"]').forEach((el) => {
+      const tooltip = Tooltip.getInstance(el);
+      if (!tooltip) return;
+      if (collapsed) {
+        tooltip.enable();
+      } else {
+        tooltip.hide();
+        tooltip.disable();
+      }
+    });
+  }
+  updateSidebarTooltips();
 });

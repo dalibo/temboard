@@ -17,16 +17,17 @@
     {% block head %}{# Put link and meta in head block to inject here #}{% endblock %}
   </head>
 
-  <body>
+  <body class="vh-100 d-flex flex-column overflow-hidden">
     <script type="module" src="{{ vitejs.url_for('temboard.js') }}"></script>
 
     {# Header bar, hidden only on login page. #}
     {% if headerbar|default(True) %}
     <div class="navbar bg-primary navbar-static-top navbar-expand sticky-top p-0" data-bs-theme="dark">
       {% if sidebar|default(instance is defined) %}
-      <a class="navbar-text fs-6 ms-3 text-white" href id="menu-collapse">
+      <button class="btn btn-link navbar-text fs-6 ms-3 text-white text-decoration-none d-lg-none"
+              type="button" id="menu-toggle" aria-controls="sidebar" aria-expanded="false">
         <i class="fa-solid fa-bars"></i>
-      </a>
+      </button>
       {% endif %}
       <a class="navbar-brand p-0 ms-3 fw-bolder" href="/home" style="letter-spacing: -1px;">temBoard</a>
       {% if instance is defined %}
@@ -88,121 +89,148 @@
     </div>
     {% endif %}{# end of header bar #}
 
-    <div class="container-fluid">
-      <div class="row">
+    <div class="container-fluid d-flex flex-column flex-grow-1 flex-shrink-1">
+      <div class="row min-h-0 flex-grow-1 flex-shrink-1 flex-nowrap" style="flex-basis: 0">
         <!-- side bar -->
         {% if sidebar|default(instance is defined) %}
-        <div class="sidebar sidebar-fixed-width col-lg-3 bg-light">
-          <div class="sidebar-sticky d-flex flex-column">
-            {% if instance is defined %}
-            <ul class="nav nav-pills flex-column">
-              {% set plugin_names = [] %}
-              {% for plugin in instance.plugins %}
-              {% set _ = plugin_names.append(plugin.plugin_name) %}
-              {% endfor %}
-              {% if plugin is undefined %}
-              {% set plugin = 'builtin' %}
-              {% endif %}
-              {% if 'dashboard' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
-                  class="{{'active' if plugin == 'dashboard' else ''}} dashboard nav-link"
-                >
-                  <i class="fa-solid fa-dashboard fa-fw"></i>
-                  <span>Dashboard</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'activity' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"
-                  class="{{'active' if plugin == 'activity' else ''}} activity nav-link"
-                >
-                  <i class="fa-solid fa-bars fa-fw"></i>
-                  <span>Activity</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'monitoring' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
-                  class="{{'active' if plugin == 'monitoring' else ''}} monitoring nav-link"
-                >
-                  <i class="fa-solid fa-chart-column fa-fw"></i>
-                  <span>Monitoring</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'monitoring' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
-                  class="{{'active' if plugin == 'alerting' else ''}} alerting nav-link"
-                >
-                  <i class="fa-solid fa-heart fa-fw"></i>
-                  <span>Status</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'pgconf' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
-                  class="{{'active' if plugin == 'pgconf' else ''}} pgconf nav-link"
-                >
-                  <i class="fa-solid fa-cog fa-fw"></i>
-                  <span>Configuration</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'maintenance' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
-                  class="{{'active' if plugin == 'maintenance' else ''}} maintenance nav-link"
-                >
-                  <i class="fa-solid fa-wrench fa-fw"></i>
-                  <span>Maintenance</span>
-                </a>
-              </li>
-              {% endif %}
-              {% if 'statements' in plugin_names %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
-                  class="{{'active' if plugin == 'statements' else ''}} statements nav-link"
-                >
-                  <i class="fa-solid fa-tasks fa-fw"></i>
-                  <span>Statements</span>
-                </a>
-              </li>
-              {% endif %}
-              <li class="nav-item">
-                <a
-                  href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
-                  class="{{'active' if plugin == 'notifications' else ''}} nav-link"
-                >
-                  <i class="fa-solid fa-envelope fa-fw"></i>
-                  <span>Notifications</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/about" class="nav-link">
-                  <i class="fa-solid fa-info fa-fw"></i>
-                  <span>About</span>
-                </a>
-              </li>
-            </ul>
-            {% endif %}{# end of instance #} {% block sidebar %}{% endblock %}
-          </div>
+        <div class="sidebar sidebar-fixed-width col-lg-3 bg-light py-3 d-flex flex-column justify-content-between" id="sidebar">
+          {% if instance is defined %}
+          <ul class="nav nav-pills flex-column">
+            {% set plugin_names = [] %}
+            {% for plugin in instance.plugins %}
+            {% set _ = plugin_names.append(plugin.plugin_name) %}
+            {% endfor %}
+            {% if plugin is undefined %}
+            {% set plugin = 'builtin' %}
+            {% endif %}
+            {% if 'dashboard' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/dashboard"
+                class="{{'active' if plugin == 'dashboard' else ''}} dashboard nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Dashboard"
+              >
+                <i class="fa-solid fa-dashboard fa-fw"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'activity' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/activity"
+                class="{{'active' if plugin == 'activity' else ''}} activity nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Activity"
+              >
+                <i class="fa-solid fa-bars fa-fw"></i>
+                <span>Activity</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'monitoring' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/monitoring"
+                class="{{'active' if plugin == 'monitoring' else ''}} monitoring nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Monitoring"
+              >
+                <i class="fa-solid fa-chart-column fa-fw"></i>
+                <span>Monitoring</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'monitoring' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/alerting"
+                class="{{'active' if plugin == 'alerting' else ''}} alerting nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Status"
+              >
+                <i class="fa-solid fa-heart fa-fw"></i>
+                <span>Status</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'pgconf' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/pgconf/configuration"
+                class="{{'active' if plugin == 'pgconf' else ''}} pgconf nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Configuration"
+              >
+                <i class="fa-solid fa-cog fa-fw"></i>
+                <span>Configuration</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'maintenance' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/maintenance"
+                class="{{'active' if plugin == 'maintenance' else ''}} maintenance nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Maintenance"
+              >
+                <i class="fa-solid fa-wrench fa-fw"></i>
+                <span>Maintenance</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if 'statements' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/statements"
+                class="{{'active' if plugin == 'statements' else ''}} statements nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Statements"
+              >
+                <i class="fa-solid fa-tasks fa-fw"></i>
+                <span>Statements</span>
+              </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
+                class="{{'active' if plugin == 'notifications' else ''}} nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Notifications"
+              >
+                <i class="fa-solid fa-envelope fa-fw"></i>
+                <span>Notifications</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/server/{{instance.agent_address}}/{{instance.agent_port}}/about" class="nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="About"
+              >
+                <i class="fa-solid fa-info fa-fw"></i>
+                <span>About</span>
+              </a>
+            </li>
+          </ul>
+          {% include "collapse_sidebar_button.html" %}
+          {% endif %}{# end of instance #} {% block sidebar %}{% endblock %}
         </div>
         {% endif %}{# end of sidebar #}
 
         <!-- Contents -->
-        <div class="main ms-auto p-3 position-relative">
+        <div class="main py-3">
           {% if instance is defined and instance.status is defined and instance.status is not none %}
           {%   set s = instance.status %}
           {%   if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}
