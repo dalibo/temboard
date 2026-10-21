@@ -48,9 +48,9 @@ from .alerting import (
     populate_host_checks,
     preprocess_data,
 )
+from .metrics import insert_metrics, merge_agent_info, update_collector_status
 from .model.db import get_host_id, get_instance_id, insert_availability
 from .model.orm import Check, CollectorStatus, Host, Instance
-from .tools import insert_metrics, merge_agent_info, update_collector_status
 
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
