@@ -9,8 +9,7 @@ from temboardui.plugins.monitoring.model.orm import Check, CheckState
 
 from ....web.flask import instance_routes
 from ..alerting import check_specs, check_state_detail, checks_info
-from ..tools import parse_start_end
-from .params import get_request_ids
+from .params import get_request_ids, parse_start_end
 
 logger = logging.getLogger(__name__)
 
