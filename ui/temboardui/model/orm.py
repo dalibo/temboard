@@ -1,3 +1,4 @@
+import logging
 import string
 from secrets import choice
 
@@ -11,6 +12,7 @@ from temboardtoolkit.utils import utcnow
 from . import QUERIES
 
 Model = declarative_base()
+logger = logging.getLogger(__name__)
 
 # For bridging ORM with raw SQL code, see
 # https://docs.sqlalchemy.org/en/14/orm/queryguide.html#getting-orm-results-from-textual-and-core-statements
@@ -524,3 +526,19 @@ class Instance(Model):
 
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
+
+    def is_discover_outdated(self, etag) -> bool:
+        """
+        Returns whether current discover data is outdated.
+        """
+
+        if not etag:
+            logger.debug("Agent did not send discover ETag.")
+            return False
+
+        if etag == self.discover_etag:  # discover is up to date
+            return False
+
+        logger.info("Detected discover data changes.")
+        logger.debug("New etag. old=%s new=%s", self.discover_etag, etag)
+        return True
