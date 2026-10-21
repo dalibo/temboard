@@ -494,15 +494,8 @@ def collector(app, address, port, engine=None):
     # monitoring is still the better place to queue a discover. This allow us
     # to have sub-minute reactivity on instance change.
     discover_etag = response.headers.get("X-TemBoard-Discover-ETag")
-    if discover_etag:
-        if discover_etag != instance.discover_etag:
-            logger.info("Detected discover data changes.")
-            logger.debug(
-                "New etag. old=%s new=%s", instance.discover_etag, discover_etag
-            )
-            refresh_discover.defer(app, address=address, port=port)
-    else:
-        logger.debug("Agent did not send discover ETag.")
+    if instance.is_discover_outdated(discover_etag):
+        refresh_discover.defer(app, address=address, port=port)
 
     if not rows:
         # If the agent has no data for 5 minutes, consider it failing.
