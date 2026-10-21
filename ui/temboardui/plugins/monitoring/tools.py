@@ -1,12 +1,10 @@
 import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
-from .alerting import bootstrap_checks, check_specs
 from .model import db
-from .model.orm import Check, CheckState, CollectorStatus, Host, Instance
+from .model.orm import CollectorStatus, Host, Instance
 
 logger = logging.getLogger(__package__)
 
@@ -153,41 +151,6 @@ def generate_logfmt_records(metric, points):
         yield record
 
 
-def get_instance_checks(session, instance_id):
-    # Returns enabled alerting checks as list of tuples:
-    # (name, warning threshold, critical threshold)
-    checks = session.query(Check).filter(Check.instance_id == instance_id)
-    return [(c.name, c.warning, c.critical) for c in checks if c.enabled]
-
-
-def populate_host_checks(session, host_id, instance_id, hostinfo):
-    # Populate checks table with bootstraped checks if needed
-    for bc in bootstrap_checks(hostinfo):
-        # Do not try to add new check if exists
-        if (
-            session.query(Check)
-            .filter(
-                Check.host_id == host_id,
-                Check.instance_id == instance_id,
-                Check.name == bc[0],
-            )
-            .count()
-            > 0
-        ):
-            continue
-        c = Check(
-            host_id=host_id,
-            instance_id=instance_id,
-            name=bc[0],
-            enabled=True,
-            warning=bc[1],
-            critical=bc[2],
-            description=check_specs.get(bc[0], {}).get("description"),
-        )
-        session.add(c)
-    session.commit()
-
-
 def update_collector_status(
     session, instance_id, status, last_pull=None, last_push=None, last_insert=None
 ):
@@ -202,135 +165,3 @@ def update_collector_status(
         cs.last_insert = last_insert
 
     session.merge(cs)
-
-
-def preprocess_data(data, checks, timestamp):
-    """Preprocess metrics for alerting."""
-    ret = list()
-
-    for check in checks:
-        spec = check_specs.get(check[0])
-        if not spec:
-            continue
-
-        try:
-            res = spec.get("preprocess")(data)
-        except Exception as e:
-            logger.debug("Failed to preprocess alerting check '%s': %s", check[0], e)
-            continue
-
-        if not isinstance(res, dict):
-            res = {"": res}
-
-        for key, value in list(res.items()):
-            ret.append(
-                dict(
-                    datetime=timestamp,
-                    name=check[0],
-                    key=key,
-                    value=value,
-                    warning=check[1],
-                    critical=check[2],
-                )
-            )
-    return ret
-
-
-def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
-    # Function in charge of checking preprocessed monitoring values
-    keys = dict()
-
-    for raw in ppdata:
-        dt = raw.get("datetime")
-        name = raw.get("name")
-        key = raw.get("key")
-        value = raw.get("value")
-        warning = raw.get("warning")
-        critical = raw.get("critical")
-
-        # Proceed with thresholds comparison
-        spec = check_specs.get(name)
-        state = "UNDEF"
-        if not spec:
-            continue
-        if not (
-            spec.get("operator")(value, warning)
-            or spec.get("operator")(value, critical)
-        ):
-            state = "OK"
-        if spec.get("operator")(value, warning):
-            state = "WARNING"
-        if spec.get("operator")(value, critical):
-            state = "CRITICAL"
-
-        # Try to find enabled check for this host_id with the same name
-        try:
-            c = (
-                session.query(Check)
-                .filter(
-                    Check.name == str(name),
-                    Check.host_id == host_id,
-                    Check.instance_id == instance_id,
-                    Check.enabled == bool(True),
-                )
-                .one()
-            )
-        except NoResultFound:
-            continue
-
-        # Update/insert check current state
-        try:
-            cs = (
-                session.query(CheckState)
-                .filter(CheckState.check_id == c.check_id, CheckState.key == str(key))
-                .one()
-            )
-            # State has changed since last time
-            if cs.state != state:
-                if app.scheduler.can_schedule():
-                    app.scheduler.schedule_task(
-                        "notify_state_change",
-                        options={
-                            "check_id": c.check_id,
-                            "key": key,
-                            "value": value,
-                            "state": state,
-                            "prev_state": cs.state,
-                        },
-                        expire=0,
-                    )
-                else:
-                    logger.warning("Can't schedule state change task.")
-            cs.state = str(state)
-            session.merge(cs)
-
-        except NoResultFound:
-            cs = CheckState(check_id=c.check_id, key=str(key), state=str(state))
-            session.add(cs)
-
-        session.flush()
-        # Append state change if any to history
-        db.append_state_changes(
-            session, dt, c.check_id, cs.state, cs.key, value, warning, critical
-        )
-
-        if c.check_id not in keys:
-            keys[c.check_id] = list()
-        keys[c.check_id].append(cs.key)
-
-        session.commit()
-        session.expunge_all()
-
-    # Purge CheckState
-    for check_id, ks in list(keys.items()):
-        db.purge_check_states(session, check_id, ks)
-        session.commit()
-
-    # Get the list of check_id for the given instance
-    req = session.query(Check).filter(Check.instance_id == instance_id)
-    all_check_ids = [check.check_id for check in req]
-
-    # Set to UNDEF each unchecked check for the given instance
-    # This may happen when postgres is not available
-    db.undef_check_states(session, all_check_ids, list(keys.keys()))
-    session.commit()
