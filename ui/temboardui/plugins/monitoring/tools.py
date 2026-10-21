@@ -19,8 +19,8 @@ def merge_agent_info(session, host_info, instance_info):
 
     try:
         # Try to get host_id, based on hostname
-        host_info["host_id"] = get_host_id(session, host_info["hostname"])
-    except Exception:
+        host_info["host_id"] = db.get_host_id(session, host_info["hostname"])
+    except NameError:
         # host not found
         pass
 
@@ -32,7 +32,7 @@ def merge_agent_info(session, host_info, instance_info):
     session.commit()
 
     # Get host_id in any case
-    host_id = get_host_id(session, host_info["hostname"])
+    host_id = db.get_host_id(session, host_info["hostname"])
     # Weird that SA does not update this.
     host.host_id = host_id
 
@@ -57,14 +57,6 @@ def merge_agent_info(session, host_info, instance_info):
     return host
 
 
-def get_host_id(session, hostname):
-    """Get host_id by the hostname."""
-    host_id = db.get_host_id(session, hostname)
-    if not host_id:
-        raise NameError("Could not find registered host with hostname=%s" % hostname)
-    return host_id
-
-
 def get_instance_id(session, host_id, port):
     """Get instance_id by host_id and port."""
     instance_id = db.get_instance_id(session, host_id, port)
@@ -77,7 +69,7 @@ def get_instance_id(session, host_id, port):
 
 
 def get_request_ids():
-    host_id = get_host_id(g.db_session, g.instance.hostname)
+    host_id = db.get_host_id(g.db_session, g.instance.hostname)
     instance_id = get_instance_id(g.db_session, host_id, g.instance.pg_port)
     return host_id, instance_id
 

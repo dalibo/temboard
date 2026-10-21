@@ -424,7 +424,9 @@ def get_host_id(session, hostname):
         "SELECT host_id FROM monitoring.hosts WHERE hostname = :hostname",
         dict(hostname=hostname),
     ).fetchone()
-    return row[0] if row else None
+    if not row:
+        raise NameError("Could not find registered host with hostname=%s" % hostname)
+    return row[0]
 
 
 def get_instance_id(session, host_id, port):
