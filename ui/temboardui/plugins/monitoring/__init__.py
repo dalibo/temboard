@@ -159,17 +159,6 @@ def history_tables_worker(app):
     logger.debug("Total time in SQL %s.", stopwatch.delta)
 
 
-@workers.register(pool_size=10)
-def check_data_worker(app, host_id, instance_id, data):
-    # Worker in charge of checking preprocessed monitoring values
-    worker_session = Session(bind=worker_engine(app.config.repository))
-
-    check_preprocessed_data(app, worker_session, host_id, instance_id)
-
-    worker_session.commit()
-    worker_session.close()
-
-
 @workers.schedule(id="purge_data", redo_interval=24 * 60 * 60)  # 24h
 @workers.register(pool_size=1)
 def purge_data_worker(app):
