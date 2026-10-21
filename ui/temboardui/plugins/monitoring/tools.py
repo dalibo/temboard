@@ -342,7 +342,7 @@ def check_preprocessed_data(app, session, host_id, instance_id, ppdata):
             )
             # State has changed since last time
             if cs.state != state:
-                if app.scheduler.can_schedule:
+                if app.scheduler.can_schedule():
                     app.scheduler.schedule_task(
                         "notify_state_change",
                         options={
