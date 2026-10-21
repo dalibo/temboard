@@ -9,6 +9,8 @@ from temboardui.agentclient import TemboardAgentClient
 from temboardui.model import worker_engine
 from temboardui.model.orm import Instance
 
+from ...core import refresh_discover
+
 logger = logging.getLogger(__name__)
 workers = taskmanager.WorkerSet()
 
@@ -141,11 +143,16 @@ def pull_data_for_instance(app, session, instance):
     client = TemboardAgentClient.factory(
         app.config, instance.agent_address, instance.agent_port
     )
+    discover_etag = None
     try:
         response = client.get("/statements")
         response.raise_for_status()
         add_statement(session, instance, response.json())
         logger.debug("Successfully pulled statements data for %s.", agent_id)
+
+        # statements is still the better place to queue a discover. This allow us
+        # to have sub-minute reactivity on instance change.
+        discover_etag = response.headers.get("X-TemBoard-Discover-ETag")
     except Exception as e:
         error = "Error while fetching statements from instance: "
         if hasattr(e, "read"):
@@ -179,6 +186,11 @@ def pull_data_for_instance(app, session, instance):
         """
         cur.execute(query, (error, instance.agent_address, instance.agent_port))
         session.connection().connection.commit()
+
+    if instance.is_discover_outdated(discover_etag):
+        refresh_discover.defer(
+            app, address=instance.agent_address, port=instance.agent_port
+        )
 
 
 @workers.schedule(id="statements_purge", redo_interval=24 * 60 * 60)  # 24h

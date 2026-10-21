@@ -491,11 +491,13 @@ def collector(app, address, port, engine=None):
     else:
         rows = response.json()
 
-    # monitoring is still the better place to queue a discover. This allow us
-    # to have sub-minute reactivity on instance change.
-    discover_etag = response.headers.get("X-TemBoard-Discover-ETag")
-    if instance.is_discover_outdated(discover_etag):
-        refresh_discover.defer(app, address=address, port=port)
+    # If statements plugin does not check for discover lag, check here.
+    if not instance.has_plugin("statements"):
+        # note: Actually, agents before 19 dont expose ETag in statements and won't have
+        # discover auto-refresh.
+        discover_etag = response.headers.get("X-TemBoard-Discover-ETag")
+        if instance.is_discover_outdated(discover_etag):
+            refresh_discover.defer(app, address=address, port=port)
 
     if not rows:
         # If the agent has no data for 5 minutes, consider it failing.
