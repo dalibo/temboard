@@ -527,6 +527,12 @@ class Instance(Model):
     def disable_plugin(self, plugin):
         return Plugin.delete(self, plugin)
 
+    def has_plugin(self, name) -> bool:
+        for p in self.plugins:
+            if p.plugin_name == name:
+                return True
+        return False
+
     def is_discover_outdated(self, etag) -> bool:
         """
         Returns whether current discover data is outdated.
