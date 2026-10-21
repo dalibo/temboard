@@ -78,9 +78,9 @@ class MonitoringPlugin:
 
     def load(self):
         # Import Flask routes
-        __import__(__name__ + ".handlers.prometheus")
-        __import__(__name__ + ".handlers.monitoring")
-        __import__(__name__ + ".handlers.alerting")
+        __import__(__name__ + ".routes.prometheus")
+        __import__(__name__ + ".routes.monitoring")
+        __import__(__name__ + ".routes.alerting")
         self.app.worker_pool.add(workers)
         self.app.scheduler.add(workers)
 
