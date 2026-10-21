@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from dateutil import parser as parse_datetime
-from flask import abort, request
 from sqlalchemy.orm.exc import NoResultFound
 from temboardtoolkit.errors import UserError
 
@@ -55,20 +53,6 @@ def merge_agent_info(session, host_info, instance_info):
         session.flush()
         session.commit()
     return host
-
-
-def parse_start_end():
-    start = request.args.get("start")
-    end = request.args.get("end")
-    try:
-        if start:
-            start = parse_datetime.parse(start)
-        if end:
-            end = parse_datetime.parse(end)
-    except ValueError:
-        abort(406, "Datetime not valid.")
-
-    return start, end
 
 
 def insert_metrics(session, host_id, instance_id, data, labels=None, max_duration=30):
