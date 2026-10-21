@@ -77,10 +77,6 @@ def parse_start_end():
     return start, end
 
 
-class TimeoutError(UserError):
-    pass
-
-
 def insert_metrics(session, host_id, instance_id, data, labels=None, max_duration=30):
     start = datetime.utcnow()
     max_duration = timedelta(seconds=max_duration)
@@ -95,7 +91,7 @@ def insert_metrics(session, host_id, instance_id, data, labels=None, max_duratio
             logger.warning(
                 "Aborting metrics insertion. Retrying in less than a minute."
             )
-            raise TimeoutError("Metrics insertion takes more than %s." % max_duration)
+            raise UserError("Metrics insertion takes more than %s." % max_duration)
 
         # Do not try to insert empty lines
         if data[metric_name] is None:
