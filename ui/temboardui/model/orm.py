@@ -9,6 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, relationship
 from temboardtoolkit.utils import utcnow
 
+from ..version import __version__
 from . import QUERIES
 
 Model = declarative_base()
@@ -357,6 +358,13 @@ class Instance(Model):
 
     def __str__(self):
         return f"{self.hostname}:{self.pg_port}"
+
+    def is_agent_outdated(self) -> bool:
+        agent_version = (
+            (self.discover or {}).get("temboard", {}).get("agent_version", "")
+        )
+        # Naïve comparison. But v8 and v9 are not supported.
+        return agent_version < __version__
 
     @classmethod
     def insert(
