@@ -432,7 +432,7 @@ def collector(app, address, port, engine=None):
         rows = response.json()
 
     # If statements plugin does not check for discover lag, check here.
-    if not instance.has_plugin("statements"):
+    if not instance.has_plugin("statements") or instance.is_agent_outdated():
         # note: Actually, agents before 19 dont expose ETag in statements and won't have
         # discover auto-refresh.
         discover_etag = response.headers.get("X-TemBoard-Discover-ETag")
