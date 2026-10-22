@@ -1,5 +1,5 @@
 SELECT EXISTS (
-	SELECT COUNT(1)
+	SELECT 1
 	  FROM application.instances AS i
 	  JOIN application.environments AS e ON e.id = i.environment_id
 	  JOIN application.groups AS g ON g.id = e.dba_group_id
