@@ -41,6 +41,7 @@ RELEASE="1$(rpm --eval '%{dist}')"
 "${pip[@]}" install --pre --root "$DESTDIR" --prefix /usr --no-deps "dist/temboard-$VERSION-py3-none-any.whl"
 # Vendor dependencies.
 pythonv=$("$python" --version |& grep -Po 'Python \K(3\.[0-9]{1,2})')
+export UV_PYTHON="$pythonv"
 uv pip install \
 	--pre --no-deps \
 	--requirement "$TOP_SRCDIR/vendor.txt" \
