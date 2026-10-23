@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}temBoard / {{instance}} / Explain{% endblock %}
+
+{% block content %}
+<div id="app" class="d-flex flex-grow-1">
+  <instance-explain :query="{{ query | default('') }}" :options='{{ options | tojson }}' />
+</div>
+
+<script type="module" src="{{ vitejs.url_for('instance.explain.js') }}"></script>
+<script>
+var agent_address = "{{instance.agent_address}}";
+var agent_port = "{{instance.agent_port}}";
+</script>
+
+{% endblock %}

@@ -115,7 +115,7 @@ generate_configuration() {
     test -n "$port"
     log "Configuring temboard-agent to run on port ${port}."
 
-    plugins=(dashboard maintenance monitoring pgconf)
+    plugins=(dashboard maintenance monitoring pgconf explain)
     if [ -n "$has_statements" ]; then
         plugins+=(statements)
     fi
@@ -159,7 +159,7 @@ generate_configuration() {
 	ssl_cert_file = ${sslcert}
 	# Path to SSL private key for HTTPS.
 	ssl_key_file = ${sslkey}
-	# Enabled plugins.
+	# Enabled plugins. ***************************
 	plugins = ["activity"${qplugins[@]}]
 
 	#

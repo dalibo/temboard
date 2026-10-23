@@ -12,8 +12,9 @@
 
 <script type="module" src="{{ vitejs.url_for('activity.js') }}"></script>
 <script>
-var agent_address = "{{instance.agent_address}}";
-var agent_port = "{{instance.agent_port}}";
+var activityApiUrl = "/proxy/{{instance.agent_address}}/{{instance.agent_port}}/activity";
+var activityKillApiUrl = "/proxy/{{instance.agent_address}}/{{instance.agent_port}}/activity/kill";
+var explainUrl = "/server/{{instance.agent_address}}/{{instance.agent_port}}/explain";
 </script>
 
 {% endblock %}
