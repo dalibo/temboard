@@ -426,7 +426,7 @@ class InstanceMiddleware:
         Ensure that the plugin is active for given instance
         """
         if name not in [p.plugin_name for p in g.instance.plugins]:
-            raise abort(408, "Plugin %s not activated." % name)
+            raise abort(403, "Plugin %s not activated." % name)
 
 
 def anonymous_allowed(func):
@@ -466,11 +466,11 @@ def transaction(func):
 
 @contextlib.contextmanager
 def validating():
-    # Translate ValueError to HTTP 408
+    # Translate ValueError to HTTP 400 Bad Request
     try:
         yield
     except ValueError as e:
-        raise abort(408, str(e))
+        raise abort(400, str(e))
 
 
 def csvify(data, status_code=200):
