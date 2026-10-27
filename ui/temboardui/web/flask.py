@@ -426,7 +426,7 @@ class InstanceMiddleware:
         Ensure that the plugin is active for given instance
         """
         if name not in [p.plugin_name for p in g.instance.plugins]:
-            raise abort(408, "Plugin %s not activated." % name)
+            raise abort(403, "Plugin %s not activated." % name)
 
 
 def anonymous_allowed(func):
