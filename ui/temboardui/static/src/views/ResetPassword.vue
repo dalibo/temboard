@@ -60,7 +60,7 @@ function submit() {
       identifier: identifier.value,
     }),
     success: () => {
-      window.location.href = "/login";
+      window.open("/login", "_self", "noreferrer");
     },
     error: (xhr) => {
       error.value.fromXHR(xhr);
