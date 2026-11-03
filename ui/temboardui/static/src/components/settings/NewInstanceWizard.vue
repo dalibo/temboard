@@ -13,7 +13,6 @@ import InstanceForm from "./InstanceForm.vue";
 
 const root = ref(null);
 const error = ref(null);
-const formCmp = ref(null);
 const waiting = ref(false);
 
 const initialState = {
@@ -198,7 +197,6 @@ function reset() {
     <!-- Register -->
     <div v-if="state.wizard_step == 'register'" v-cloak>
       <InstanceForm
-        ref="formCmp"
         submit_text="Register"
         type="New"
         :pg_host="state.pg_host"
