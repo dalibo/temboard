@@ -72,3 +72,11 @@ split-on-trailing-comma = false
 skip-magic-trailing-comma = true
 line-ending = "lf"
 docstring-code-format = true
+
+[tool.ty]
+environment.extra-paths = [
+    "agent/temboardagent/_vendor",
+    "ui/temboardui/_vendor",
+    "tests", # for fixtures
+]
+src.exclude = ["_vendor"]
