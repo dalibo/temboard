@@ -119,7 +119,7 @@ def jsonlist(raw):
 def port(raw):
     port = int(raw)
 
-    if 0 > port or port > 65635:
+    if port < 1 or 65535 < port:
         raise ValueError("Port out of range")
 
     return port
