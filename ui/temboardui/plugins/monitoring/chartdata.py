@@ -273,6 +273,7 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         probename="db_size",
     ),
     loadavg=dict(
+        promql="""{__name__=~"node_load(1|5|15)", server="%(server)s"}""",
         sql_nozoom="""
 SELECT
     datetime AS date,

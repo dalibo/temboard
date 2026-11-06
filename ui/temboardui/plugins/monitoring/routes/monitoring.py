@@ -3,6 +3,7 @@ import logging
 from flask import abort, current_app, g, render_template, request
 
 from ....web.flask import csvify, instance_routes
+from .. import prometheus
 from ..chartdata import get_metric_data_csv, get_unavailability_csv
 from .params import get_request_ids, parse_start_end
 
@@ -38,24 +39,34 @@ def unavailability():
 @instance_routes.route(r"/monitoring/data/<metric_name>")
 def data_metric(metric_name):
     key = request.args.get("key")
-    try:
-        host_id, instance_id = get_request_ids()
-    except NameError as e:
-        logger.info("%s. No data.", e)
-        return csvify(data=[])
-
     start, end = parse_start_end()
+
     try:
-        data = get_metric_data_csv(
-            g.db_session,
-            metric_name,
-            start,
-            end,
-            host_id=host_id,
-            instance_id=instance_id,
+        data = prometheus.query_data(
+            server=str(current_app.instance),
+            metric=metric_name,
             key=key,
+            start=start,
+            end=end,
         )
-    except IndexError:
-        raise abort(400, "Unknown metric.")
+    except prometheus.Disabled:
+        try:
+            host_id, instance_id = get_request_ids()
+        except NameError as e:
+            logger.info("%s. No data.", e)
+            return csvify(data=[])
+
+        try:
+            data = get_metric_data_csv(
+                g.db_session,
+                metric_name,
+                start,
+                end,
+                host_id=host_id,
+                instance_id=instance_id,
+                key=key,
+            )
+        except IndexError:
+            raise abort(400, "Unknown metric.")
 
     return csvify(data=data)
