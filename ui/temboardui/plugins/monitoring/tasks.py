@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import zip_longest
 from textwrap import dedent
 
@@ -375,6 +375,7 @@ def collector(app, address, port, engine=None):
     # Agent monitoring API endpoint
     history_url = "/monitoring/history?limit=100"
     start = None
+    now = datetime.now(timezone.utc)
     try:
         # Trying to find host_id, instance_id and the datetime of the latest
         # inserted record.
@@ -403,6 +404,8 @@ def collector(app, address, port, engine=None):
 
         if collector_status and collector_status.last_insert:
             start = collector_status.last_insert + timedelta(seconds=1)
+            # last_insert is UTC, but stored naïve. Make it TZ aware.
+            start = start.replace(tzinfo=timezone.utc)
             history_url += "&start=%s" % start.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Finally, let's call /monitoring/history agent API for getting metrics
@@ -422,9 +425,7 @@ def collector(app, address, port, engine=None):
         )
         # Update collector status only if instance_id is known
         if instance_id:
-            update_collector_status(
-                worker_session, instance_id, "FAIL", last_pull=datetime.utcnow()
-            )
+            update_collector_status(worker_session, instance_id, "FAIL", last_pull=now)
             worker_session.commit()
         worker_session.close()
         return
@@ -441,7 +442,7 @@ def collector(app, address, port, engine=None):
 
     if not rows:
         # If the agent has no data for 5 minutes, consider it failing.
-        if start and start < datetime.utcnow() - timedelta(minutes=5):
+        if start and start < now - timedelta(minutes=5):
             logger.error(
                 "No monitoring data returned by agent. instance=%s agent=%s",
                 instance,
@@ -449,7 +450,7 @@ def collector(app, address, port, engine=None):
             )
             if instance_id:
                 update_collector_status(
-                    worker_session, instance_id, "FAIL", last_pull=datetime.utcnow()
+                    worker_session, instance_id, "FAIL", last_pull=now
                 )
                 worker_session.commit()
             worker_session.close()
