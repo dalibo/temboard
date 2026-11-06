@@ -5,6 +5,7 @@ import ssl
 from datetime import datetime, timezone
 from time import time
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 
 from .errors import TemboardError
 from .log import LastnameFilter
@@ -76,7 +77,8 @@ class TemboardClient:
                 self._ssl_context.verify_mode = ssl.CERT_NONE
         return self._ssl_context
 
-    def request(self, method, path, headers=None, body=None):
+    def request(self, method, path, headers=None, body=None, query=None):
+        path = join_query(path, query)
         hostport = f"{self.host}:{self.port}"
         fullurl = f"{self.scheme}://{hostport}{path}"
 
@@ -126,11 +128,11 @@ class TemboardClient:
 
         return response
 
-    def get(self, path, headers=None):
-        return self.request("GET", path, headers)
+    def get(self, path, headers=None, query=None):
+        return self.request("GET", path, headers, query=query)
 
-    def post(self, path, body, headers=None):
-        return self.request("POST", path, headers, body)
+    def post(self, path, body, headers=None, query=None):
+        return self.request("POST", path, headers, body, query=query)
 
 
 class TemboardResponse(http.client.HTTPResponse):
@@ -157,6 +159,18 @@ class TemboardResponse(http.client.HTTPResponse):
 
     def json(self):
         return json.loads(self.read().decode("utf-8"))
+
+
+def join_query(path, query=None):
+    """Append query string to path.
+
+    query is a dict or a sequence of (name, value) pairs. A list value is
+    serialized as repeated parameters.
+    """
+    if not query:
+        return path
+    separator = "&" if "?" in path else "?"
+    return path + separator + urlencode(query, doseq=True)
 
 
 def format_date(date=None):
