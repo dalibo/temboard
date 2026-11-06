@@ -49,11 +49,7 @@ def data_metric(metric_name):
             raise prometheus.Disabled()
 
         data = prometheus.query_data(
-            server=str(current_app.instance),
-            metric=metric_name,
-            key=key,
-            start=start,
-            end=end,
+            server=str(g.instance), metric=metric_name, key=key, start=start, end=end
         )
     except prometheus.Disabled:
         try:
