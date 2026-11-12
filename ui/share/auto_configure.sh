@@ -78,6 +78,7 @@ setup_ssl() {
 		fi
 		chmod 640 $sslkey
 		chgrp "$SYSUSER" "$sslkey"
+		chgrp "$SYSUSER" "$sslcert"
 	fi
 	readlink -e $sslcert $sslkey
 }
