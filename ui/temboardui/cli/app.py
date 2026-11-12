@@ -47,6 +47,7 @@ class TemboardApplication(BaseApplication):
         "pgconf",
         "maintenance",
         "statements",
+        "explain",
     ]
 
     def __init__(self, *a, **kw):

@@ -201,6 +201,20 @@
               </a>
             </li>
             {% endif %}
+            {% if 'explain' in plugin_names %}
+            <li class="nav-item">
+              <a
+                href="/server/{{instance.agent_address}}/{{instance.agent_port}}/explain"
+                class="{{'active' if plugin == 'explain' else ''}} explain nav-link"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Explain"
+              >
+                <i class="fa-solid fa-sitemap fa-fw"></i>
+                <span>Explain</span>
+              </a>
+            </li>
+            {% endif %}
             <li class="nav-item">
               <a
                 href="/server/{{instance.agent_address}}/{{instance.agent_port}}/notifications"
@@ -230,7 +244,7 @@
         {% endif %}{# end of sidebar #}
 
         <!-- Contents -->
-        <div class="main py-3">
+        <div class="main py-3 d-flex flex-column">
           {% if instance is defined and instance.status is defined and instance.status is not none %}
           {%   set s = instance.status %}
           {%   if "pending_restart" in s.get("postgres",{}) and s.get("postgres",{})["pending_restart"] %}

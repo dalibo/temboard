@@ -115,11 +115,12 @@ generate_configuration() {
     test -n "$port"
     log "Configuring temboard-agent to run on port ${port}."
 
-    plugins=(dashboard maintenance monitoring pgconf)
+    plugins=(activity dashboard maintenance monitoring pgconf explain)
     if [ -n "$has_statements" ]; then
         plugins+=(statements)
     fi
-    printf -v qplugins ', "%s"' "${plugins[@]}" # loose jsonify
+    printf -v qplugins '"%s", ' "${plugins[@]}" # loose jsonify
+    qplugins="[${qplugins%, }]" # trim the trailing comma
 
     local usepeer
     if [ -n "${PGPASSWORD-}" ]; then
@@ -160,8 +161,7 @@ generate_configuration() {
 	# Path to SSL private key for HTTPS.
 	ssl_key_file = ${sslkey}
 	# Enabled plugins.
-	plugins = ["activity"${qplugins[@]}]
-
+	plugins = ${qplugins[@]}
 	#
 	# Managed PostgreSQL instance configuration
 	#
