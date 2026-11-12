@@ -42,6 +42,12 @@ def data_metric(metric_name):
     start, end = parse_start_end()
 
     try:
+        if request.args.get("prometheus") == "disabled":
+            raise prometheus.Disabled()
+
+        if request.headers.get("X-Prometheus") == "disabled":
+            raise prometheus.Disabled()
+
         data = prometheus.query_data(
             server=str(current_app.instance),
             metric=metric_name,
