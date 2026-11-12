@@ -25,7 +25,6 @@ from ..model import QUERIES
 from ..model import configure as configure_db_session
 from ..version import __version__, format_version, inspect_versions
 from ..web.flask import finalize_app as finalize_flask_app
-from ..web.tornado import Error404Handler, TemplateRenderer
 from ..web.tornado import app as tornado_app
 
 logger = logging.getLogger("temboardui")
@@ -176,15 +175,11 @@ class TemboardUIConfiguration(MergedConfiguration):
 def bootstrap_tornado_app(tornado_app, config):
     tornado_app.config = config
 
-    base_path = os.path.dirname(os.path.dirname(__file__))
     # Load handlers
     __import__("temboardui.handlers.notification")
 
     tornado_app.configure(
-        cookie_secret=config.temboard["cookie_secret"],
-        debug=config.logging.debug,
-        template_path=base_path + "/templates",
-        default_handler_class=Error404Handler,
+        cookie_secret=config.temboard["cookie_secret"], debug=config.logging.debug
     )
 
     return tornado_app
@@ -231,8 +226,6 @@ def finalize_tornado_app(tornado_app, config):
             )
         ]
     )
-
-    TemplateRenderer.GLOBAL_NAMESPACE["vitejs"] = flask_app.vitejs
 
 
 def map_pgvars(environ):
