@@ -33,6 +33,7 @@ class MonitoringPlugin:
     options_specs = [
         OptionSpec(s, "collect_max_duration", default=30, validator=int),
         OptionSpec(s, "prometheus", default=prometheus, validator=v.file_),
+        OptionSpec(s, "prometheus_url", validator=v.url),
     ]
 
     def __init__(self, app):

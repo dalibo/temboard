@@ -2,7 +2,7 @@ import json
 import logging
 from uuid import uuid4
 
-from temboardtoolkit.http import TemboardClient, format_date
+from temboardtoolkit.http import TemboardClient, format_date, join_query
 from temboardtoolkit.signing import canonicalize_request, sign_v1
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,9 @@ class TemboardAgentClient(TemboardClient):
         self.signing_key = signing_key
         self.username = username
 
-    def request(self, method, path, headers=None, body=None):
+    def request(self, method, path, headers=None, body=None, query=None):
+        # Query string is part of the signed path.
+        path = join_query(path, query)
         hostport = f"{self.host}:{self.port}"
         headers = headers or {}
 

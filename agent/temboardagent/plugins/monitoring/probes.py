@@ -40,11 +40,10 @@ def load_probes(options, home):
     return probes
 
 
-def run_probes(probes, pool, instances, delta=True):
+def run_probes(ts, probes, pool, instances, delta=True):
     """Execute the probes."""
 
-    now = utcnow()
-    logger.debug("Running probes at %s.", now.isoformat())
+    logger.debug("Running probes at %s.", ts.isoformat())
     # Output is a mapping of probe names with lists. Each probe returns
     # a list of dicts(metric -> value).
     output = {}
@@ -95,7 +94,7 @@ def run_probes(probes, pool, instances, delta=True):
                     continue
 
         for record in out:
-            record["datetime"] = now
+            record["datetime"] = ts
         output[p.get_name()] = out
 
     logger.debug("Finished probes run.")

@@ -3,7 +3,7 @@ import $ from "jquery";
 import moment from "moment";
 import { onMounted, ref, watch } from "vue";
 
-const props = defineProps(["graph", "metrics", "from", "to"]);
+const props = defineProps(["graph", "metrics", "from", "to", "prometheus"]);
 const chartEl = ref(null);
 
 let chart;
@@ -79,7 +79,12 @@ function createOrUpdateChart(create) {
     defaultOptions[attrname] = props.metrics[id].options[attrname];
   }
 
-  const params = "?start=" + timestampToIsoDate(startDate) + "&end=" + timestampToIsoDate(endDate) + "&noerror=1";
+  let params = "?start=" + timestampToIsoDate(startDate) + "&end=" + timestampToIsoDate(endDate) + "&noerror=1";
+  if (!!props.prometheus) {
+    params += "&prometheus=" + props.prometheus;
+    defaultOptions.ylabel = defaultOptions.ylabel + " prometheus=" + props.prometheus;
+  }
+
   let data = null;
   const dataReq = $.get(apiUrl + "/" + props.metrics[id].api + params, function (_data) {
     data = _data;

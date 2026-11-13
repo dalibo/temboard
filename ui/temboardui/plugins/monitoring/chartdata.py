@@ -273,6 +273,14 @@ GROUP BY datetime, instance_id ORDER BY 1,2 ASC
         probename="db_size",
     ),
     loadavg=dict(
+        prometheus={
+            "query": """{__name__=~"node_load(1|5|15)", server="%(server)s"}""",
+            "map": [
+                ("node_load1", "load1"),
+                ("node_load5", "load5"),
+                ("node_load15", "load15"),
+            ],
+        },
         sql_nozoom="""
 SELECT
     datetime AS date,

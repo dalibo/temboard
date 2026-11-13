@@ -442,6 +442,17 @@ function showMetricsSelector() {
             </div>
           </div>
         </div>
+        <!-- for debugging purpose: double graph: first with legacy engine, second with prometheus. Edit v-if to enable. -->
+        <MonitoringChart
+          :graph="graph"
+          :id="'chart' + graph"
+          :metrics="metrics"
+          :from="from"
+          :to="to"
+          @onZoom="setFromTo"
+          prometheus="disabled"
+          v-if="false && from && to"
+        ></MonitoringChart>
         <MonitoringChart
           :graph="graph"
           :id="'chart' + graph"

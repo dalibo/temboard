@@ -14,10 +14,12 @@ def parse_start_end():
     start = request.args.get("start")
     end = request.args.get("end")
     try:
+        # Truncate seconds since agent collects every minute.
+        # This stabilizes prometheus graph.
         if start:
-            start = parse_datetime.parse(start)
+            start = parse_datetime.parse(start).replace(second=0)
         if end:
-            end = parse_datetime.parse(end)
+            end = parse_datetime.parse(end).replace(second=0)
     except ValueError:
         abort(406, "Datetime not valid.")
 

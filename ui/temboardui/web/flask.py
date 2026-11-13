@@ -476,7 +476,7 @@ def validating():
 def csvify(data, status_code=200):
     if isinstance(data, list):
         fo = StringIO()
-        writer = csv.writer(fo)
+        writer = csv.writer(fo, lineterminator="\n")
         for row in data:
             writer.writerow(row)
         data = fo.getvalue()

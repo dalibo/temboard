@@ -6,10 +6,11 @@ from datetime import datetime
 from bottle import HTTPError, default_app, request, response
 from temboardtoolkit import taskmanager
 from temboardtoolkit.configuration import OptionSpec
+from temboardtoolkit.utils import utcnow
 from temboardtoolkit.validators import commalist
 
 from ... import __version__ as __VERSION__
-from ...tools import now, validate_parameters
+from ...tools import validate_parameters
 from ...web.app import CustomBottle
 from . import db
 from .inventory import host_info, instance_info
@@ -109,20 +110,20 @@ def monitoring_collector_worker(app):
     logger.debug("Load the probes to run.")
     probes = load_probes(config.monitoring, config.temboard.home)
 
+    now = utcnow()
     with app.postgres.dbpool() as pool:
         instance = instance_info(pool, app.config.monitoring.dbnames, discover)
-        data = run_probes(probes, pool, [instance])
+        data = run_probes(now, probes, pool, [instance])
 
     # Prepare and send output
     output = dict(
-        datetime=now(),
+        datetime=now.strftime("%Y-%m-%d %H:%M:%S +0000"),
         hostinfo=system_info,
         instances=remove_passwords([instance]),
         data=data,
         version=__VERSION__,
     )
-    logger.debug("Add data to metrics table.")
-    db.add_metric(config.temboard.home, "monitoring.db", time.time(), output)
+    db.add_metric(config.temboard.home, "monitoring.db", now.timestamp(), output)
 
     logger.debug("Collect done.")
 
