@@ -99,7 +99,13 @@ def test_port():
     assert 8080 == v.port("8080")
 
     with pytest.raises(ValueError):
+        v.port("0")
+
+    with pytest.raises(ValueError):
         v.port("-1")
+
+    with pytest.raises(ValueError):
+        v.port("65536")
 
     with pytest.raises(ValueError):
         v.port("80000")
