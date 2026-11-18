@@ -99,6 +99,19 @@ class Browser:
     def select_all(self, selector):
         return self.webdriver.find_elements(by=By.CSS_SELECTOR, value=selector)
 
+    def by_text(self, text, tag_name="*"):
+        """Helper to select an element with the text it contains.
+        The element tag can also be provided, to be more explicit.
+
+        Example:
+        <button onclick="doSomething" type="submit">Click me</button>
+        can be selected with: by_text("Click me", "button")
+        """
+
+        return self.webdriver.find_element(
+            By.XPATH, f"//{tag_name}[contains(text(), {text!r})]"
+        )
+
     def list_download_filenames(self):
         self.webdriver.command_executor._commands["SET_CONTEXT"] = (
             "POST",
