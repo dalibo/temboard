@@ -136,7 +136,10 @@ BRANCH?=master
 # When stable branch v8 is created, use this:
 # BRANCH?=v$(firstword $(subst ., ,$(VERSION)))
 
-# To test release target, override GIT_REMOTE with your own fork.
+# To test release target, override REMOTE with your own fork.
+# Here's an example command for a given fork and branch:
+# make release REMOTE=git@github.com:foouser/temboard.git BRANCH=v10
+
 REMOTE=git@github.com:dalibo/temboard.git
 release:  #: Tag and push a new git release.
 	@echo Checking we are on branch $(BRANCH).
