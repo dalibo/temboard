@@ -276,6 +276,15 @@ setup :
 - `make clean-agents` trashes every existing instances from 2348 to 3000,
   without interaction. **make clean-agents does not unregister agents!**
 
+## Try out SMTP
+
+Need to check what emails sent via temBoard look like?
+
+With a dev environment correctly set up, a SMTP service should be up and running and
+will let you check what emails sent via temBoard look like. For example, you can give
+the "forgotten / reset password" feature a try.
+
+Browse to http://127.0.0.1:8025/ to get a web interface to view sent emails.
 
 ## Execute Unit Tests
 
